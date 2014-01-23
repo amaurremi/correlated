@@ -16,11 +16,12 @@ we included its source code in this project.
 
 ### Set Up
 
-The project can be built with [SBT](http://www.scala-sbt.org/). To do that, first, install SBT on your machine.
+The project can be built with [SBT](http://www.scala-sbt.org/). To do that, first,
+[install](http://www.scala-sbt.org/release/docs/Getting-Started/Setup) SBT on your machine.
 Then navigate into the checked out Correlated Calls project directory from the command line and run
 - `sbt gen-idea`, if you'd like to use [IntelliJ IDEA](http://www.jetbrains.com/idea/)
 - `sbt eclipse`, if you'd like to use [Eclipse](http://www.eclipse.org/)
 - `sbt`, if you prefer using another IDE. From the SBT shell, type `compile` to compile the project, `run` to run it, and `test` to run the tests.
 
-To run tests, you ought to first adjust the absolute paths of `jre-lib-path` and `dependencies.jar`
+To run tests, first adjust the absolute paths of `jre-lib-path` and `dependencies.jar`
 in the `src.main.resources.application.conf` file.

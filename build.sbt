@@ -16,4 +16,5 @@ libraryDependencies ++= Seq(
   "com.ibm.wala" % "com.ibm.wala.shrike" % "1.3.4-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.util" % "1.3.4-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.core" % "1.3.4-SNAPSHOT",
-  "org.scalatest" % "scalatest_2.10" % "2.0" % "test")
+  "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
+  "org.scalaz" %% "scalaz-core" % "7.0.5")
