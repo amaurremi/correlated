@@ -7,14 +7,11 @@ import com.ibm.wala.classLoader.JarFileModule
 import com.ibm.wala.util.config.FileOfClasses
 import com.ibm.wala.util.io.FileProvider
 import scala.collection._
-import scala.collection.JavaConverters._
 import com.ibm.wala.util.strings.Atom
 import java.util.Collections
 import com.ibm.wala.classLoader.Language
 import AnalysisScope._
 import java.io.ByteArrayInputStream
-import scala.Array.canBuildFrom
-import com.ibm.wala.classLoader.SourceDirectoryTreeModule
 import com.ibm.wala.types.ClassLoaderReference
 import com.ibm.wala.classLoader.Module
 //import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
@@ -46,7 +43,8 @@ object Dependency {
 case class Dependency(file: String, nature: DependencyNature.DependencyNature, scope: Scope)
 
 class AnalysisScope(jreLibPath: String, exclusions: String, dependencies: Iterable[Dependency]) extends com.ibm.wala.ipa.callgraph.AnalysisScope(Collections.singleton(Language.JAVA)) {
-  val UNDER_ECLIPSE = false;
+  val UNDER_ECLIPSE = false
+
   import AnalysisScope._
   import DependencyNature._
 
@@ -78,10 +76,10 @@ class AnalysisScope(jreLibPath: String, exclusions: String, dependencies: Iterab
 
   def addBinaryDependency(directory: String, analysisScope: Atom = Application) {
     //    debug("Binary: " + directory);
-    val sd = getFile(directory);
+    val sd = getFile(directory)
     assert(sd.exists(), "dependency \"" + directory + "\" not found")
-    assert(sd.isDirectory(), "dependency \"" + directory + "\" not a directory")
-    addToScope(getLoader(analysisScope), new BinaryDirectoryTreeModule(sd));
+    assert(sd.isDirectory, "dependency \"" + directory + "\" not a directory")
+    addToScope(getLoader(analysisScope), new BinaryDirectoryTreeModule(sd))
   }
 
   // stuff for source frontend below
@@ -102,20 +100,20 @@ class AnalysisScope(jreLibPath: String, exclusions: String, dependencies: Iterab
 //    if (m.isInstanceOf[SourceDirectoryTreeModule] && loader.equals(ClassLoaderReference.Application)) {
 //      super.addToScope(JavaSourceAnalysisScope.SOURCE, m);
 //    } else {
-      super.addToScope(loader, m);
+      super.addToScope(loader, m)
 //    }
   }
 
   // stuff for source front end above
 
-  def getLoader() = AnalysisScope.this.getClass().getClassLoader();
+  def getLoader() = AnalysisScope.this.getClass.getClassLoader
 
   def addJarDirectoryDependency(path: String, scope: Scope = Extension) {
     //    debug("Jar folder: " + path);
-    val dir = getFile(path);
+    val dir = getFile(path)
     val delim = if (path.endsWith("/")) "" else "/"
 
-    val files = dir.list();
+    val files = dir.list()
     if (files == null) return
 
     for (fileName <- files) yield {
@@ -123,8 +121,8 @@ class AnalysisScope(jreLibPath: String, exclusions: String, dependencies: Iterab
         addJarDependency(path + delim + fileName, scope)
       else {
         val file = new File(fileName)
-        if (file.isDirectory())
-          addJarDirectoryDependency(file.getAbsolutePath(), scope)
+        if (file.isDirectory)
+          addJarDirectoryDependency(file.getAbsolutePath, scope)
       }
     }
   }
@@ -132,11 +130,11 @@ class AnalysisScope(jreLibPath: String, exclusions: String, dependencies: Iterab
   def addJarDependency(file: String, scope: Scope = Extension) {
     //    debug("Jar: " + file);
     val M = if (UNDER_ECLIPSE)
-      new FileProvider().getJarFileModule(file, getLoader());
+      new FileProvider().getJarFileModule(file, getLoader())
     else
-      new JarFileModule(new JarFile(file, true));
+      new JarFileModule(new JarFile(file, true))
 
-    addToScope(getLoader(scope), M);
+    addToScope(getLoader(scope), M)
   }
 
 }

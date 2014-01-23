@@ -10,8 +10,6 @@ import com.ibm.wala.ipa.callgraph.Entrypoint
 import scala.collection.JavaConversions._
 import com.typesafe.config.Config
 import com.ibm.wala.classLoader.ClassLoaderFactoryImpl
-import com.ibm.wala.classLoader.ClassLoaderFactory
-import com.ibm.wala.types.ClassLoaderReference
 import com.typesafe.config.ConfigList
 
 class AnalysisOptions(scope: AnalysisScope, entrypoints: java.lang.Iterable[Entrypoint], val cha: ClassHierarchy, val isSourceAnalysis: Boolean)
@@ -86,7 +84,9 @@ object AnalysisOptions {
             m.getSignature() matches signaturePattern
           }
         }
-        matchingMethods map { new DefaultEntrypoint(_, cha) } toSeq
+        (matchingMethods map {
+          new DefaultEntrypoint(_, cha)
+        }).toSeq
       } else
         Seq()
 
@@ -114,7 +114,7 @@ object AnalysisOptions {
 
   private def makeEntrypoint(entryClass: String, entryMethod: String)(implicit scope: AnalysisScope, cha: ClassHierarchy): Entrypoint = {
     val methodReference = AnalysisScope.allScopes.toStream
-      .map { scope.getLoader(_) }
+      .map { scope.getLoader }
       .map { TypeReference.findOrCreate(_, TypeName.string2TypeName(entryClass)) }
       .map { MethodReference.findOrCreate(_, entryMethod.substring(0, entryMethod.indexOf('(')), entryMethod.substring(entryMethod.indexOf('('))) }
       .find { cha.resolveMethod(_) != null } getOrElse { throw new Error("Could not find entrypoint: " + entryClass + "#" + entryMethod + " anywhere in loaded classes.") }
