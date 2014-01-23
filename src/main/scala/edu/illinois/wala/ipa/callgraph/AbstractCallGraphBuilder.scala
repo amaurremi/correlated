@@ -1,6 +1,5 @@
 package edu.illinois.wala.ipa.callgraph
 
-import com.ibm.wala.ipa.callgraph.impl.Util
 import com.ibm.wala.ipa.callgraph.propagation.cfa.DefaultSSAInterpreter
 import com.ibm.wala.ipa.callgraph.AnalysisCache
 import com.ibm.wala.ipa.cha.ClassHierarchy
@@ -10,7 +9,6 @@ import com.ibm.wala.analysis.pointers.HeapGraph
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector
 import com.ibm.wala.ipa.callgraph.impl.Util
-import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys.ALLOCATIONS
 
 trait AbstractCallGraphBuilder {
   def _options: AnalysisOptions
@@ -21,13 +19,12 @@ trait AbstractCallGraphBuilder {
   def heap: HeapGraph
   def cg: CallGraph
   
-  
   // just helpers
   lazy val defaultInterpreter = new DefaultSSAInterpreter(_options, _cache)
 //  lazy val reflectionInterpreter = new DelegatingSSAContextInterpreter(
 //    ReflectionContextInterpreter.createReflectionContextInterpreter(_cha, _options, _cache), defaultInterpreter)
   Util.addDefaultSelectors(_options, _cha)
-  Util.addDefaultBypassLogic(_options, _options.getAnalysisScope(), classOf[Util].getClassLoader(), _cha)
+  Util.addDefaultBypassLogic(_options, _options.getAnalysisScope, classOf[Util].getClassLoader, _cha)
 
   // Hooks
   def policy = { import ZeroXInstanceKeys._;  ALLOCATIONS }

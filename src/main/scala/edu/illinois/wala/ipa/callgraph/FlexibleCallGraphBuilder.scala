@@ -45,7 +45,7 @@ class FlexibleCallGraphBuilder(
 //    else
       new DefaultIRFactory())
 
-  final lazy val heap = getPointerAnalysis().getHeapGraph()
+  final lazy val heap = getPointerAnalysis.getHeapGraph
 
   setContextInterpreter(theContextInterpreter)
   setContextSelector(cs)

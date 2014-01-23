@@ -7,23 +7,27 @@ import edu.illinois.wala.S
 trait ExtraFeatures { self: AbstractCallGraphBuilder =>
 
   lazy val allStatements = {
-    cg.asScala filter { _.getIR() != null } map { n => n.instructions.map(i => S(n, i)) } flatten
+    (cg.asScala filter {
+      _.getIR != null
+    } map {
+      n => n.instructions.map(i => S(n, i))
+    }).flatten
   }
 
   /**
    * find a call graph node that matches .*pattern.*
    */
   def findNode(pattern: String): Option[N] = {
-    val p = (".*" + pattern + ".*")
-    cg.asScala.find(n => n.getMethod.toString().matches(p))
+    val p = ".*" + pattern + ".*"
+    cg.asScala.find(n => n.getMethod.toString.matches(p))
   }
 
   /**
    * find a call graph node that matches .*pattern.*
    */
   def findNodes(pattern: String): Iterable[N] = {
-    val p = (".*" + pattern + ".*")
-    cg.asScala.filter(n => n.getMethod.toString().matches(p))
+    val p = ".*" + pattern + ".*"
+    cg.asScala.filter(n => n.getMethod.toString.matches(p))
   }
 
   /**
