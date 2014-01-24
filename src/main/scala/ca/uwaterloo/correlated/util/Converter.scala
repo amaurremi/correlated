@@ -4,5 +4,5 @@ import scala.collection.JavaConverters._
 
 object Converter {
 
-  def convert[T](iterator: java.util.Iterator[T]) = iterator.asScala
+  def toScalaIterator[T](iterator: java.util.Iterator[T]) = iterator.asScala
 }

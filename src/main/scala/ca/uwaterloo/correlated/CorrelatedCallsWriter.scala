@@ -6,7 +6,11 @@ object CorrelatedCallsWriter {
 
   implicit val s = new Semigroup[CorrelatedCalls]{
     def append(f1: CorrelatedCalls, f2: => CorrelatedCalls): CorrelatedCalls =
-      CorrelatedCalls(f1.receiverToCallSites ++ f2.receiverToCallSites, f1.allCallSites + f2.allCallSites)
+      CorrelatedCalls(
+        f1.receiverToCallSites ++ f2.receiverToCallSites,
+        f1.totalCallSites + f2.totalCallSites,
+        f1.dispatchCallSites + f2.dispatchCallSites
+      )
   }
 
   implicit val applicative = new Applicative[CorrelatedCallWriter] {
