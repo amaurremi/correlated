@@ -8,17 +8,33 @@ import CorrelatedCallsWriter._
 import scalaz.Scalaz
 import ca.uwaterloo.correlated.util.CallGraphUtil
 
+/**
+ * Data structure that contains information about the program with respect to correlated calls.
+ */
 case class CorrelatedCalls(
+  /* Total amount of call graph nodes */
   cgNodes: Long = 0,
+  /* Recursive components of the graph. A recursive component is a strongly connected component
+   * of the graph that consists of at least two nodes, or, if it consists of a single node, then
+   * that node has a self-loop. */
   sccs: List[Set[CGNode]] = List.empty,
+  /* Maps a receiver to a set of call sites that are invoked on that receiver */
   receiverToCallSites: MultiMap[Receiver, CallSiteReference] = Map.empty,
+  /* Total amount of reachable call sites */
   totalCallSites: Long = 0,
+  /* Total amount of multiple dispatch call sites */
   dispatchCallSites: Long = 0
 ) {
+  /**
+   * All correlated call sites
+   */
   val ccSites: Iterable[CallSiteReference] = {
     receiverToCallSites.values.flatten
   }
 
+  /**
+   * Prints out the information related to correlated calls.
+   */
   def printInfo() =
     printf(
       "%7d call graph nodes\n" +                          // 1
@@ -42,6 +58,9 @@ object CorrelatedCalls {
 
   val empty = CorrelatedCalls()
 
+  /**
+   * Creates a CorrelatedCalls object for a given call graph.
+   */
   def apply(cg: CallGraph): CorrelatedCalls = {
     import Scalaz._
 
