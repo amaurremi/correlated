@@ -1,12 +1,12 @@
 package ca.uwaterloo.correlated
 
+import ca.uwaterloo.correlated.util.CallGraphUtil
 import ca.uwaterloo.correlated.util.Converter._
 import com.ibm.wala.classLoader.CallSiteReference
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 import com.ibm.wala.util.graph.traverse.DFS
 import CorrelatedCallsWriter._
 import scalaz.Scalaz
-import ca.uwaterloo.correlated.util.CallGraphUtil
 
 /**
  * Data structure that contains information about the program with respect to correlated calls.
