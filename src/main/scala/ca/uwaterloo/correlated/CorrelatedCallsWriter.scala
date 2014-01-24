@@ -9,7 +9,7 @@ object CorrelatedCallsWriter {
       CorrelatedCalls(f1.receiverToCallSites ++ f2.receiverToCallSites, f1.allCallSites + f2.allCallSites)
   }
 
-  implicit val applicative = new Applicative[CorrelatedCallWriter]{
+  implicit val applicative = new Applicative[CorrelatedCallWriter] {
     def point[A](a: => A): CorrelatedCallWriter[A] = Writer(CorrelatedCalls.empty, a)
 
     def ap[A, B](fa: => CorrelatedCallWriter[A])(f: => CorrelatedCallWriter[(A) => B]): CorrelatedCallWriter[B] =
