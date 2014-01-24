@@ -14,6 +14,9 @@ analysis on Java bytecode written in Java. To facilitate the usage of WALA in Sc
 the [WALAFacade](https://github.com/cos/WALAFacade) library. To be able to add our own modifications to WALAFacade,
 we included its source code in this project.
 
+Thus, our analysis code is in the `ca.uwaterloo.correlated` package, whereas the WALAFacade code, with some
+minor modifications, is in the `edu.illinois.wala` package.
+
 ### Set Up
 
 The project can be built with [SBT](http://www.scala-sbt.org/). To do that, first,
@@ -21,6 +24,6 @@ The project can be built with [SBT](http://www.scala-sbt.org/). To do that, firs
 Then navigate into the checked out Correlated Calls project directory from the command line and run
 - `sbt gen-idea`, if you'd like to use [IntelliJ IDEA](http://www.jetbrains.com/idea/)
 - `sbt eclipse`, if you'd like to use [Eclipse](http://www.eclipse.org/)
-- `sbt`, if you prefer using another IDE. From the SBT shell, type `compile` to compile the project, `run` to run it, and `test` to run the tests.
+- `sbt`, if you prefer using another IDE. From the SBT shell, type `compile` to compile the project, and `test` to run the tests.
 
 To run tests, first adjust the absolute paths in the `src.main.resources.application.conf` file.
