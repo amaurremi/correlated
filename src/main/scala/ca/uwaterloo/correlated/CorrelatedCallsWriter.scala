@@ -8,6 +8,7 @@ object CorrelatedCallsWriter {
     def append(f1: CorrelatedCalls, f2: => CorrelatedCalls): CorrelatedCalls =
       CorrelatedCalls(
         f1.cgNodes + f2.cgNodes,
+        f1.sccs ++ f2.sccs,
         f1.receiverToCallSites ++ f2.receiverToCallSites,
         f1.totalCallSites + f2.totalCallSites,
         f1.dispatchCallSites + f2.dispatchCallSites

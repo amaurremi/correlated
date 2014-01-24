@@ -1,6 +1,6 @@
 package ca.uwaterloo.correlated
 
-import ca.uwaterloo.correlated.util.ZeroCfaCallGraphBuilder
+import ca.uwaterloo.correlated.util.CallGraphUtil
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.typesafe.config.ConfigFactory
 import org.junit.runner.RunWith
@@ -23,7 +23,7 @@ class CorrelatedCallsSpec extends FunSpec {
       Some(new File(config.getString(exclusionKey)))
     else None
 
-    val cg: CallGraph = ZeroCfaCallGraphBuilder(appJar, exclusionFile)
+    val cg: CallGraph = CallGraphUtil.buildZeroCfaCg(appJar, exclusionFile)
     CorrelatedCalls(cg).printInfo()
   }
 }

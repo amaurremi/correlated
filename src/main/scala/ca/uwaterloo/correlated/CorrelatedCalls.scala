@@ -1,14 +1,16 @@
 package ca.uwaterloo.correlated
 
-import ca.uwaterloo.correlated.util.Converter.toScalaIterator
+import ca.uwaterloo.correlated.util.Converter._
 import com.ibm.wala.classLoader.CallSiteReference
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
-import com.ibm.wala.util.graph.traverse.DFS.getReachableNodes
+import com.ibm.wala.util.graph.traverse.DFS
 import CorrelatedCallsWriter._
 import scalaz.Scalaz
+import ca.uwaterloo.correlated.util.CallGraphUtil
 
 case class CorrelatedCalls(
   cgNodes: Long = 0,
+  sccs: List[Set[CGNode]] = List.empty,
   receiverToCallSites: MultiMap[Receiver, CallSiteReference] = Map.empty,
   totalCallSites: Long = 0,
   dispatchCallSites: Long = 0
@@ -19,12 +21,20 @@ case class CorrelatedCalls(
 
   def printInfo() =
     printf(
-      "%7d call graph nodes\n" +
-        "%7d total call sites\n" +
-        "%7d dispatch call sites\n" +
-        "%7d CCs\n" +
-        "%7d correlated call (CC) receivers\n",
-      cgNodes, totalCallSites, dispatchCallSites, ccSites.size, receiverToCallSites.size
+      "%7d call graph nodes\n" +                          // 1
+      "%7d total call sites\n" +                          // 2
+      "%7d dispatch call sites\n\n" +                     // 3
+      "%7d correlated calls (CCs)\n" +                    // 4
+      "%7d CC receivers\n\n" +                            // 5
+      "%7d strongly connected components (SCCs)\n" +      // 6
+      "%7d nodes in SCCs",                                // 7
+      cgNodes,                                            // 1
+      totalCallSites,                                     // 2
+      dispatchCallSites,                                  // 3
+      ccSites.size,                                       // 4
+      receiverToCallSites.size,                           // 5
+      sccs.size,                                          // 6
+      sccs.flatten.size                                   // 7
     )
 }
 
@@ -35,15 +45,25 @@ object CorrelatedCalls {
   def apply(cg: CallGraph): CorrelatedCalls = {
     import Scalaz._
 
-    val cgNodes  = toScalaIterator(getReachableNodes(cg).iterator).toList
-    val ccWriter = cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter)
+    val sccs =
+      CallGraphUtil.getSccs(cg)
+    val cgNodes             = toScalaList(DFS.getReachableNodes(cg).iterator)
+    val ccWriter            =
+      for {
+        _ <- CorrelatedCalls(sccs = sccs).tell
+        _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter(sccs))
+      } yield ()
     ccWriter.written
   }
 
-  private[this] def cgNodeWriter(cgNode: CGNode): CorrelatedCallWriter[CGNode] = {
+  private[this] def cgNodeWriter(
+    sccs: List[Set[CGNode]]
+  )(
+    cgNode: CGNode
+  ): CorrelatedCallWriter[CGNode] = {
     import Scalaz._
 
-    val callSites = callSiteIterator(cgNode).toList // .toSeq   // todo remove
+    val callSites = callSiteIterator(cgNode).toList
     for {
       _ <- callSites.traverse[CorrelatedCallWriter, CallSiteReference](callSiteWriter(cgNode))
       _ <- CorrelatedCalls(
