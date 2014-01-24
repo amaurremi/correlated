@@ -4,6 +4,7 @@ import ca.uwaterloo.correlated.util.Converter.toScalaIterator
 import com.ibm.wala.classLoader.CallSiteReference
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 import com.ibm.wala.util.graph.traverse.DFS.getReachableNodes
+import CorrelatedCallsWriter._
 import scalaz.Scalaz
 
 case class CorrelatedCalls(
@@ -32,7 +33,6 @@ object CorrelatedCalls {
   val empty = CorrelatedCalls()
 
   def apply(cg: CallGraph): CorrelatedCalls = {
-    import CorrelatedCallsWriter._
     import Scalaz._
 
     val cgNodes  = toScalaIterator(getReachableNodes(cg).iterator).toList
@@ -41,17 +41,31 @@ object CorrelatedCalls {
   }
 
   private[this] def cgNodeWriter(cgNode: CGNode): CorrelatedCallWriter[CGNode] = {
-    import Scalaz.ToWriterOps
+    import Scalaz._
 
-    val callSites = callSiteIterator(cgNode).toSeq
+    val callSites = callSiteIterator(cgNode).toList // .toSeq   // todo remove
     for {
+      _ <- callSites.traverse[CorrelatedCallWriter, CallSiteReference](callSiteWriter(cgNode))
       _ <- CorrelatedCalls(
         cgNodes             = 1,
-        receiverToCallSites = receiverToCallSites(cgNode), // todo export as separate writer
-        totalCallSites      = callSites.length,
-        dispatchCallSites   = callSites count { _.isDispatch }
+        receiverToCallSites = receiverToCallSites(cgNode)
       ).tell
     } yield cgNode
+  }
+
+  private[this] def callSiteWriter(
+    cgNode: CGNode
+  )(
+    callSiteRef: CallSiteReference
+  ): CorrelatedCallWriter[CallSiteReference] = {
+    import Scalaz._
+
+    for {
+      _ <- CorrelatedCalls(
+        totalCallSites = 1,
+        dispatchCallSites = if (callSiteRef.isDispatch) 1 else 0
+      ).tell
+    } yield callSiteRef
   }
 
   private[this] def receiverToCallSites(
