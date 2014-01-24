@@ -23,5 +23,4 @@ Then navigate into the checked out Correlated Calls project directory from the c
 - `sbt eclipse`, if you'd like to use [Eclipse](http://www.eclipse.org/)
 - `sbt`, if you prefer using another IDE. From the SBT shell, type `compile` to compile the project, `run` to run it, and `test` to run the tests.
 
-To run tests, first adjust the absolute paths of `jre-lib-path` and `dependencies.jar`
-in the `src.main.resources.application.conf` file.
+To run tests, first adjust the absolute paths in the `src.main.resources.application.conf` file.

@@ -36,19 +36,17 @@ object CorrelatedCalls {
     import Scalaz._
 
     val cgNodes  = toScalaIterator(getReachableNodes(cg).iterator).toList
-    val ccWriter = for {
-      _ <- CorrelatedCalls(cgNodes = cgNodes.size).tell
-      _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](writeCallSites)
-    } yield ()
+    val ccWriter = cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter)
     ccWriter.written
   }
 
-  private[this] def writeCallSites(cgNode: CGNode): CorrelatedCallWriter[CGNode] = {
+  private[this] def cgNodeWriter(cgNode: CGNode): CorrelatedCallWriter[CGNode] = {
     import Scalaz.ToWriterOps
 
     val callSites = callSiteIterator(cgNode).toSeq
     for {
       _ <- CorrelatedCalls(
+        cgNodes             = 1,
         receiverToCallSites = receiverToCallSites(cgNode), // todo export as separate writer
         totalCallSites      = callSites.length,
         dispatchCallSites   = callSites count { _.isDispatch }
