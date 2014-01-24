@@ -66,8 +66,8 @@ object CorrelatedCalls {
 
     val sccs =
       CallGraphUtil.getSccs(cg)
-    val cgNodes             = toScalaList(DFS.getReachableNodes(cg).iterator)
-    val ccWriter            =
+    val cgNodes  = toScalaList(DFS.getReachableNodes(cg).iterator)
+    val ccWriter =
       for {
         _ <- CorrelatedCalls(sccs = sccs).tell
         _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter(sccs))
