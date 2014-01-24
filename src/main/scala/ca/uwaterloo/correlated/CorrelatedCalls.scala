@@ -12,25 +12,41 @@ import ca.uwaterloo.correlated.util.CallGraphUtil
  * Data structure that contains information about the program with respect to correlated calls.
  */
 case class CorrelatedCalls(
-  /* Total amount of call graph nodes */
+  /*
+   * Total amount of call graph nodes
+   */
   cgNodes: Long = 0,
-  /* Recursive components of the graph. A recursive component is a strongly connected component
+  /*
+   * Recursive components of the graph. A recursive component is a strongly connected component
    * of the graph that consists of at least two nodes, or, if it consists of a single node, then
-   * that node has a self-loop. */
+   * that node has a self-loop.
+   */
   sccs: List[Set[CGNode]] = List.empty,
-  /* Maps a receiver to a set of call sites that are invoked on that receiver */
+  /*
+   * Receivers contained in a recursive component
+   */
+  sccReceivers: Set[Receiver] = Set.empty,
+  /*
+   * Maps a receiver to a set of call sites that are invoked on that receiver
+   */
   receiverToCallSites: MultiMap[Receiver, CallSiteReference] = Map.empty,
-  /* Total amount of reachable call sites */
-  totalCallSites: Long = 0,
-  /* Total amount of multiple dispatch call sites */
-  dispatchCallSites: Long = 0
+  /*
+   * Total amount of reachable call sites
+   */
+  totalCallSites: Set[CallSiteReference] = Set.empty
 ) {
+
   /**
    * All correlated call sites
    */
-  val ccSites: Iterable[CallSiteReference] = {
-    receiverToCallSites.values.flatten
-  }
+  lazy val ccSites: Set[CallSiteReference] =
+    receiverToCallSites.values.flatten.toSet
+
+  /**
+   * Total amount of multiple dispatch call sites
+   */
+  lazy val dispatchCallSites: Set[CallSiteReference] =
+    totalCallSites filter { _.isDispatch }
 
   /**
    * Prints out the information related to correlated calls.
@@ -43,14 +59,16 @@ case class CorrelatedCalls(
       "%7d correlated calls (CCs)\n" +                    // 4
       "%7d CC receivers\n\n" +                            // 5
       "%7d strongly connected components (SCCs)\n" +      // 6
-      "%7d nodes in SCCs",                                // 7
+      "%7d nodes in SCCs\n" +                             // 7
+      "%7d receivers in nodes in SCCs",                   // 8
       cgNodes,                                            // 1
-      totalCallSites,                                     // 2
-      dispatchCallSites,                                  // 3
+      totalCallSites.size,                                // 2
+      dispatchCallSites.size,                             // 3
       ccSites.size,                                       // 4
       receiverToCallSites.size,                           // 5
       sccs.size,                                          // 6
-      sccs.flatten.size                                   // 7
+      sccs.flatten.size,                                  // 7
+      sccReceivers.size                                   // 8
     )
 }
 
@@ -64,47 +82,32 @@ object CorrelatedCalls {
   def apply(cg: CallGraph): CorrelatedCalls = {
     import Scalaz._
 
-    val sccs =
-      CallGraphUtil.getSccs(cg)
+    val sccs = CallGraphUtil.getSccs(cg)
     val cgNodes  = toScalaList(DFS.getReachableNodes(cg).iterator)
     val ccWriter =
       for {
         _ <- CorrelatedCalls(sccs = sccs).tell
-        _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter(sccs))
+        _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter(sccs.flatten.toSet))
       } yield ()
     ccWriter.written
   }
 
   private[this] def cgNodeWriter(
-    sccs: List[Set[CGNode]]
+    sccs: Set[CGNode]
   )(
     cgNode: CGNode
   ): CorrelatedCallWriter[CGNode] = {
     import Scalaz._
 
-    val callSites = callSiteIterator(cgNode).toList
+    val recToCallSites = receiverToCallSites(cgNode)
     for {
-      _ <- callSites.traverse[CorrelatedCallWriter, CallSiteReference](callSiteWriter(cgNode))
       _ <- CorrelatedCalls(
         cgNodes             = 1,
-        receiverToCallSites = receiverToCallSites(cgNode)
+        totalCallSites      = callSiteIterator(cgNode).toSet,
+        receiverToCallSites = recToCallSites,
+        sccReceivers        = if (sccs contains cgNode) recToCallSites.keys.toSet else Set.empty
       ).tell
     } yield cgNode
-  }
-
-  private[this] def callSiteWriter(
-    cgNode: CGNode
-  )(
-    callSiteRef: CallSiteReference
-  ): CorrelatedCallWriter[CallSiteReference] = {
-    import Scalaz._
-
-    for {
-      _ <- CorrelatedCalls(
-        totalCallSites = 1,
-        dispatchCallSites = if (callSiteRef.isDispatch) 1 else 0
-      ).tell
-    } yield callSiteRef
   }
 
   private[this] def receiverToCallSites(
