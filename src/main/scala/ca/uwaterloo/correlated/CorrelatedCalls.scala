@@ -7,31 +7,39 @@ import com.ibm.wala.util.graph.traverse.DFS.getReachableNodes
 import scalaz.Scalaz
 
 case class CorrelatedCalls(
-  receiverToCallSites: MultiMap[Receiver, CallSiteReference],
-  totalCallSites: Long,
-  dispatchCallSites: Long
+  cgNodes: Long = 0,
+  receiverToCallSites: MultiMap[Receiver, CallSiteReference] = Map.empty,
+  totalCallSites: Long = 0,
+  dispatchCallSites: Long = 0
 ) {
   val ccSites: Iterable[CallSiteReference] = {
     receiverToCallSites.values.flatten
   }
 
-  val getInfo: String =
-    "Correlated call (CC) receivers: " + receiverToCallSites.size +
-    "\nCCs: " + ccSites.size +
-    "\nTotal call sites: " + totalCallSites +
-    "\nDispatch call sites: " + dispatchCallSites
+  def printInfo() =
+    printf(
+      "%7d call graph nodes\n" +
+        "%7d total call sites\n" +
+        "%7d dispatch call sites\n" +
+        "%7d CCs\n" +
+        "%7d correlated call (CC) receivers\n",
+      cgNodes, totalCallSites, dispatchCallSites, ccSites.size, receiverToCallSites.size
+    )
 }
 
 object CorrelatedCalls {
 
-  val empty = CorrelatedCalls(Map.empty, 0, 0)
+  val empty = CorrelatedCalls()
 
   def apply(cg: CallGraph): CorrelatedCalls = {
     import CorrelatedCallsWriter._
     import Scalaz._
 
     val cgNodes  = toScalaIterator(getReachableNodes(cg).iterator).toList
-    val ccWriter = cgNodes.traverse[CorrelatedCallWriter, CGNode](writeCallSites)
+    val ccWriter = for {
+      _ <- CorrelatedCalls(cgNodes = cgNodes.size).tell
+      _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](writeCallSites)
+    } yield ()
     ccWriter.written
   }
 
@@ -52,7 +60,8 @@ object CorrelatedCalls {
     cgNode: CGNode
   ): MultiMap[Receiver, CallSiteReference] = {
     val startMap = Map[Receiver, Set[CallSiteReference]]() withDefaultValue Set.empty
-    callSiteIterator(cgNode).foldLeft(startMap) {
+    // Create a map from receivers to dispatch call sites
+    val receiverToCallsiteMap = callSiteIterator(cgNode).foldLeft(startMap) {
       (map, callSite) =>
         Receiver(cgNode, callSite) match {
           case Some(receiver) =>
@@ -60,6 +69,10 @@ object CorrelatedCalls {
           case _ =>
             map
         }
+    }
+    // Return a map that only contains receivers with more than one corresponding call site
+    receiverToCallsiteMap filter {
+      case (_, set) => set.size > 1
     }
   }
 
