@@ -23,9 +23,9 @@ case class CorrelatedCalls(
    */
   sccs: List[Set[CGNode]] = List.empty,
   /*
-   * Receivers contained in a recursive component
+   * Receivers of correlated calls that are contained in a recursive component
    */
-  sccReceivers: Set[Receiver] = Set.empty,
+  sccCcReceivers: Set[Receiver] = Set.empty,
   /*
    * Maps a receiver to a set of call sites that are invoked on that receiver
    */
@@ -60,7 +60,7 @@ case class CorrelatedCalls(
       "%7d CC receivers\n\n" +                            // 5
       "%7d strongly connected components (SCCs)\n" +      // 6
       "%7d nodes in SCCs\n" +                             // 7
-      "%7d receivers in nodes in SCCs\n\n",               // 8
+      "%7d CC receivers in nodes in SCCs\n\n",            // 8
       cgNodes,                                            // 1
       totalCallSites.size,                                // 2
       dispatchCallSites.size,                             // 3
@@ -68,7 +68,7 @@ case class CorrelatedCalls(
       receiverToCallSites.size,                           // 5
       sccs.size,                                          // 6
       sccs.flatten.size,                                  // 7
-      sccReceivers.size                                   // 8
+      sccCcReceivers.size                                   // 8
     )
 }
 
@@ -105,7 +105,7 @@ object CorrelatedCalls {
         cgNodes             = 1,
         totalCallSites      = callSiteIterator(cgNode).toSet,
         receiverToCallSites = recToCallSites,
-        sccReceivers        = if (sccs contains cgNode) recToCallSites.keys.toSet else Set.empty
+        sccCcReceivers        = if (sccs contains cgNode) recToCallSites.keys.toSet else Set.empty
       ).tell
     } yield cgNode
   }

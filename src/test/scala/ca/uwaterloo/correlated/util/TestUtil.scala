@@ -2,13 +2,29 @@ package ca.uwaterloo.correlated.util
 
 import ca.uwaterloo.correlated.CorrelatedCalls
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
+import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import java.io.File
 
 object TestUtil {
 
-  def getCcs(testName: String = ""): CorrelatedCalls = {
-    val config = ConfigFactory.load()
+  def getCcsForPointerAnalysisCallGraph(testName: String = "application"): CorrelatedCalls = {
+    implicit val config =
+      ConfigFactory.load(
+        testName,
+        ConfigParseOptions.defaults().setAllowMissing(false),
+        ConfigResolveOptions.defaults()
+      )
+    val pa = FlexibleCallGraphBuilder()
+
+    CorrelatedCalls(pa.cg)
+  }
+
+  def getCcsForZeroCfa(testName: String = ""): CorrelatedCalls = {
+
+    def getFileName(paths: String*) = paths mkString "/" replaceAll ("//", "/")
+
+    val config = ConfigFactory.load("application_zero_cfa")
     val exclusionKey = "wala.exclussions"
     val projectPath = "wala.projectPath"
     val inputProgramPath =
@@ -36,7 +52,4 @@ object TestUtil {
     val cg: CallGraph = CallGraphUtil.buildZeroCfaCg(appJar, exclusionFile)
     CorrelatedCalls(cg)
   }
-
-  private[this] def getFileName(paths: String*): String =
-    paths mkString "/" replaceAll ("//", "/")
 }

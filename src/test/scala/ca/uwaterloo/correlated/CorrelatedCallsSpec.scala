@@ -1,9 +1,9 @@
 package ca.uwaterloo.correlated
 
+import ca.uwaterloo.correlated.util.TestUtil._
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
-import ca.uwaterloo.correlated.util.TestUtil.getCcs
 
 @RunWith(classOf[JUnitRunner])
 class CorrelatedCallsSpec extends FunSpec {
@@ -11,7 +11,7 @@ class CorrelatedCallsSpec extends FunSpec {
   describe("Correlated Calls") {
 
     describe("NoCcs") {
-      val ccs = getCcs("NoCcs")
+      val ccs = getCcsForZeroCfa("NoCcs")
       ccs.printInfo()
     }
   }
