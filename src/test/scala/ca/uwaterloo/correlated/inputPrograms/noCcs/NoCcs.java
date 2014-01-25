@@ -8,14 +8,20 @@ public class NoCcs {
         NoCcs b = new NoCcs();
 
         // Invoking the same method on two different objects of the same class
-        String aStr = a.toString();
-        String bStr = b.toString();
+        a.bar();
+        b.bar();
+          //todo remove
+        a.bar();
 
         // Invoking a second call on a, but on a private method
-        int c = a.foo();
+        a.foo();
     }
 
-    private int foo() {
-        return 2;
+    private void foo() {
+        System.out.println("foo");
+    }
+
+    void bar() {
+        System.out.println("bar");
     }
 }

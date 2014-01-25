@@ -60,7 +60,7 @@ case class CorrelatedCalls(
       "%7d CC receivers\n\n" +                            // 5
       "%7d strongly connected components (SCCs)\n" +      // 6
       "%7d nodes in SCCs\n" +                             // 7
-      "%7d receivers in nodes in SCCs",                   // 8
+      "%7d receivers in nodes in SCCs\n\n",               // 8
       cgNodes,                                            // 1
       totalCallSites.size,                                // 2
       dispatchCallSites.size,                             // 3
