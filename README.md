@@ -13,7 +13,7 @@ Thus, our analysis code is in the `ca.uwaterloo.correlated` package, whereas the
 
 ### Set Up
 
-1. Install the WALA library into your local [Maven](http://maven.apache.org/) repository, as described in the [first]((https://github.com/cos/WALAFacade#steps)) step of the WALAFacade installation instructions.
+1. Install the WALA library into your local [Maven](http://maven.apache.org/) repository, as described in the [first]((https://github.com/cos/WALAFacade#steps) step of the WALAFacade installation instructions.
 
 2. Build the project with [SBT](http://www.scala-sbt.org/): 
   - [Install](http://www.scala-sbt.org/release/docs/Getting-Started/Setup) SBT on your machine.
@@ -22,4 +22,4 @@ Thus, our analysis code is in the `ca.uwaterloo.correlated` package, whereas the
     - `sbt eclipse`, if you'd like to use [Eclipse](http://www.eclipse.org/),
     - `sbt`, if you prefer using another IDE. From the SBT shell, type `compile` to compile the project, and `test` to run the tests.
 
-Note: for now, to run tests, it's necessary to adjust the absolute paths in the `.conf` files of the `src.main.resources` directory.
+**Note**: for now, to run tests, it's necessary to adjust the absolute paths in the `.conf` files of the `src.main.resources` directory.
