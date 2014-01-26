@@ -15,7 +15,7 @@ case class CorrelatedCalls(
   /*
    * Total amount of call graph nodes
    */
-  cgNodes: Long = 0,
+  cgNodeNum: Long = 0,
   /*
    * Recursive components of the graph. A recursive component is a strongly connected component
    * of the graph that consists of at least two nodes, or, if it consists of a single node, then
@@ -97,7 +97,7 @@ case class CorrelatedCalls(
       "%7d strongly connected components (SCCs)\n" +      // 6
       "%7d nodes in SCCs\n" +                             // 7
       "%7d CC receivers in nodes in SCCs\n\n",            // 8
-      cgNodes,                                            // 1
+      cgNodeNum,                                            // 1
       totalCallSiteNum,                                   // 2
       dispatchCallSiteNum,                                // 3
       ccSiteNum,                                          // 4
@@ -138,7 +138,7 @@ object CorrelatedCalls {
     val recToCallSites = receiverToCallSites(cgNode)
     for {
       _ <- CorrelatedCalls(
-        cgNodes             = 1,
+        cgNodeNum             = 1,
         totalCallSites      = callSiteIterator(cgNode).toSet,
         receiverToCallSites = recToCallSites,
         sccCcReceivers        = if (sccs contains cgNode) recToCallSites.keys.toSet else Set.empty

@@ -7,7 +7,7 @@ object CorrelatedCallsWriter {
   implicit val s = new Semigroup[CorrelatedCalls]{
     def append(f1: CorrelatedCalls, f2: => CorrelatedCalls): CorrelatedCalls =
       CorrelatedCalls(
-        f1.cgNodes + f2.cgNodes,
+        f1.cgNodeNum + f2.cgNodeNum,
         f1.sccs ++ f2.sccs,
         f1.sccCcReceivers ++ f2.sccCcReceivers,
         f1.receiverToCallSites ++ f2.receiverToCallSites,
