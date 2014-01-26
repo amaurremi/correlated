@@ -20,11 +20,11 @@ object CallGraphUtil {
     builder.makeCallGraph(options, null)
   }
 
-  def getSccs(cg: CallGraph): List[Set[CGNode]] = {
-    val sccs = toScalaList(new SCCIterator[CGNode](cg)) map toScalaSet
-    sccs filter {
-      scc =>
-        scc.size > 1 || scc.size == 1 && isRecursive(cg, scc.headOption.get)
+  def getRcs(cg: CallGraph): List[Set[CGNode]] = {
+    val rcs = toScalaList(new SCCIterator[CGNode](cg)) map toScalaSet
+    rcs filter {
+      rc =>
+        rc.size > 1 || rc.size == 1 && isRecursive(cg, rc.headOption.get)
     }
   }
 

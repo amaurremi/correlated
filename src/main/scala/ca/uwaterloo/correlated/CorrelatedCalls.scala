@@ -21,11 +21,11 @@ case class CorrelatedCalls(
    * of the graph that consists of at least two nodes, or, if it consists of a single node, then
    * that node has a self-loop.
    */
-  sccs: List[Set[CGNode]] = List.empty,
+  rcs: List[Set[CGNode]] = List.empty,
   /*
    * Receivers of correlated calls that are contained in a recursive component
    */
-  sccCcReceivers: Set[Receiver] = Set.empty,
+  rcCcReceivers: Set[Receiver] = Set.empty,
   /*
    * Maps a receiver to a set of call sites that are invoked on that receiver
    */
@@ -70,19 +70,19 @@ case class CorrelatedCalls(
 
   /**
    * Number of recursive components
-   * @see CorrelatedCalls.sccs
+   * @see CorrelatedCalls.rcs
    */
-  lazy val sccNum = sccs.size
+  lazy val rcNum = rcs.size
 
   /**
    * Number of nodes in recursive components
    */
-  lazy val sccNodeNum = sccs.flatten.size
+  lazy val rcNodeNum = rcs.flatten.size
 
   /**
    * Number of correlated call receivers in recursive components
    */
-  lazy val sccCcReceiverNum = sccCcReceivers.size
+  lazy val rcCcReceiverNum = rcCcReceivers.size
 
   /**
    * Prints out the information related to correlated calls.
@@ -94,17 +94,17 @@ case class CorrelatedCalls(
       "%7d dispatch call sites\n\n" +                     // 3
       "%7d correlated calls (CCs)\n" +                    // 4
       "%7d CC receivers\n\n" +                            // 5
-      "%7d strongly connected components (SCCs)\n" +      // 6
-      "%7d nodes in SCCs\n" +                             // 7
-      "%7d CC receivers in nodes in SCCs\n\n",            // 8
-      cgNodeNum,                                            // 1
+      "%7d recursive components (RCs)\n" +                // 6
+      "%7d nodes in RCs\n" +                              // 7
+      "%7d CC receivers in nodes in RCs\n\n",             // 8
+      cgNodeNum,                                          // 1
       totalCallSiteNum,                                   // 2
       dispatchCallSiteNum,                                // 3
       ccSiteNum,                                          // 4
       ccReceiverNum,                                      // 5
-      sccNum,                                             // 6
-      sccNodeNum,                                         // 7
-      sccCcReceiverNum                                    // 8
+      rcNum,                                             // 6
+      rcNodeNum,                                         // 7
+      rcCcReceiverNum                                    // 8
     )
 }
 
@@ -118,18 +118,18 @@ object CorrelatedCalls {
   def apply(cg: CallGraph): CorrelatedCalls = {
     import Scalaz._
 
-    val sccs = CallGraphUtil.getSccs(cg)
+    val rcs = CallGraphUtil.getRcs(cg)
     val cgNodes  = toScalaList(DFS.getReachableNodes(cg).iterator)
     val ccWriter =
       for {
-        _ <- CorrelatedCalls(sccs = sccs).tell
-        _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter(sccs.flatten.toSet))
+        _ <- CorrelatedCalls(rcs = rcs).tell
+        _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter(rcs.flatten.toSet))
       } yield ()
     ccWriter.written
   }
 
   private[this] def cgNodeWriter(
-    sccs: Set[CGNode]
+    rcs: Set[CGNode]
   )(
     cgNode: CGNode
   ): CorrelatedCallWriter[CGNode] = {
@@ -141,7 +141,7 @@ object CorrelatedCalls {
         cgNodeNum             = 1,
         totalCallSites      = callSiteIterator(cgNode).toSet,
         receiverToCallSites = recToCallSites,
-        sccCcReceivers        = if (sccs contains cgNode) recToCallSites.keys.toSet else Set.empty
+        rcCcReceivers        = if (rcs contains cgNode) recToCallSites.keys.toSet else Set.empty
       ).tell
     } yield cgNode
   }

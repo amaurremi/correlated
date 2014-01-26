@@ -18,9 +18,9 @@ class CorrelatedCallsSpec extends FunSpec {
       assert(ccs.ccReceiverNum == 0, "cc receivers")
       assert(ccs.ccSiteNum == 0, "cc sites")
       assert(ccs.dispatchCallSiteNum == 0, "dispatch sites")
-      assert(ccs.sccCcReceiverNum == 0, "cc receivers in rcs")
-      assert(ccs.sccNodeNum == 0, "nodes in rcs")
-      assert(ccs.sccNum == 0, "rcs")
+      assert(ccs.rcCcReceiverNum == 0, "cc receivers in rcs")
+      assert(ccs.rcNodeNum == 0, "nodes in rcs")
+      assert(ccs.rcNum == 0, "rcs")
 //      assert(ccs.cgNodeNum == 0, "cg nodes")                 // todo this outputs 9
 //      assert(ccs.totalCallSiteNum == 0, "total call sites")  // todo this outputs 9
     }
@@ -45,8 +45,8 @@ class CorrelatedCallsSpec extends FunSpec {
 
     it("detects recursive and mutually recursive methods") {
       val ccs = getCcsForPointerAnalysisCallGraph("Rec")
-      assert(ccs.sccNum == 2, "recursive components")
-      assert(ccs.sccCcReceiverNum == 1, "cc receiver in recursive component")
+      assert(ccs.rcNum == 2, "recursive components")
+      assert(ccs.rcCcReceiverNum == 1, "cc receiver in recursive component")
     }
   }
 }
