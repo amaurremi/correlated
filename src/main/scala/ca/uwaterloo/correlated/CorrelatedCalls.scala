@@ -49,6 +49,42 @@ case class CorrelatedCalls(
     totalCallSites filter { _.isDispatch }
 
   /**
+   * Amount of correlated call receivers
+   */
+  lazy val ccReceiverNum: Int = receiverToCallSites.size
+
+  /**
+   * Total number of call sites
+   */
+  lazy val totalCallSiteNum = totalCallSites.size
+
+  /**
+   * Number of multiple dispatch call sites
+   */
+  lazy val dispatchCallSiteNum = dispatchCallSites.size
+
+  /**
+   * Number of correlated call sites
+   */
+  lazy val ccSiteNum = ccSites.size
+
+  /**
+   * Number of recursive components
+   * @see CorrelatedCalls.sccs
+   */
+  lazy val sccNum = sccs.size
+
+  /**
+   * Number of nodes in recursive components
+   */
+  lazy val sccNodeNum = sccs.flatten.size
+
+  /**
+   * Number of correlated call receivers in recursive components
+   */
+  lazy val sccCcReceiverNum = sccCcReceivers.size
+
+  /**
    * Prints out the information related to correlated calls.
    */
   def printInfo() =
@@ -62,13 +98,13 @@ case class CorrelatedCalls(
       "%7d nodes in SCCs\n" +                             // 7
       "%7d CC receivers in nodes in SCCs\n\n",            // 8
       cgNodes,                                            // 1
-      totalCallSites.size,                                // 2
-      dispatchCallSites.size,                             // 3
-      ccSites.size,                                       // 4
-      receiverToCallSites.size,                           // 5
-      sccs.size,                                          // 6
-      sccs.flatten.size,                                  // 7
-      sccCcReceivers.size                                   // 8
+      totalCallSiteNum,                                   // 2
+      dispatchCallSiteNum,                                // 3
+      ccSiteNum,                                          // 4
+      ccReceiverNum,                                      // 5
+      sccNum,                                             // 6
+      sccNodeNum,                                         // 7
+      sccCcReceiverNum                                    // 8
     )
 }
 

@@ -1,27 +1,15 @@
-package ca.uwaterloo.correlated.inputPrograms.NoCcs;
+package NoCcs;
 
-// This class does not have correlated calls
 public class NoCcs {
 
     public static void main(String[] args) {
         NoCcs a = new NoCcs();
-        NoCcs b = new NoCcs();
-
-        // Invoking the same method on two different objects of the same class
-        a.bar();
-        b.bar();
-          //todo remove
-        a.bar();
-
-        // Invoking a second call on a, but on a private method
+        // Two invocations on method a, one of which is private
         a.foo();
+        a.bar();
     }
 
-    private void foo() {
-        System.out.println("foo");
-    }
+    private void foo() {}
 
-    void bar() {
-        System.out.println("bar");
-    }
+    void bar() {}
 }
