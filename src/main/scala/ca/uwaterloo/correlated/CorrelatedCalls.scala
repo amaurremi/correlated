@@ -13,9 +13,10 @@ import scalaz.Scalaz
  */
 case class CorrelatedCalls(
   /*
-   * Total amount of call graph nodes
+   * All call graph nodes
    */
-  cgNodeNum: Long = 0,
+  cgNodes: Set[CGNode] = Set.empty,
+
   /*
    * Recursive components of the graph. A recursive component is a strongly connected component
    * of the graph that consists of at least two nodes, or, if it consists of a single node, then
@@ -35,6 +36,11 @@ case class CorrelatedCalls(
    */
   totalCallSites: Set[CallSiteReference] = Set.empty
 ) {
+
+  /**
+   * Total number of call graph nodes
+   */
+  lazy val cgNodeNum = cgNodes.size
 
   /**
    * All correlated call sites
@@ -102,9 +108,9 @@ case class CorrelatedCalls(
       dispatchCallSiteNum,                                // 3
       ccSiteNum,                                          // 4
       ccReceiverNum,                                      // 5
-      rcNum,                                             // 6
-      rcNodeNum,                                         // 7
-      rcCcReceiverNum                                    // 8
+      rcNum,                                              // 6
+      rcNodeNum,                                          // 7
+      rcCcReceiverNum                                     // 8
     )
 }
 
@@ -138,10 +144,10 @@ object CorrelatedCalls {
     val recToCallSites = receiverToCallSites(cgNode)
     for {
       _ <- CorrelatedCalls(
-        cgNodeNum             = 1,
+        cgNodes             = Set(cgNode),
         totalCallSites      = callSiteIterator(cgNode).toSet,
         receiverToCallSites = recToCallSites,
-        rcCcReceivers        = if (rcs contains cgNode) recToCallSites.keys.toSet else Set.empty
+        rcCcReceivers       = if (rcs contains cgNode) recToCallSites.keys.toSet else Set.empty
       ).tell
     } yield cgNode
   }
