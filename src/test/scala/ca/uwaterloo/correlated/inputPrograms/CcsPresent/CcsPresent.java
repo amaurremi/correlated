@@ -17,6 +17,18 @@ public class CcsPresent {
         // third correlated call
         bar();
         bar();
+        new A().foo();
+    }
+
+    void bar() {}
+}
+
+class A {
+
+    // fourth correlated call
+    void foo() {
+        bar();
+        bar();
     }
 
     void bar() {}

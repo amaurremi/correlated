@@ -16,4 +16,10 @@ public class NoCcs {
         main(null);
         main(null);
     }
+
+    // should not be count since baz is unreachable
+    void baz() {
+        bar();
+        bar();
+    }
 }
