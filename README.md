@@ -13,7 +13,7 @@ Thus, our analysis code is in the `ca.uwaterloo.correlated` package, whereas the
 
 ### Set Up
 
-1. Install the WALA library into your local [Maven](http://maven.apache.org/) repository, as described in the [first]((https://github.com/cos/WALAFacade#steps) step of the WALAFacade installation instructions.
+1. Install the WALA library into your local [Maven](http://maven.apache.org/) repository, as described in the [first](https://github.com/cos/WALAFacade#steps) step of the WALAFacade installation instructions.
 
 2. Build the project with [SBT](http://www.scala-sbt.org/): 
   - [Install](http://www.scala-sbt.org/release/docs/Getting-Started/Setup) SBT on your machine.

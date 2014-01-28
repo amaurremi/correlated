@@ -5,13 +5,12 @@ import ca.uwaterloo.correlated.util.Converter._
 import com.ibm.wala.classLoader.CallSiteReference
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 import com.ibm.wala.util.graph.traverse.DFS
-import CorrelatedCallsWriter._
-import scalaz.Scalaz
 
 /**
  * Data structure that contains information about the program with respect to correlated calls.
  */
 case class CorrelatedCalls(
+
   /*
    * All call graph nodes
    */
@@ -22,15 +21,18 @@ case class CorrelatedCalls(
    * of the graph that consists of at least two nodes, or, if it consists of a single node, then
    * that node has a self-loop.
    */
+
   rcs: List[Set[CGNode]] = List.empty,
   /*
    * Receivers of correlated calls that are contained in a recursive component
    */
   rcCcReceivers: Set[Receiver] = Set.empty,
+
   /*
    * Maps a receiver to a set of call sites that are invoked on that receiver
    */
   receiverToCallSites: MultiMap[Receiver, CallSiteReference] = Map.empty,
+
   /*
    * Total amount of reachable call sites
    */
@@ -122,57 +124,9 @@ object CorrelatedCalls {
    * Creates a CorrelatedCalls object for a given call graph.
    */
   def apply(cg: CallGraph): CorrelatedCalls = {
-    import Scalaz._
-
     val rcs = CallGraphUtil.getRcs(cg)
     val cgNodes  = toScalaList(DFS.getReachableNodes(cg).iterator)
-    val ccWriter =
-      for {
-        _ <- CorrelatedCalls(rcs = rcs).tell
-        _ <- cgNodes.traverse[CorrelatedCallWriter, CGNode](cgNodeWriter(rcs.flatten.toSet))
-      } yield ()
+    val ccWriter = CorrelatedCallsWriter(rcs, cgNodes)
     ccWriter.written
-  }
-
-  private[this] def cgNodeWriter(
-    rcs: Set[CGNode]
-  )(
-    cgNode: CGNode
-  ): CorrelatedCallWriter[CGNode] = {
-    import Scalaz._
-
-    val recToCallSites = receiverToCallSites(cgNode)
-    for {
-      _ <- CorrelatedCalls(
-        cgNodes             = Set(cgNode),
-        totalCallSites      = callSiteIterator(cgNode).toSet,
-        receiverToCallSites = recToCallSites,
-        rcCcReceivers       = if (rcs contains cgNode) recToCallSites.keys.toSet else Set.empty
-      ).tell
-    } yield cgNode
-  }
-
-  private[this] def receiverToCallSites(
-    cgNode: CGNode
-  ): MultiMap[Receiver, CallSiteReference] = {
-    val startMap = Map[Receiver, Set[CallSiteReference]]() withDefaultValue Set.empty
-    // Create a map from receivers to dispatch call sites
-    val receiverToCallsiteMap = callSiteIterator(cgNode).foldLeft(startMap) {
-      (map, callSite) =>
-        Receiver(cgNode, callSite) match {
-          case Some(receiver) =>
-            map.updated(receiver, map(receiver) + callSite)
-          case _ =>
-            map
-        }
-    }
-    // Return a map that only contains receivers with more than one corresponding call site
-    receiverToCallsiteMap filter {
-      case (_, set) => set.size > 1
-    }
-  }
-
-  private[this] def callSiteIterator(cgNode: CGNode): Iterator[CallSiteReference] = {
-    toScalaIterator(cgNode.iterateCallSites())
   }
 }
