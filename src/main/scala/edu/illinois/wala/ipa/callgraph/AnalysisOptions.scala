@@ -5,7 +5,7 @@ import com.ibm.wala.ipa.cha.ClassHierarchy
 import com.ibm.wala.types.TypeReference
 import com.ibm.wala.types.MethodReference
 import com.ibm.wala.types.TypeName
-import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint
+import com.ibm.wala.ipa.callgraph.impl.{Util, DefaultEntrypoint}
 import com.ibm.wala.ipa.callgraph.Entrypoint
 import scala.collection.JavaConversions._
 import com.typesafe.config.Config
