@@ -33,8 +33,8 @@ class CorrelatedCallsSpec extends FunSpec {
 
     it("returns no CCs for programs where each receiver has at most one invocation, excluding private and static calls") {
       val ccs = getCcsForPointerAnalysisCallGraph("NoCcs")
-      assert(ccs.ccReceiverNum == 0, "no cc receivers")
-      assert(ccs.ccSiteNum == 0, "no cc sites")
+      assert(ccs.ccReceiverNum == 0, "cc receivers")
+      assert(ccs.ccSiteNum == 0, "cc sites")
     }
 
     it("detects CCs, including invocations on 'this'") {

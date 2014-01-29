@@ -1,13 +1,10 @@
 package ca.uwaterloo.correlated
 
-import ca.uwaterloo.correlated.util.CallGraphUtil
-import ca.uwaterloo.correlated.util.Converter._
 import com.ibm.wala.classLoader.CallSiteReference
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
-import com.ibm.wala.util.graph.traverse.DFS
 
 /**
- * Data structure that contains information about the program with respect to correlated calls.
+ * Data structure that contains information about the program with respect to correlated calls
  */
 case class CorrelatedCalls(
 
@@ -31,12 +28,17 @@ case class CorrelatedCalls(
   /*
    * Maps a receiver to a set of call sites that are invoked on that receiver
    */
-  receiverToCallSites: MultiMap[Receiver, CallSiteReference] = Map.empty,
+  receiverToCallSites: ReceiverToCallSites = Map.empty withDefaultValue Set.empty,
 
   /*
-   * Total amount of reachable call sites
+   * All call sites that are reachable in the call graph
    */
-  totalCallSites: Set[CallSiteReference] = Set.empty
+  totalCallSites: Set[CallSiteReference] = Set.empty,
+
+  /**
+   * Call sites that have more than one target
+   */
+  polymorphicCallSites: Set[CallSiteReference] = Set.empty
 ) {
 
   /**
@@ -55,6 +57,9 @@ case class CorrelatedCalls(
    */
   lazy val dispatchCallSites: Set[CallSiteReference] =
     totalCallSites filter { _.isDispatch }
+
+  lazy val polymorphicCallSiteNum: Int =
+    polymorphicCallSites.size
 
   /**
    * Amount of correlated call receivers
@@ -123,10 +128,6 @@ object CorrelatedCalls {
   /**
    * Creates a CorrelatedCalls object for a given call graph.
    */
-  def apply(cg: CallGraph): CorrelatedCalls = {
-    val rcs = CallGraphUtil.getRcs(cg)
-    val cgNodes  = toScalaList(DFS.getReachableNodes(cg).iterator)
-    val ccWriter = CorrelatedCallsWriter(rcs, cgNodes)
-    ccWriter.written
-  }
+  def apply(cg: CallGraph): CorrelatedCalls =
+    CorrelatedCallsWriter(cg).written
 }
