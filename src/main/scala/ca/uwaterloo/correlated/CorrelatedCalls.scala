@@ -53,7 +53,7 @@ case class CorrelatedCalls(
     receiverToCallSites.values.flatten.toSet
 
   /**
-   * Total amount of multiple dispatch call sites
+   * Total amount of dispatch call sites
    */
   lazy val dispatchCallSites: Set[CallSiteReference] =
     totalCallSites filter { _.isDispatch }
@@ -72,7 +72,7 @@ case class CorrelatedCalls(
   lazy val totalCallSiteNum = totalCallSites.size
 
   /**
-   * Number of multiple dispatch call sites
+   * Number of dispatch call sites
    */
   lazy val dispatchCallSiteNum = dispatchCallSites.size
 
@@ -104,20 +104,22 @@ case class CorrelatedCalls(
     printf(
       "%7d call graph nodes\n" +                          // 1
       "%7d total call sites\n" +                          // 2
-      "%7d dispatch call sites\n\n" +                     // 3
-      "%7d correlated calls (CCs)\n" +                    // 4
-      "%7d CC receivers\n\n" +                            // 5
-      "%7d recursive components (RCs)\n" +                // 6
-      "%7d nodes in RCs\n" +                              // 7
-      "%7d CC receivers in nodes in RCs\n\n",             // 8
+      "%7d dispatch call sites\n" +                       // 3
+      "%7d polymorphic call sites\n\n" +                  // 4
+      "%7d correlated calls (CCs)\n" +                    // 5
+      "%7d CC receivers\n\n" +                            // 6
+      "%7d recursive components (RCs)\n" +                // 7
+      "%7d nodes in RCs\n" +                              // 8
+      "%7d CC receivers in nodes in RCs\n\n",             // 9
       cgNodeNum,                                          // 1
       totalCallSiteNum,                                   // 2
       dispatchCallSiteNum,                                // 3
-      ccSiteNum,                                          // 4
-      ccReceiverNum,                                      // 5
-      rcNum,                                              // 6
-      rcNodeNum,                                          // 7
-      rcCcReceiverNum                                     // 8
+      polymorphicCallSiteNum,                             // 4
+      ccSiteNum,                                          // 5
+      ccReceiverNum,                                      // 6
+      rcNum,                                              // 7
+      rcNodeNum,                                          // 8
+      rcCcReceiverNum                                     // 9
     )
 }
 
