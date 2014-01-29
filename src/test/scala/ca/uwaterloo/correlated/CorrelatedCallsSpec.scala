@@ -39,8 +39,8 @@ class CorrelatedCallsSpec extends FunSpec {
 
     it("detects CCs, including invocations on 'this'") {
       val ccs = getCcsForPointerAnalysisCallGraph("CcsPresent")
-      assert(ccs.ccReceiverNum == 4, "cc receivers")
-      assert(ccs.ccSiteNum == 8, "cc sites")
+      assert(ccs.ccReceiverNum == 1, "cc receivers")
+      assert(ccs.ccSiteNum == 3, "cc sites")
       assert(ccs.rcNum == 0, "rcs")
     }
 

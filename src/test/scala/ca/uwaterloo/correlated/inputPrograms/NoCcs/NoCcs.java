@@ -15,6 +15,13 @@ public class NoCcs {
         // static method invocations are not counted as correlated calls
         main(null);
         main(null);
+        NoCcs noCcs = new NoCcs();
+        // Monomorphic correlated calls are not counted
+        noCcs.bar();
+        noCcs.foo();
+        // Monomorphic correlated calls are not counted
+        foo();
+        foo();
     }
 
     // should not be count since baz is unreachable
