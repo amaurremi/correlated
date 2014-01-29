@@ -12,8 +12,7 @@ object Receiver {
    * Returns a receiver for a call site if the call site is polymorphic
    */
   def apply(cg: CallGraph, cgNode: CGNode, callSiteRef: CallSiteReference): Option[Receiver] =
-    if (cg.getNumberOfTargets(cgNode, callSiteRef) > 1) {
-//      assert(callSiteRef.isDispatch, "if a call site is polymorphic, it must be a dispatch call site")
+    if (callSiteRef.isDispatch && cg.getNumberOfTargets(cgNode, callSiteRef) > 1) {
       val calls = cgNode.getIR.getCalls(callSiteRef)
       /*if (calls.length > 1) {
         assert(
