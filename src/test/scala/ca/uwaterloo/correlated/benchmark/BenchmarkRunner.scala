@@ -1,4 +1,4 @@
-package ca.uwaterloo.correlated.example
+package ca.uwaterloo.correlated.benchmark
 
 import ca.uwaterloo.correlated.util.TestUtil
 
