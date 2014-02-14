@@ -35,7 +35,7 @@ class IdeSolver[T, P, F](
   }
 
   def forwardExitNode(en: ExitNode[T], e: IdeEdge[T], f: IdeFunction) {
-    callReturnEdges(en) map {
+    callReturnEdges(en.n) map {
       case cre@IdeEdge(c, r) =>
         val f4   = edgeFn(IdeEdge(c, e.source))
         val f5   = edgeFn(IdeEdge(en, r))
@@ -43,9 +43,11 @@ class IdeSolver[T, P, F](
         val f6   = (f5 ◦ f ◦ f4) ⊓ sumF
         if (f6 != sumF) {
           SummaryFn += cre -> f6
-          val sq = startNode(c) // todo: change type of this type of methods to return T instead of IdeNode[T]
-          val f3 = JumpFn(IdeEdge(sq, c))
-          propagate(IdeEdge(sq, r), f6 ◦ f3)
+          startNodes(c.n) map {
+            sq =>
+              val f3 = JumpFn(IdeEdge(sq, c))
+              propagate(IdeEdge(sq, r), f6 ◦ f3)
+          }
         }
     }
   }

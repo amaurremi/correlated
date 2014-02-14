@@ -22,14 +22,14 @@ class SupergraphInfo[T, P](superGraph: ISupergraph[T, P]) {
   /**
    * Returns the start node of the argument's enclosing procedure.
    */
-  def startNode(node: IdeNode[T]): IdeNode[T] = ???
+  def startNodes(node: T): Seq[IdeNode[T]] = ???
 
   /**
    * Let p be the node's enclosing procedure. This method returns all
    * edges from a p's caller node to the corresponding return node.
    */
-  def callReturnEdges(node: IdeNode[T]): Seq[IdeEdge[T]] = {
-    val proc = enclProc(node.n)
+  def callReturnEdges(node: T): Seq[IdeEdge[T]] = {
+    val proc = enclProc(node)
     ???
   }
 }
