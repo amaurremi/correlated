@@ -1,0 +1,46 @@
+package ca.uwaterloo.ide.example.constant
+
+import ca.uwaterloo.ide._
+import ca.uwaterloo.ide.Num
+
+/**
+ * Represents a function
+ * λl . (a * l + b) ⊓ c
+ * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
+ * with applications to constant propagation"
+ */
+case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunction[ConstantPropagationF] {
+
+  override def apply(arg: LatticeNum): LatticeNum = (Num(a) * arg + Num(b)) meet c
+
+  /**
+   * Meet operator
+   */
+  override def ⊓(f: ConstantPropagationF): ConstantPropagationF =
+    f match {
+      case ConstantPropagationF(a2, b2, c2) =>
+        if (a == a2 && b == b2)
+          ConstantPropagationF(a, b, c meet c2)
+        else if (equiv(a2, b2, c2))
+          this
+        else
+          ConstantPropagationF(1, 0, ⊥)
+    }
+
+  private def equiv(a2: Long, b2: Long, c2: LatticeNum): Boolean = {
+    val l: Double = (b - b2) / (a2 - a)
+    l.isWhole() && c == (Num(a * l.toInt + b) meet c meet c2)
+  }
+
+  override def ◦(f: ConstantPropagationF): ConstantPropagationF =
+    f match {
+      case ConstantPropagationF(a2, b2, c2) =>
+        ConstantPropagationF(a * a2, a * b2 + b, (Num(a) * c2 + Num(b)) meet c)
+    }
+
+  override def equals(obj: Any): Boolean =
+    obj match {
+      case ConstantPropagationF(_, _, ⊥) if c == ⊥ => true
+      case _ => super.equals(obj)
+    }
+}

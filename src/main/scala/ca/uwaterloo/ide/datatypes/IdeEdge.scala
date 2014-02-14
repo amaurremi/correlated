@@ -4,7 +4,7 @@ import com.ibm.wala.dataflow.IFDS.PathEdge
 
 case class IdeEdge[T](source: IdeNode[T], target: IdeNode[T]) {
 
-  def getWalaPathEdge: PathEdge[T] = new PathEdge[T](source.n, source.d, target.n, target.d)
+  def getWalaPathEdge: PathEdge[T] = PathEdge.createPathEdge(source.n, source.d, target.n, target.d)
 }
 
 object IdeEdge {

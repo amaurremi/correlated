@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 
-class SupergraphInfo[T, P](superGraph: ISupergraph[T, P]) {
+class SupergraphInfo[T, P, V](superGraph: ISupergraph[T, P]) {
 
   /**
    * Returns all edges with a given source node
@@ -12,7 +12,7 @@ class SupergraphInfo[T, P](superGraph: ISupergraph[T, P]) {
   /**
    * Returns the edge function corresponding to an edge
    */
-  def edgeFn(edge: IdeEdge[T]): IdeFunction = ???
+  def edgeFn(edge: IdeEdge[T]): V = ???
 
   /**
    * Returns the enclosing procedure of a given node

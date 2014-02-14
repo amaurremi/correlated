@@ -2,19 +2,22 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS._
 
-case class IdeProblem[T, P, F](
-  superGraph: ISupergraph[T, P],
-  domain: TabulationDomain[F, T],
-  initialSeeds: Seq[PathEdge[T]]
-) extends TabulationProblem[T, P, F]{
+/**
+ * @tparam V type of IdeFunction implementation
+ */
+trait IdeProblem[T, P, F, V] extends TabulationProblem[T, P, F]{
 
-  override def getMergeFunction: IMergeFunction = null
+  /**
+   * Represents λl.⊤
+   */
+  val Top: V
 
-  override def getFunctionMap: IFlowFunctionMap[T] = ???
+  /**
+   * Represents λl.l
+   */
+  val Id: V
 
-  override def getDomain: TabulationDomain[F, T] = domain
+  val superGraph: ISupergraph[T, P]
 
-  override def getSupergraph: ISupergraph[T, P] = superGraph
-
-  val superGraphInfo = new SupergraphInfo[T, P](superGraph)
+  val superGraphInfo = new SupergraphInfo[T, P, V](getSupergraph)
 }
