@@ -46,7 +46,8 @@ class IdeSolver[T, P, F](
           startNodes(c.n) map {
             sq =>
               val f3 = JumpFn(IdeEdge(sq, c))
-              propagate(IdeEdge(sq, r), f6 ◦ f3)
+              if (f3 != IdeFunction.Top)
+                propagate(IdeEdge(sq, r), f6 ◦ f3)
           }
         }
     }

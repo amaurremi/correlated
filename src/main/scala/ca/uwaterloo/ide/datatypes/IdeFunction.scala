@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 /**
  * Represents a function
- * λl . (a * l + b) ∩ c
+ * λl . (a * l + b) ⊓ c
  * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
  * with applications to constant propagation"
  */
@@ -42,7 +42,7 @@ case class IdeFunction(a: Long, b: Long, c: LatticeNum) { // todo: make more gen
 
 object IdeFunction {
 
-  val Top: IdeFunction = IdeFunction(0, 0, ⊤)
+  val Top: IdeFunction = IdeFunction(1, 0, ⊤)
 
   val Id: IdeFunction = IdeFunction(1, 0, ⊤)
 }
