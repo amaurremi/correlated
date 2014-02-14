@@ -39,23 +39,27 @@ class IdeSolver[T, P, F](
       val f = JumpFn(e)
       val n = e.target
       n match {
-        case CallNode(_, _) => forwardCallNode(n, f)
-        case en@ExitNode(_, _) =>
-          callReturnEdges(en) map {
-            case cre@IdeEdge(c, r) =>
-              val f4 = edgeFn(IdeEdge(c, e.source))
-              val f5 = edgeFn(IdeEdge(en, r))
-              val sumF: IdeFunction = SummaryFn(cre)
-              val f6 = (f5 ◦ f ◦ f4) ⊓ sumF
-              if (f6 != sumF) {
-                SummaryFn += cre -> f6
-                val sq = startNode(c) // todo: change type of this type of methods to return T instead of IdeNode[T]
-                val f3 = JumpFn(IdeEdge(sq, c))
-                propagate(IdeEdge(sq, r), f6 ◦ f3)
-              }
-          }
-        case ProcNode(_, _) => forwardProcNode(e, f)
+        case CallNode(_, _)    => forwardCallNode(n, f)
+        case en@ExitNode(_, _) => forwardExitNode(en, e, f)
+        case ProcNode(_, _)    => forwardProcNode(e, f)
       }
+    }
+  }
+
+
+  def forwardExitNode(en: ExitNode[T], e: IdeEdge[T], f: IdeFunction) {
+    callReturnEdges(en) map {
+      case cre@IdeEdge(c, r) =>
+        val f4 = edgeFn(IdeEdge(c, e.source))
+        val f5 = edgeFn(IdeEdge(en, r))
+        val sumF: IdeFunction = SummaryFn(cre)
+        val f6 = (f5 ◦ f ◦ f4) ⊓ sumF
+        if (f6 != sumF) {
+          SummaryFn += cre -> f6
+          val sq = startNode(c) // todo: change type of this type of methods to return T instead of IdeNode[T]
+          val f3 = JumpFn(IdeEdge(sq, c))
+          propagate(IdeEdge(sq, r), f6 ◦ f3)
+        }
     }
   }
 
