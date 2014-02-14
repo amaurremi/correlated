@@ -9,6 +9,7 @@ class IdeSolver[T, P, F](
   problem,
   null
 ) {
+  import problem.superGraphInfo._
 
   private[this] val initializeJumpFn = ???
 
@@ -19,19 +20,6 @@ class IdeSolver[T, P, F](
   private[this] val SummaryFn: mutable.Map[IdeEdge[T], IdeFunction] = initializeSummaryFn
 
   private[this] val PathWorkList = makeWorklist
-
-  private[this] def edgesWithSource(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
-
-  private[this] def edgeFn(edge: IdeEdge[T]): IdeFunction = ???
-
-  private[this] def enclProc(node: IdeNode[T]): IdeNode[T] = ???
-
-  private[this] def startNode(node: IdeNode[T]): IdeNode[T] = ???
-
-  private[this] def callReturnEdges(node: IdeNode[T]): Seq[IdeEdge[T]] = {
-    val proc = enclProc(node)
-    ???
-  }
 
   def forwardComputeJumpFunctionsSlrps() {
     while (PathWorkList.size > 0) {
@@ -46,14 +34,13 @@ class IdeSolver[T, P, F](
     }
   }
 
-
   def forwardExitNode(en: ExitNode[T], e: IdeEdge[T], f: IdeFunction) {
     callReturnEdges(en) map {
       case cre@IdeEdge(c, r) =>
-        val f4 = edgeFn(IdeEdge(c, e.source))
-        val f5 = edgeFn(IdeEdge(en, r))
-        val sumF: IdeFunction = SummaryFn(cre)
-        val f6 = (f5 ◦ f ◦ f4) ⊓ sumF
+        val f4   = edgeFn(IdeEdge(c, e.source))
+        val f5   = edgeFn(IdeEdge(en, r))
+        val sumF = SummaryFn(cre)
+        val f6   = (f5 ◦ f ◦ f4) ⊓ sumF
         if (f6 != sumF) {
           SummaryFn += cre -> f6
           val sq = startNode(c) // todo: change type of this type of methods to return T instead of IdeNode[T]
@@ -84,7 +71,7 @@ class IdeSolver[T, P, F](
 
   def propagate(e: IdeEdge[T], f: IdeFunction) {
     val jumpFn = JumpFn(e)
-    val f2 = f ⊓ jumpFn
+    val f2     = f ⊓ jumpFn
     if (f2 != jumpFn) {
       JumpFn += e -> f2
       PathWorkList.insert(e.getWalaPathEdge)

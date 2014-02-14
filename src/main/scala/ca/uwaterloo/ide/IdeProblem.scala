@@ -15,3 +15,6 @@ case class IdeProblem[T, P, F](
   override def getDomain: TabulationDomain[F, T] = domain
 
   override def getSupergraph: ISupergraph[T, P] = superGraph
+
+  val superGraphInfo = new SupergraphInfo[T, P](superGraph)
+}
