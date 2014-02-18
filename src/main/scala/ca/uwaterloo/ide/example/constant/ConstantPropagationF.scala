@@ -11,7 +11,7 @@ import ca.uwaterloo.ide.Num
  */
 case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunction[ConstantPropagationF] {
 
-  override def apply(arg: LatticeNum): LatticeNum = (Num(a) * arg + Num(b)) meet c
+  override def apply(arg: LatticeNum): LatticeNum = (Num(a) * arg + Num(b)) ⊓ c
 
   /**
    * Meet operator
@@ -20,7 +20,7 @@ case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunc
     f match {
       case ConstantPropagationF(a2, b2, c2) =>
         if (a == a2 && b == b2)
-          ConstantPropagationF(a, b, c meet c2)
+          ConstantPropagationF(a, b, c ⊓ c2)
         else if (equiv(a2, b2, c2))
           this
         else
@@ -29,13 +29,13 @@ case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunc
 
   private def equiv(a2: Long, b2: Long, c2: LatticeNum): Boolean = {
     val l: Double = (b - b2) / (a2 - a)
-    l.isWhole() && c == (Num(a * l.toInt + b) meet c meet c2)
+    l.isWhole() && c == (Num(a * l.toInt + b) ⊓ c ⊓ c2)
   }
 
   override def ◦(f: ConstantPropagationF): ConstantPropagationF =
     f match {
       case ConstantPropagationF(a2, b2, c2) =>
-        ConstantPropagationF(a * a2, a * b2 + b, (Num(a) * c2 + Num(b)) meet c)
+        ConstantPropagationF(a * a2, a * b2 + b, (Num(a) * c2 + Num(b)) ⊓ c)
     }
 
   override def equals(obj: Any): Boolean =

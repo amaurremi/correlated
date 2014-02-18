@@ -1,10 +1,10 @@
 package ca.uwaterloo.ide
 
-trait LatticeNum {
+sealed trait LatticeNum {
   def +(n:LatticeNum): LatticeNum
   def -(n: LatticeNum): LatticeNum
   def *(n: LatticeNum): LatticeNum
-  def meet(n: LatticeNum): LatticeNum
+  def ⊓(n: LatticeNum): LatticeNum
   val inverse: LatticeNum
 }
 
@@ -12,7 +12,7 @@ case object ⊤ extends LatticeNum {
   override def +(n: LatticeNum) = ⊤
   override def -(n: LatticeNum) = ⊤
   override def *(n: LatticeNum) = ⊤
-  override def meet(n: LatticeNum) = n
+  override def ⊓(n: LatticeNum) = n
   override val inverse = ⊤
 }
 
@@ -20,7 +20,7 @@ case object ⊥ extends LatticeNum {
   override def +(n: LatticeNum) = ⊥
   override def -(n: LatticeNum) = ⊥
   override def *(n: LatticeNum) = ⊥
-  override def meet(n: LatticeNum) = ⊥
+  override def ⊓(n: LatticeNum) = ⊥
   override val inverse = ⊥
 }
 
@@ -40,8 +40,8 @@ case class Num(n: Long) extends LatticeNum {
 
   override val inverse: LatticeNum = Num(-n)
 
-  override def meet(ln: LatticeNum) = ln match {
+  override def ⊓(ln: LatticeNum) = ln match {
     case Num(n2) => if (n == n2) ln else ⊥
-    case _       => ln meet this
+    case _       => ln ⊓ this
   }
 }

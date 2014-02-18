@@ -3,7 +3,7 @@ package ca.uwaterloo.ide
 import com.ibm.wala.dataflow.IFDS.ITabulationWorklist
 import scala.collection.mutable
 
-class ComputeJumpFuncs[T, P, F, V <: IdeFunction[V]](
+class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   pathWorklist: ITabulationWorklist[T],
   problem: IdeProblem[T, P, F, V]
 ) {
@@ -11,15 +11,11 @@ class ComputeJumpFuncs[T, P, F, V <: IdeFunction[V]](
   import problem._
   import supergraphInfo._
 
-  private[this] def initializeJumpFn() = ???
-
-  private[this] def initializeSummaryFn() = ???
-
-  private[this] val JumpFn: mutable.Map[IdeEdge[T], V] = initializeJumpFn()
+  private[this] val JumpFn: JumpFn[T, V] = initializeJumpFn()
 
   private[this] val SummaryFn: mutable.Map[IdeEdge[T], V] = initializeSummaryFn()
 
-  def run() {
+  def compute: JumpFn[T, V] = {
     while (pathWorklist.size > 0) {
       val e = IdeEdge(pathWorklist.take())
       val f = JumpFn(e)
@@ -30,9 +26,14 @@ class ComputeJumpFuncs[T, P, F, V <: IdeFunction[V]](
         case _                 => forwardProcNode(e, f)
       }
     }
+    JumpFn
   }
 
-  def forwardExitNode(en: ExitNode[T], e: IdeEdge[T], f: V) {
+  private[this] def initializeJumpFn() = ???
+
+  private[this] def initializeSummaryFn() = ???
+
+  private[this] def forwardExitNode(en: ExitNode[T], e: IdeEdge[T], f: V) {
     callReturnEdges(en.n) map {
       case cre@IdeEdge(c, r) =>
         val f4   = edgeFn(IdeEdge(c, e.source))
