@@ -11,7 +11,11 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   import problem._
   import supergraphInfo._
 
-  private[this] val JumpFn: JumpFn[T, V] = initializeJumpFn()
+  private[this] val initialJumpFn = ???
+
+  private[this] def initializeSummaryFn() = ???
+
+  private[this] val JumpFn: JumpFn[T, V] = initialJumpFn
 
   private[this] val SummaryFn: mutable.Map[IdeEdge[T], V] = initializeSummaryFn()
 
@@ -28,10 +32,6 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     }
     JumpFn
   }
-
-  private[this] def initializeJumpFn() = ???
-
-  private[this] def initializeSummaryFn() = ???
 
   private[this] def forwardExitNode(en: ExitNode[T], e: IdeEdge[T], f: V) {
     callReturnEdges(en.n) map {
