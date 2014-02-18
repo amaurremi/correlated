@@ -2,6 +2,10 @@ package ca.uwaterloo.ide
 
 case class Fact(n: Int)
 
+object Fact {
+  val zero = Fact(0)
+}
+
 trait IdeNode[T] {
   val n: T
   val d: Fact 
