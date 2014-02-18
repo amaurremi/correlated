@@ -40,19 +40,19 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
   }
 
 
-  def computeCallNode(cn: T) {
+  private[this] def computeCallNode(cn: T) {
     callStartEdges(cn) map {
       e =>
         propagateValue(e.target, edgeFn(e)(vals(e.source)))
     }
   }
 
-  def computeStartNode(p: P) {
+  private[this] def computeStartNode(p: P) {
     for {
       c <- getCallNodes(p)
       e <- edgesWithTarget(c)
-      if jumpFunc(e) != Top
       f2 = jumpFunc(e)
+      if f2 != Top
     } yield
       propagateValue(e.target, f2(vals(e.source)))
   }
