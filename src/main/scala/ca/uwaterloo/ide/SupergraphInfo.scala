@@ -1,8 +1,9 @@
 package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.ISupergraph
+import scala.collection.JavaConverters._
 
-class SupergraphInfo[T, P, V](superGraph: ISupergraph[T, P]) {
+class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
 
   /**
    * Returns all edges with a given source node
@@ -32,4 +33,8 @@ class SupergraphInfo[T, P, V](superGraph: ISupergraph[T, P]) {
     val proc = enclProc(node)
     ???
   }
+
+  def getCallnodes(proc: P): Seq[T] = ???
+  
+  def supergraphIterator = supergraph.iterator().asScala
 }
