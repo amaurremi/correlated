@@ -10,18 +10,24 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
 
   import problem._
   import supergraphInfo._
+  import Util.mutableMap
 
   private[this] val pathWorklist = new PathWorklist(problem.initialSeeds)
 
   private[this] val JumpFn: JumpFn[T, V] = {
     val initialSeeds = problem.initialSeeds().iterator().asScala
-    mutable.Map((initialSeeds map {
+    val jumpFn = mutableMap(initialSeeds map {
       seed =>
         (IdeEdge(seed), Top)
-    }).toSeq: _*)
+    })
+    ??? // todo: p. 147, line 6
   }
 
-  private[this] val SummaryFn: mutable.Map[IdeEdge[T], V] = ???
+  private[this] val SummaryFn: mutable.Map[IdeEdge[T], V] = {
+    mutableMap(callReturnEdges map {
+      _ -> Top
+    })
+  }
 
   def compute: JumpFn[T, V] = {
     while (pathWorklist.size > 0) {

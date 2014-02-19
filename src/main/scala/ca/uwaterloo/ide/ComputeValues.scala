@@ -8,12 +8,13 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
 ) {
   import problem._
   import supergraphInfo._
+  import Util.mutableMap
 
   private[this] lazy val vals: Values[T] =
-    mutable.Map(supergraphIterator.map {
+    mutableMap(supergraphIterator.map {
       node =>
         (IdeNode(node, ???), ⊤)
-    }.toSeq: _*)
+    })
 
   private[this] lazy val nodeWorklist = new NodeWorklist[T]
 

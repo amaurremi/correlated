@@ -50,4 +50,9 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
   lazy val supergraphIterator = supergraph.iterator().asScala
 
   lazy val notCallOrStartNodes: Seq[T] = ???
+
+  /**
+   * All corresponding call-return edges in the exploded graph
+   */
+  lazy val callReturnEdges: Seq[IdeEdge[T]] = ???
 }
