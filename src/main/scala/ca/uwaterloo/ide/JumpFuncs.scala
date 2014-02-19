@@ -6,7 +6,6 @@ import scala.collection.mutable
 class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   problem: IdeProblem[T, P, F, V]
 ) {
-
   import Util.mutableMap
   import problem._
   import supergraphInfo._
@@ -36,7 +35,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       n match {
         case CallNode(_, _)    => forwardCallNode(n, f)
         case en@ExitNode(_, _) => forwardExitNode(en, e, f)
-        case _                 => forwardProcNode(e, f)
+        case _                 => forwardOtherNode(e, f)
       }
     }
     jumpFn
@@ -73,7 +72,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     }
   }
 
-  private[this] def forwardProcNode(e: IdeEdge[T], f: V) {
+  private[this] def forwardOtherNode(e: IdeEdge[T], f: V) {
     edgesWithSource(e.target) map {
       edge =>
         propagate(IdeEdge(e.source, edge.target), edgeFn(edge) ◦ f)

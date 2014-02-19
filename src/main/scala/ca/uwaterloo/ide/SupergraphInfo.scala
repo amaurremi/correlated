@@ -49,6 +49,9 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
    */
   lazy val supergraphIterator = supergraph.iterator().asScala
 
+  /**
+   * All nodes that are not call nodes or start nodes.
+   */
   lazy val notCallOrStartNodes: Seq[T] = ???
 
   /**
