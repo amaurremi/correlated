@@ -6,20 +6,22 @@ import scala.collection.mutable
 class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   problem: IdeProblem[T, P, F, V]
 ) {
-  import Util.mutableMap
+
   import problem._
   import supergraphInfo._
+  import Util.mutableMap
 
   private[this] val pathWorklist = new PathWorklist(problem.initialSeeds)
 
   private[this] val jumpFn: JumpFn[T, V] = {
-    val initialSeeds = problem.initialSeeds().iterator().asScala
+    val initialSeeds = problem.initialSeeds.iterator.asScala
+    // [1-2]
     val jumpFn       = mutableMap(intraEdgesFromStart map {
       _ -> Top
     })
+    // [6]
     jumpFn ++ mutableMap(initialSeeds map {
-      seed =>
-        IdeEdge(seed) -> Id
+        IdeEdge(_) -> Id
     })
   }
 
