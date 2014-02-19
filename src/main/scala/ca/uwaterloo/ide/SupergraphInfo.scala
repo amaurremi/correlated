@@ -40,6 +40,16 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
   }
 
   /**
+   * All corresponding call-return edges in the exploded graph
+   */
+  lazy val allCallReturnEdges: Seq[IdeEdge[T]] = ???
+  
+  /**
+   * All intra-procedural edges from the start of a procedure.
+   */
+  lazy val intraEdgesFromStart: Seq[IdeEdge[T]] = ???
+  
+  /**
    * Returns all call nodes for a given procedure.
    */
   lazy val getCallNodes: P => Seq[T] = ???
@@ -53,9 +63,4 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
    * All nodes that are not call nodes or start nodes.
    */
   lazy val notCallOrStartNodes: Seq[T] = ???
-
-  /**
-   * All corresponding call-return edges in the exploded graph
-   */
-  lazy val callReturnEdges: Seq[IdeEdge[T]] = ???
 }

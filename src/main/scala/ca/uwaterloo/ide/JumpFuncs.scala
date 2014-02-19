@@ -14,16 +14,18 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
 
   private[this] val jumpFn: JumpFn[T, V] = {
     val initialSeeds = problem.initialSeeds().iterator().asScala
-    val jumpFn = mutableMap(initialSeeds map {
-      seed =>
-        (IdeEdge(seed), Top)
+    val jumpFn       = mutableMap(intraEdgesFromStart map {
+      _ -> Top
     })
-    ??? // todo: p. 147, line 6
+    jumpFn ++ mutableMap(initialSeeds map {
+      seed =>
+        IdeEdge(seed) -> Id
+    })
   }
 
   private[this] val summaryFn: mutable.Map[IdeEdge[T], V] =
     mutableMap(
-      callReturnEdges map {
+      allCallReturnEdges map {
         _ -> Top
       })
 
