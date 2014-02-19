@@ -2,26 +2,30 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.ITabulationWorklist
 import scala.collection.mutable
+import scala.collection.JavaConverters._
 
 class JumpFuncs[T, P, F, V <: IdeFunction[V]](
-  pathWorklist: ITabulationWorklist[T],
   problem: IdeProblem[T, P, F, V]
 ) {
 
   import problem._
   import supergraphInfo._
 
-  private[this] val initialJumpFn = ???
+  private[this] val pathWorklist = new PathWorklist(problem.initialSeeds)
 
-  private[this] def initializeSummaryFn() = ???
+  private[this] val JumpFn: JumpFn[T, V] = {
+    val initialSeeds = problem.initialSeeds().iterator().asScala
+    mutable.Map((initialSeeds map {
+      seed =>
+        (IdeEdge(seed), Top)
+    }).toSeq: _*)
+  }
 
-  private[this] val JumpFn: JumpFn[T, V] = initialJumpFn
-
-  private[this] val SummaryFn: mutable.Map[IdeEdge[T], V] = initializeSummaryFn()
+  private[this] val SummaryFn: mutable.Map[IdeEdge[T], V] = ???
 
   def compute: JumpFn[T, V] = {
     while (pathWorklist.size > 0) {
-      val e = IdeEdge(pathWorklist.take())
+      val e = pathWorklist.take()
       val f = JumpFn(e)
       val n = e.target
       n match {
@@ -76,7 +80,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     val f2     = f ⊓ jumpFn
     if (f2 != jumpFn) {
       JumpFn += e -> f2
-      pathWorklist.insert(e.getWalaPathEdge)
+      pathWorklist.insert(e)
     }
   }
 }

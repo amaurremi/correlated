@@ -13,21 +13,10 @@ class IdeSolver[T, P, F, V <: IdeFunction[V]](
 
   // todo: modify edges in super graph?
   override def solve(): TabulationResult[T, P, F] = {
-    val jumpFuncs = new JumpFuncs[T, P, F, V](makeWorklist(), problem).compute
+    val jumpFuncs = new JumpFuncs[T, P, F, V](problem).compute
     val vals = new ComputeValues[T, P, F, V](problem, jumpFuncs).compute
     valuesToResult(vals)
   }
 
-  private[this] def valuesToResult(vals: Values[T]): TabulationResult[T, P, F] =
-    new TabulationResult[T, P, F] {
-      override def getSeeds: util.Collection[PathEdge[T]] = ???
-
-      override def getSummaryTargets(n1: T, d1: Int, n2: T): IntSet = ???
-
-      override def getSupergraphNodesReached: util.Collection[T] = ???
-
-      override def getProblem: TabulationProblem[T, P, F] = ???
-
-      override def getResult(node: T): IntSet = ???
-    }
+  private[this] def valuesToResult(vals: Values[T]): TabulationResult[T, P, F] = ??? // todo: make IdeSolver not extend TabulationSolver
 }

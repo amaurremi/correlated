@@ -37,7 +37,6 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     vals
   }
 
-
   private[this] def computeCallNode(cn: T) {
     callStartEdges(cn) map {
       e =>
