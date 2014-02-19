@@ -1,11 +1,10 @@
 package ca.uwaterloo.ide
 
-import scala.collection.mutable
-
 class ComputeValues[T, P, F, V <: IdeFunction[V]](
   problem: IdeProblem[T, P, F, V],
   jumpFunc: JumpFn[T, V]
 ) {
+
   import problem._
   import supergraphInfo._
   import Util.mutableMap

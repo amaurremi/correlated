@@ -1,8 +1,6 @@
 package ca.uwaterloo.ide
 
-import com.ibm.wala.dataflow.IFDS.{PathEdge, TabulationProblem, TabulationResult, TabulationSolver}
-import com.ibm.wala.util.intset.IntSet
-import java.util
+import com.ibm.wala.dataflow.IFDS.{TabulationResult, TabulationSolver}
 
 class IdeSolver[T, P, F, V <: IdeFunction[V]](
   problem: IdeProblem[T, P, F, V]

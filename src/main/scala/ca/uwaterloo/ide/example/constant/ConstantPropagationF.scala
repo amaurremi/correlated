@@ -1,7 +1,6 @@
 package ca.uwaterloo.ide.example.constant
 
 import ca.uwaterloo.ide._
-import ca.uwaterloo.ide.Num
 
 /**
  * Represents a function

@@ -1,20 +1,19 @@
 package ca.uwaterloo.ide
 
-import com.ibm.wala.dataflow.IFDS.ITabulationWorklist
-import scala.collection.mutable
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   problem: IdeProblem[T, P, F, V]
 ) {
 
+  import Util.mutableMap
   import problem._
   import supergraphInfo._
-  import Util.mutableMap
 
   private[this] val pathWorklist = new PathWorklist(problem.initialSeeds)
 
-  private[this] val JumpFn: JumpFn[T, V] = {
+  private[this] val jumpFn: JumpFn[T, V] = {
     val initialSeeds = problem.initialSeeds().iterator().asScala
     val jumpFn = mutableMap(initialSeeds map {
       seed =>
@@ -23,16 +22,16 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     ??? // todo: p. 147, line 6
   }
 
-  private[this] val SummaryFn: mutable.Map[IdeEdge[T], V] = {
-    mutableMap(callReturnEdges map {
-      _ -> Top
-    })
-  }
+  private[this] val summaryFn: mutable.Map[IdeEdge[T], V] =
+    mutableMap(
+      callReturnEdges map {
+        _ -> Top
+      })
 
   def compute: JumpFn[T, V] = {
     while (pathWorklist.size > 0) {
       val e = pathWorklist.take()
-      val f = JumpFn(e)
+      val f = jumpFn(e)
       val n = e.target
       n match {
         case CallNode(_, _)    => forwardCallNode(n, f)
@@ -40,7 +39,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
         case _                 => forwardProcNode(e, f)
       }
     }
-    JumpFn
+    jumpFn
   }
 
   private[this] def forwardExitNode(en: ExitNode[T], e: IdeEdge[T], f: V) {
@@ -48,13 +47,13 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       case cre@IdeEdge(c, r) =>
         val f4   = edgeFn(IdeEdge(c, e.source))
         val f5   = edgeFn(IdeEdge(en, r))
-        val sumF = SummaryFn(cre)
+        val sumF = summaryFn(cre)
         val f6   = (f5 ◦ f ◦ f4) ⊓ sumF
         if (f6 != sumF) {
-          SummaryFn += cre -> f6
+          summaryFn += cre -> f6
           startNodes(c.n) map {
             sq =>
-              val f3 = JumpFn(IdeEdge(sq, c))
+              val f3 = jumpFn(IdeEdge(sq, c))
               if (f3 != Top)
                 propagate(IdeEdge(sq, r), f6 ◦ f3)
           }
@@ -68,7 +67,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
         propagate(IdeEdge(callee, callee), Id)
       case e@IdeEdge(_, r@ReturnNode(_, _)) =>
         propagate(IdeEdge(e.source, r), edgeFn(e) ◦ f)
-        val sumF = SummaryFn(e)
+        val sumF = summaryFn(e)
         if (sumF != Top)
           propagate(e, sumF ◦ f)
     }
@@ -82,10 +81,10 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   }
 
   private[this] def propagate(e: IdeEdge[T], f: V) {
-    val jumpFn = JumpFn(e)
+    val jumpFn = jumpFn(e)
     val f2     = f ⊓ jumpFn
     if (f2 != jumpFn) {
-      JumpFn += e -> f2
+      jumpFn += e -> f2
       pathWorklist.insert(e)
     }
   }
