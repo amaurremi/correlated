@@ -81,9 +81,9 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   }
 
   private[this] def propagate(e: IdeEdge[T], f: V) {
-    val jumpFn = jumpFn(e)
-    val f2     = f ⊓ jumpFn
-    if (f2 != jumpFn) {
+    val jf = jumpFn(e)
+    val f2 = f ⊓ jf
+    if (f2 != jf) {
       jumpFn += e -> f2
       pathWorklist.insert(e)
     }
