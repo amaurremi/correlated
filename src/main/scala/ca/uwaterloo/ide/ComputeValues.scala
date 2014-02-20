@@ -9,7 +9,7 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
 
   import Util._
   import problem._
-  import supergraphInfo._
+  import explodedGraphInfo._
   import edgeFn._
 
   private[this] lazy val vals: Values[T] = {

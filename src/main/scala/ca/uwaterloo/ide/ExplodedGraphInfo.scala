@@ -2,8 +2,8 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 
-class SupergraphInfo[T, P, V <: IdeFunction[V]](
-  supergraph: ISupergraph[T, P]
+class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
+  edgeFn: EdgeFn[T, V]
 ) {
 
   /**
