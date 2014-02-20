@@ -6,9 +6,14 @@ import scala.collection.JavaConverters._
 class GraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
 
   /**
-   * Returns all edges with a given source node.
+   * All edges with a given source node.
    */
   def edgesWithSource(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
+
+  /**
+   * All edges with a given target node.
+   */
+  def edgesWithTarget(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
 
   /**
    * Returns all edges from a given call node to a start node.
@@ -68,9 +73,4 @@ class GraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
    * All nodes that are not call nodes or start nodes.
    */
   lazy val notCallOrStartNodes: Seq[IdeNode[T]] = ???
-
-  /**
-   * All edges with given target.
-   */
-  def edgesWithTarget(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
 }
