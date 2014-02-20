@@ -1,16 +1,10 @@
 package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.ISupergraph
-import scala.collection.JavaConverters._
 
-class GraphInfo[T, P, V <: IdeFunction[V]](
+class SupergraphInfo[T, P, V <: IdeFunction[V]](
   supergraph: ISupergraph[T, P]
 ) {
-
-  /**
-   * All edges with a given target node.
-   */
-  def edgesWithTarget(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
 
   /**
    * Returns all edges from a given call node to a start node.

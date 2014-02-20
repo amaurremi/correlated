@@ -22,5 +22,5 @@ trait IdeProblem[T, P, F, V <: IdeFunction[V]] extends TabulationProblem[T, P, F
    */
   val edgeFn: EdgeFn[T, V]
 
-  val supergraphInfo = new GraphInfo[T, P, V](getSupergraph)
+  val supergraphInfo = new SupergraphInfo[T, P, V](getSupergraph)
 }

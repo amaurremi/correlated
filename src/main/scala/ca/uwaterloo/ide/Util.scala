@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import java.util
 import scala.collection.mutable
-import com.ibm.wala.dataflow.IFDS.PathEdge
+import com.ibm.wala.dataflow.IFDS.{ISupergraph, PathEdge}
 import scala.collection.JavaConverters._
 
 object Util {
@@ -12,10 +12,10 @@ object Util {
 
   def getSeeds[T] = (seeds: util.Collection[PathEdge[T]]) => seeds.iterator.asScala
 
-  def seedNodes[T] =
-    (seeds: util.Collection[PathEdge[T]]) =>
+  def seedNodes[T, P] =
+    (seeds: util.Collection[PathEdge[T]], supergraph: ISupergraph[T, P]) =>
       getSeeds(seeds) map {
         seed =>
-          IdeNode(seed.getEntry, Fact(seed.getD1)) // todo correct?
+          IdeNode(seed.getEntry, Fact(seed.getD1), supergraph) // todo correct?
       }
 }

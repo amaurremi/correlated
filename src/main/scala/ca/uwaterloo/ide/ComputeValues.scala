@@ -10,6 +10,7 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
   import Util._
   import problem._
   import supergraphInfo._
+  import edgeFn._
 
   private[this] lazy val vals: Values[T] = {
     // [1]
@@ -17,7 +18,7 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
       _ -> ⊤
     })
     // [2]
-    val bottoms = mutableMap(seedNodes(initialSeeds) map {
+    val bottoms = mutableMap(seedNodes(initialSeeds, getSupergraph) map {
       _ -> ⊥
     })
     tops ++ bottoms

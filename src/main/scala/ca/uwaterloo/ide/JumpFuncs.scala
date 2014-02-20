@@ -23,7 +23,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     })
     // [6]
     jumpFn ++ mutableMap(seeds map {
-        IdeEdge(_) -> Id
+        IdeEdge(_, getSupergraph) -> Id
     })
   }
 
