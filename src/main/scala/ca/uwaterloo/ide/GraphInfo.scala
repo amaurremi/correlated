@@ -3,7 +3,7 @@ package ca.uwaterloo.ide
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 import scala.collection.JavaConverters._
 
-class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
+class GraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
 
   /**
    * Returns all edges with a given source node.

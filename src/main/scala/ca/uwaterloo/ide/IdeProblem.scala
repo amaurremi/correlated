@@ -17,5 +17,5 @@ trait IdeProblem[T, P, F, V] extends TabulationProblem[T, P, F]{
    */
   val Id: V
 
-  val supergraphInfo = new SupergraphInfo[T, P, V](getSupergraph)
+  val supergraphInfo = new GraphInfo[T, P, V](getSupergraph)
 }
