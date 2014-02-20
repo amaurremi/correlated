@@ -52,7 +52,7 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
   /**
    * Returns all call nodes for a given procedure.
    */
-  lazy val getCallNodes: P => Seq[T] = ???
+  lazy val getCallNodes: P => Seq[IdeNode[T]] = ???
 
   /**
    * Returns a Scala Iterator over the supergraph's nodes.
@@ -60,7 +60,12 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
   lazy val supergraphIterator = supergraph.iterator().asScala
 
   /**
+   * Returns an iterator over the exploded graph that corresponds to the supergraph.
+   */
+  lazy val explodedGraphIterator: Iterator[IdeNode[T]] = ???
+
+  /**
    * All nodes that are not call nodes or start nodes.
    */
-  lazy val notCallOrStartNodes: Seq[T] = ???
+  lazy val notCallOrStartNodes: Seq[IdeNode[T]] = ???
 }

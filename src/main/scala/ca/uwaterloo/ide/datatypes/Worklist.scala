@@ -12,7 +12,7 @@ abstract class Worklist[E] extends Heap[E](100) {
 
 class NodeWorklist[T] extends Worklist[IdeNode[T]] {
 
-  insert(IdeNode(???, ???)) // todo
+  insert(???) // todo
 }
 
 class PathWorklist[T](

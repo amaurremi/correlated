@@ -1,21 +1,29 @@
 package ca.uwaterloo.ide
 
+// p. 149 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
+// with applications to constant propagation"
 class ComputeValues[T, P, F, V <: IdeFunction[V]](
   problem: IdeProblem[T, P, F, V],
   jumpFunc: JumpFn[T, V]
 ) {
 
+  import Util._
   import problem._
   import supergraphInfo._
-  import Util.mutableMap
 
-  private[this] lazy val vals: Values[T] =
-    mutableMap(supergraphIterator.map {
-      node =>
-        (IdeNode(node, ???), ⊤)
+  private[this] lazy val vals: Values[T] = {
+    // [1]
+    val tops = mutableMap(explodedGraphIterator map {
+      _ -> ⊤
     })
+    // [2]
+    val bottoms = mutableMap(seedNodes(initialSeeds) map {
+      _ -> ⊥
+    })
+    tops ++ bottoms
+  }
 
-  private[this] lazy val nodeWorklist = new NodeWorklist[T]
+  private[this] lazy val nodeWorklist = new NodeWorklist[T] // todo represent in same way as other sets and maps
 
   def compute: Values[T] = {
     // Phase II(i)
@@ -63,5 +71,5 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     }
   }
 
-  private[this] def edgesWithTarget(n: T): Seq[IdeEdge[T]] = ??? // todo IS EASY
+  private[this] def edgesWithTarget(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
 }

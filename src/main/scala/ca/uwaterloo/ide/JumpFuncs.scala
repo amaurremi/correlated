@@ -1,26 +1,27 @@
 package ca.uwaterloo.ide
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable
 
+// p. 147 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
+// with applications to constant propagation"
 class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   problem: IdeProblem[T, P, F, V]
 ) {
 
+  import Util.mutableMap
   import problem._
   import supergraphInfo._
-  import Util.mutableMap
 
   private[this] val pathWorklist = new PathWorklist(problem.initialSeeds)
 
   private[this] val jumpFn: JumpFn[T, V] = {
-    val initialSeeds = problem.initialSeeds.iterator.asScala
+    val seeds = Util.getSeeds(problem.initialSeeds)
     // [1-2]
     val jumpFn       = mutableMap(intraEdgesFromStart map {
       _ -> Top
     })
     // [6]
-    jumpFn ++ mutableMap(initialSeeds map {
+    jumpFn ++ mutableMap(seeds map {
         IdeEdge(_) -> Id
     })
   }
