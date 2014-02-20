@@ -11,7 +11,7 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
   def edgesWithSource(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
 
   /**
-   * Returns all edges from a given call node to a start node
+   * Returns all edges from a given call node to a start node.
    */
   def callStartEdges(n: T): Seq[IdeEdge[T]] = ???
 
@@ -40,7 +40,7 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
   }
 
   /**
-   * All corresponding call-return edges in the exploded graph
+   * All corresponding call-return edges in the exploded graph.
    */
   lazy val allCallReturnEdges: Seq[IdeEdge[T]] = ???
   
@@ -68,4 +68,9 @@ class SupergraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
    * All nodes that are not call nodes or start nodes.
    */
   lazy val notCallOrStartNodes: Seq[IdeNode[T]] = ???
+
+  /**
+   * All edges with given target.
+   */
+  def edgesWithTarget(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
 }

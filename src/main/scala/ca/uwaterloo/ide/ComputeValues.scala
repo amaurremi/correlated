@@ -70,6 +70,4 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
       nodeWorklist.insert(n)
     }
   }
-
-  private[this] def edgesWithTarget(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
 }
