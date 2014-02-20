@@ -6,6 +6,26 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   edgeFn: EdgeFn[T, V]
 ) {
 
+  import edgeFn.keys
+
+  /**
+   * All edges with a given source.
+   */
+  lazy val edgesWithSource: IdeNode[T] => Set[IdeEdge[T]] =
+    (source: IdeNode[T]) =>
+      keys filter {
+        _.source == source
+      }
+
+  /**
+   * All edges with a given target node.
+   */
+  lazy val edgesWithTarget: IdeNode[T] => Set[IdeEdge[T]] =
+    (target: IdeNode[T]) =>
+      keys filter {
+        _.target == target
+      }
+
   /**
    * Returns all edges from a given call node to a start node.
    */
