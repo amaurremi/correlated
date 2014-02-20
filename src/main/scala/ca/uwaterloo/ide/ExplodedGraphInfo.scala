@@ -3,6 +3,7 @@ package ca.uwaterloo.ide
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 
 class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
+  supergraph: ISupergraph[T, P],
   edgeFn: EdgeFn[T, V]
 ) {
 
@@ -12,16 +13,23 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
    * All edges with a given source.
    */
   lazy val edgesWithSource: IdeNode[T] => Set[IdeEdge[T]] =
-    (source: IdeNode[T]) =>
+    source =>
       keys filter {
         _.source == source
+      }
+
+  lazy val ideNodes: T => Set[IdeNode[T]] =
+    n =>
+      keys collect {
+        case edge if edge.source.n == n => edge.source
+        case edge if edge.target.n == n => edge.target
       }
 
   /**
    * All edges with a given target node.
    */
   lazy val edgesWithTarget: IdeNode[T] => Set[IdeEdge[T]] =
-    (target: IdeNode[T]) =>
+    target =>
       keys filter {
         _.target == target
       }
@@ -29,12 +37,18 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   /**
    * Returns all edges from a given call node to a start node.
    */
-  def callStartEdges(n: T): Seq[IdeEdge[T]] = ???
+  def callStartEdges(n: T): Set[IdeEdge[T]] =
+    for {
+      node                          <- ideNodes(n)
+      e@IdeEdge(_, StartNode(_, _)) <- edgesWithSource(node)
+    } yield e
 
   /**
    * Returns the enclosing procedure of a given node.
    */
-  lazy val enclProc: T => P = ???
+  lazy val enclProc: T => P =
+    n =>
+      supergraph getProcOf n
 
   /**
    * Returns the start node of the argument's enclosing procedure.

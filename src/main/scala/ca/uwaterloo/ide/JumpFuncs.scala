@@ -11,7 +11,6 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   import Util.mutableMap
   import problem._
   import explodedGraphInfo._
-  import edgeFn._
 
   private[this] val pathWorklist = new PathWorklist(problem.initialSeeds)
 

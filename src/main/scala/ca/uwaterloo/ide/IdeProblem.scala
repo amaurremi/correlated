@@ -22,5 +22,5 @@ trait IdeProblem[T, P, F, V <: IdeFunction[V]] extends TabulationProblem[T, P, F
    */
   val edgeFn: EdgeFn[T, V]
 
-  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](edgeFn)
+  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](getSupergraph, edgeFn)
 }
