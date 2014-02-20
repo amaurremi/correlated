@@ -3,12 +3,9 @@ package ca.uwaterloo.ide
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 import scala.collection.JavaConverters._
 
-class GraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
-
-  /**
-   * All edges with a given source node.
-   */
-  def edgesWithSource(n: IdeNode[T]): Seq[IdeEdge[T]] = ???
+class GraphInfo[T, P, V <: IdeFunction[V]](
+  supergraph: ISupergraph[T, P]
+) {
 
   /**
    * All edges with a given target node.
@@ -19,11 +16,6 @@ class GraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
    * Returns all edges from a given call node to a start node.
    */
   def callStartEdges(n: T): Seq[IdeEdge[T]] = ???
-
-  /**
-   * Returns the edge IDE function corresponding to an edge.
-   */
-  lazy val edgeFn: IdeEdge[T] => V = ???
 
   /**
    * Returns the enclosing procedure of a given node.
@@ -58,11 +50,6 @@ class GraphInfo[T, P, V](supergraph: ISupergraph[T, P]) {
    * Returns all call nodes for a given procedure.
    */
   lazy val getCallNodes: P => Seq[IdeNode[T]] = ???
-
-  /**
-   * Returns a Scala Iterator over the supergraph's nodes.
-   */
-  lazy val supergraphIterator = supergraph.iterator().asScala
 
   /**
    * Returns an iterator over the exploded graph that corresponds to the supergraph.
