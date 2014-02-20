@@ -53,7 +53,8 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   /**
    * Returns the start node of the argument's enclosing procedure.
    */
-  lazy val startNodes: T => Seq[IdeNode[T]] = ???
+  lazy val startNodes: T => Array[IdeNode[T]] =
+    supergraph getEntriesForProcedure enclProc(_) flatMap ideNodes
 
   /**
    * Let p be the node's enclosing procedure. This method returns all
