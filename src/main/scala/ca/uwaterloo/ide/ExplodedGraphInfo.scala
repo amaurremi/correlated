@@ -1,6 +1,7 @@
 package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.ISupergraph
+import scala.collection.JavaConverters._
 
 class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   supergraph: ISupergraph[T, P],
@@ -48,14 +49,13 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
    * edges from p's caller nodes to their corresponding return nodes.
    */
   def callReturnEdges(node: T): Seq[IdeEdge[T]] = { // todo not sure that's the right implementation
-  val proc    = enclProc(node)
+    val proc           = enclProc(node)
     val procEntryNodes = supergraph getEntriesForProcedure proc flatMap ideNodes
-    val callNodes = procEntryNodes flatMap edgesWithTarget collect {
+    val callNodes      = procEntryNodes flatMap edgesWithTarget collect {
       case IdeEdge(CallNode(c, _), _) => c
     }
-    val returnNodes = callNodes map {
-      c =>
-        supergraph.getReturnSites(c, proc)
+    val returnNodes    = callNodes map {
+      supergraph.getReturnSites(_, proc)
     }
     for {
       n <- callNodes
@@ -68,9 +68,8 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   /**
    * Returns the enclosing procedure of a given node.
    */
-  lazy val enclProc: T => P =
-    n =>
-      supergraph getProcOf n
+  def enclProc: T => P =
+    supergraph.getProcOf
 
   /**
    * Returns the start node of the argument's enclosing procedure.
@@ -81,7 +80,11 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   /**
    * All corresponding call-return edges in the exploded graph.
    */
-  lazy val allCallReturnEdges: Seq[IdeEdge[T]] = ???
+  lazy val allCallReturnEdges: Set[IdeEdge[T]] =
+    edgeFn.keys filter {
+      edge =>
+        supergraph.isCall(edge.source.n) && supergraph.isReturn(edge.target.n)
+    }
   
   /**
    * All intra-procedural edges from the start of a procedure.
@@ -96,14 +99,15 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   /**
    * Returns an iterator over the exploded graph that corresponds to the supergraph.
    */
-  lazy val explodedGraphIterator: Iterator[IdeNode[T]] = ???
+  lazy val explodedGraphIterator: Iterator[IdeNode[T]] =
+    supergraph.iterator.asScala flatMap ideNodes
 
   /**
    * All nodes that are not call nodes or start nodes.
    */
   lazy val notCallOrStartNodes: Iterator[IdeNode[T]] =
-    explodedGraphIterator filter {
-      case CallNode(_, _) | StartNode(_, _) => false
-      case _                                => true
+    explodedGraphIterator filterNot {
+      n =>
+        supergraph.isCall(n.n) || supergraph.isEntry(n.n)
     }
 }
