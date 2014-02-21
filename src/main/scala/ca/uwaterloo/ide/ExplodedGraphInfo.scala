@@ -101,5 +101,9 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   /**
    * All nodes that are not call nodes or start nodes.
    */
-  lazy val notCallOrStartNodes: Seq[IdeNode[T]] = ???
+  lazy val notCallOrStartNodes: Iterator[IdeNode[T]] =
+    explodedGraphIterator filter {
+      case CallNode(_, _) | StartNode(_, _) => false
+      case _                                => true
+    }
 }
