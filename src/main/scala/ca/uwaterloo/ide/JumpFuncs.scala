@@ -49,8 +49,8 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   private[this] def forwardExitNode(en: ExitNode[T], e: IdeEdge[T], f: V) {
     callReturnEdges(en.n) map {
       case cre@IdeEdge(c, r) =>
-        val f4   = edgeFn(IdeEdge(c, e.source))
-        val f5   = edgeFn(IdeEdge(en, r))
+        val f4   = edgeFnMap(IdeEdge(c, e.source))
+        val f5   = edgeFnMap(IdeEdge(en, r))
         val sumF = summaryFn(cre)
         val f6   = (f5 ◦ f ◦ f4) ⊓ sumF
         if (f6 != sumF) {
@@ -64,13 +64,14 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
         }
     }
   }
+  // todo map for line 28 on page 147
 
   private[this] def forwardCallNode(n: IdeNode[T], f: V) {
     edgesWithSource(n) collect {
       case IdeEdge(_, callee@CallNode(_, _)) =>
         propagate(IdeEdge(callee, callee), Id)
       case e@IdeEdge(_, r@ReturnNode(_, _)) =>
-        propagate(IdeEdge(e.source, r), edgeFn(e) ◦ f)
+        propagate(IdeEdge(e.source, r), edgeFnMap(e) ◦ f)
         val sumF = summaryFn(e)
         if (sumF != Top)
           propagate(e, sumF ◦ f)
@@ -80,7 +81,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   private[this] def forwardOtherNode(e: IdeEdge[T], f: V) {
     edgesWithSource(e.target) map {
       edge =>
-        propagate(IdeEdge(e.source, edge.target), edgeFn(edge) ◦ f)
+        propagate(IdeEdge(e.source, edge.target), edgeFnMap(edge) ◦ f)
     }
   }
 

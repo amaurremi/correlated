@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 
-trait IdeNode[T] {
+sealed trait IdeNode[T] {
   val n: T
   val d: Fact 
 }

@@ -1,5 +1,7 @@
 package ca.uwaterloo.ide
 
+// todo make generic
+
 sealed trait LatticeNum {
   def +(n:LatticeNum): LatticeNum
   def -(n: LatticeNum): LatticeNum

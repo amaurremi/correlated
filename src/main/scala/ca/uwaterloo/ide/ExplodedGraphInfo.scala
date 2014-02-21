@@ -44,6 +44,28 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
     } yield e
 
   /**
+   * Let p be the node's enclosing procedure. This method returns all
+   * edges from p's caller nodes to their corresponding return nodes.
+   */
+  def callReturnEdges(node: T): Seq[IdeEdge[T]] = { // todo not sure that's the right implementation
+  val proc    = enclProc(node)
+    val procEntryNodes = supergraph getEntriesForProcedure proc flatMap ideNodes
+    val callNodes = procEntryNodes flatMap edgesWithTarget collect {
+      case IdeEdge(CallNode(c, _), _) => c
+    }
+    val returnNodes = callNodes map {
+      c =>
+        supergraph.getReturnSites(c, proc)
+    }
+    for {
+      n <- callNodes
+      c <- ideNodes(n)
+      e <- edgesWithSource(c)
+      if returnNodes contains e.target
+    } yield e
+  }
+
+  /**
    * Returns the enclosing procedure of a given node.
    */
   lazy val enclProc: T => P =
@@ -53,17 +75,8 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   /**
    * Returns the start node of the argument's enclosing procedure.
    */
-  lazy val startNodes: T => Array[IdeNode[T]] =
+  lazy val startNodes: T => Array[IdeNode[T]] = // todo: in general, not sure to which scala collections WALA's collections should be converted
     supergraph getEntriesForProcedure enclProc(_) flatMap ideNodes
-
-  /**
-   * Let p be the node's enclosing procedure. This method returns all
-   * edges from a p's caller node to the corresponding return node.
-   */
-  def callReturnEdges(node: T): Seq[IdeEdge[T]] = {
-    val proc = enclProc(node)
-    ???
-  }
 
   /**
    * All corresponding call-return edges in the exploded graph.

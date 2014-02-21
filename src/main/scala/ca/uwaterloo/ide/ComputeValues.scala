@@ -48,7 +48,7 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
   private[this] def computeCallNode(cn: T) {
     callStartEdges(cn) map {
       e =>
-        propagateValue(e.target, edgeFn(e)(vals(e.source)))
+        propagateValue(e.target, edgeFnMap(e)(vals(e.source)))
     }
   }
 
@@ -67,7 +67,7 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     val v2 = v ⊓ ln
     if (v2 != ln) {
       vals += n -> v2
-      nodeWorklist.insert(n)
+      nodeWorklist insert n
     }
   }
 }
