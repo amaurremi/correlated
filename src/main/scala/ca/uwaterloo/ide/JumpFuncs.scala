@@ -15,9 +15,9 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
   private[this] val pathWorklist = new PathWorklist(problem.initialSeeds)
 
   private[this] val jumpFn: JumpFn[T, V] = {
-    val seeds = Util.getSeeds(problem.initialSeeds)
+    val seeds  = Util.getSeeds(problem.initialSeeds)
     // [1-2]
-    val jumpFn       = mutableMap(intraEdgesFromStart map {
+    val jumpFn = mutableMap(intraEdgesFromStart map {
       _ -> Top
     })
     // [6]
@@ -28,7 +28,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
 
   private[this] val summaryFn: mutable.Map[IdeEdge[T], V] =
     mutableMap(
-      allCallReturnEdges map {
+      allCallReturnIdeEdges map {
         _ -> Top
       })
 

@@ -22,7 +22,11 @@ trait IdeProblem[T, P, F, V <: IdeFunction[V]] extends TabulationProblem[T, P, F
    */
   val edgeFnMap: EdgeFn[T, V]
 
-  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](getSupergraph, edgeFnMap)
+  val nonZeroFacts: Set[Fact]
 
-  // input should have zero element, main methods can be taken from WALA
+  val zeroFact: Fact
+
+  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](getSupergraph, edgeFnMap, nonZeroFacts + zeroFact)
+
+  // todo input should have zero element, main methods can be taken from WALA
 }

@@ -54,7 +54,7 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
 
   private[this] def computeStartNode(p: P) {
     for {
-      c <- getCallNodes(p)
+      c <- getCallIdeNodes(p)
       e <- edgesWithTarget(c)
       f2 = jumpFunc(e)
       if f2 != Top
