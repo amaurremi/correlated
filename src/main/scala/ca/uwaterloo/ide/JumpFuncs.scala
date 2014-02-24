@@ -1,8 +1,8 @@
 package ca.uwaterloo.ide
 
-import scala.collection.mutable
 import com.ibm.wala.util.collections.HashSetMultiMap
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 // p. 147 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
 // with applications to constant propagation"
