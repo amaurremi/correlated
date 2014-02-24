@@ -20,13 +20,13 @@ trait IdeProblem[T, P, F, V <: IdeFunction[V]] extends TabulationProblem[T, P, F
   /**
    * The flow function that corresponds to an exploded graph edge
    */
-  val edgeFnMap: EdgeFn[T, V]
+  val edgeFunctions: EdgeFunctions[T, V]
 
   val nonZeroFacts: Set[Fact]
 
   val zeroFact: Fact
 
-  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](getSupergraph, edgeFnMap, nonZeroFacts + zeroFact)
+  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](getSupergraph, nonZeroFacts + zeroFact)
 
   // todo input should have zero element, main methods can be taken from WALA
 }

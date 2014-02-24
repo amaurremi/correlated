@@ -5,63 +5,18 @@ import scala.collection.JavaConverters._
 
 class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   supergraph: ISupergraph[T, P],
-  edgeFn: EdgeFn[T, V],
   allFacts: Set[Fact]
 ) {
 
-  import edgeFn.keys
+  def followingNodes(n: T): Iterator[T] =
+    supergraph.getSuccNodes(n).asScala
 
-  /**
-   * All edges with a given source.
-   */
-  lazy val edgesWithSource: IdeNode[T] => Set[IdeEdge[T]] =
-    source =>
-      keys filter {
-        _.source == source
-      }
-
-  lazy val ideNodes: T => Set[IdeNode[T]] =
-    n =>
-      keys collect {
-        case edge if edge.source.n == n => edge.source
-        case edge if edge.target.n == n => edge.target
-      }
+  lazy val ideNodes: T => Set[IdeNode[T]] = ???
 
   /**
    * All edges with a given target node.
    */
-  lazy val edgesWithTarget: IdeNode[T] => Set[IdeEdge[T]] =
-    target =>
-      keys filter {
-        _.target == target
-      }
-
-  /**
-   * Returns all edges from a given call node to a start node.
-   */
-  def callStartEdges(n: T): Set[IdeEdge[T]] =
-    for {
-      node                          <- ideNodes(n)
-      e@IdeEdge(_, StartNode(_, _)) <- edgesWithSource(node)
-    } yield e
-
-  /**
-   * Let p be the node's enclosing procedure. This method returns all
-   * edges from p's caller nodes to their corresponding return nodes.
-   */
-  def callReturnEdges(node: T): Seq[IdeEdge[T]] = { // todo not sure that's the right implementation
-    val proc        = enclProc(node)
-    val callNodes   = getCallNodes(proc)
-    val returnNodes = callNodes map {
-      supergraph.getReturnSites(_, proc)
-    }
-    for {
-      n <- callNodes
-      c <- ideNodes(n)
-      e <- edgesWithSource(c)
-      if returnNodes contains e.target
-    } yield e
-  }
+  lazy val edgesWithTarget: IdeNode[T] => Set[IdeEdge[T]] = ???
 
   /**
    * Returns the enclosing procedure of a given node.
@@ -69,10 +24,30 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   def enclProc: T => P = supergraph.getProcOf
 
   /**
+   * Given a call node n, returns the start nodes of n's target procedures.
+   */
+  def targetStartNodes(n: T): Iterator[T] =
+    supergraph.getCalledNodes(n).asScala
+
+  def returnNodes(n: T): Iterator[T] = {
+    targetStartNodes(n) flatMap { s =>
+      supergraph.getReturnSites(n, enclProc(s)).asScala
+    }
+  }
+
+  /**
    * Returns the start node of the argument's enclosing procedure.
    */
-  lazy val startNodes: T => Array[IdeNode[T]] = // todo: in general, not sure to which scala collections WALA's collections should be converted
-    supergraph getEntriesForProcedure enclProc(_) flatMap ideNodes
+  lazy val startNodes: T => Array[_ <: T] = // todo: in general, not sure to which scala collections WALA's collections should be converted
+    supergraph getEntriesForProcedure enclProc(_)
+
+  def callReturnPairs(node: T): Seq[(T, T)] = {
+    val proc = enclProc(node)
+    for {
+      c <- getCallNodes(proc)
+      r <- supergraph.getReturnSites(c, proc).asScala
+    } yield c -> r
+  }
 
   /**
    * All corresponding call-return edges in the exploded graph.

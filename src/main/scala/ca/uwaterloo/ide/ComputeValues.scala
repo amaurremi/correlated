@@ -30,7 +30,7 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     while (!nodeWorklist.isEmpty) {
       nodeWorklist.take().n match {
         case StartNode(sn: T, _) => computeStartNode(enclProc(sn))
-        case CallNode(cn: T, _)  => computeCallNode(cn)
+        case c: CallNode[T]      => computeCallNode(c)
       }
     }
     // Phase II(ii)
@@ -45,11 +45,13 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     vals
   }
 
-  private[this] def computeCallNode(cn: T) {
-    callStartEdges(cn) map {
-      e =>
-        propagateValue(e.target, edgeFnMap(e)(vals(e.source)))
-    }
+  private[this] def computeCallNode(c: IdeNode[T]) {
+    val cn = c.n
+    val cd = c.d
+    for {
+      sq                      <- targetStartNodes(cn)
+      FactFunPair(d$, edgeFn) <- edgeFunctions.callStartFns(cn, cd, sq)
+    } yield propagateValue(IdeNode(sq, d$, getSupergraph), edgeFn(vals(IdeNode(cn, cd, getSupergraph))))
   }
 
   private[this] def computeStartNode(p: P) {
