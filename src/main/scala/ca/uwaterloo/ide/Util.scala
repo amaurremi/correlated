@@ -12,10 +12,9 @@ object Util {
 
   def getSeeds[T] = (seeds: util.Collection[PathEdge[T]]) => seeds.iterator.asScala
 
-  def seedNodes[T, P] =
-    (seeds: util.Collection[PathEdge[T]], supergraph: ISupergraph[T, P]) =>
+  def seedNodes[T, P](seeds: util.Collection[PathEdge[T]])(implicit supergraph: ISupergraph[T, P]) =
       getSeeds(seeds) map {
         seed =>
-          IdeNode(seed.getEntry, Fact(seed.getD1), supergraph) // todo correct?
+          IdeNode(seed.getEntry, Fact(seed.getD1)) // todo correct?
       }
 }

@@ -17,7 +17,7 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
       _ -> ⊤
     })
     // [2]
-    val bottoms = mutableMap(seedNodes(initialSeeds, getSupergraph) map {
+    val bottoms = mutableMap(seedNodes(initialSeeds) map {
       _ -> ⊥
     })
     tops ++ bottoms
