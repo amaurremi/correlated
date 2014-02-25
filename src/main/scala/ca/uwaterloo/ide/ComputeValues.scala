@@ -1,10 +1,14 @@
 package ca.uwaterloo.ide
 
+import com.ibm.wala.dataflow.IFDS.ISupergraph
+
 // p. 149 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
 // with applications to constant propagation"
 class ComputeValues[T, P, F, V <: IdeFunction[V]](
   problem: IdeProblem[T, P, F, V],
   jumpFunc: JumpFn[T, V]
+)(
+  implicit supergraph: ISupergraph[T, P]
 ) {
 
   import Util._
@@ -17,13 +21,13 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
       _ -> ⊤
     })
     // [2]
-    val bottoms = mutableMap(seedNodes(initialSeeds) map {
+    val bottoms = mutableMap(seedNodes(initialSeeds)(supergraph) map {
       _ -> ⊥
     })
     tops ++ bottoms
   }
 
-  private[this] lazy val nodeWorklist = new NodeWorklist[T] // todo represent in same way as other sets and maps
+  private[this] lazy val nodeWorklist = new NodeWorklist(initialSeeds, zeroFact) // todo represent in same way as other sets and maps
 
   def compute: Values[T] = {
     // Phase II(i)
@@ -51,8 +55,8 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     val cd = c.d
     for {
       sq                      <- targetStartNodes(cn)
-      FactFunPair(d$, edgeFn) <- edgeFunctions.callStartFns(cn, cd, sq)
-    } yield propagateValue(IdeNode(sq, d$), edgeFn(vals(IdeNode(cn, cd))))
+      FactFunPair(dPrime, edgeFn) <- edgeFunctions.callStartFns(cn, cd, sq)
+    } yield propagateValue(IdeNode(sq, dPrime), edgeFn(vals(IdeNode(cn, cd))))
   }
 
   private[this] def computeStartNode(p: P) {

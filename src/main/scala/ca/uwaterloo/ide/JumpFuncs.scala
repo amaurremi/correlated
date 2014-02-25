@@ -97,14 +97,14 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       rn                     = IdeNode(r, d5)
       sumEdge                = IdeEdge(IdeNode(c, d4), rn)
       sumF                   = summaryFn(sumEdge)
-      fprime                     = (f5 ◦ f ◦ f4) ⊓ sumF
-      if fprime != sumF
+      fPrime                 = (f5 ◦ f ◦ f4) ⊓ sumF
+      if fPrime != sumF
       // [26]
-      _                     <- summaryFn += sumEdge -> fprime
+      _                     <- summaryFn += sumEdge -> fPrime
       sq                    <- startNodes(c)
       (d3, f3)              <- forwardExitD3s.get(sq, c, d4).asScala
       // [29]
-    } yield propagate(IdeEdge(IdeNode(sq, d3), rn), fprime ◦ f3)
+    } yield propagate(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
   }
 
   private[this] def forwardExitFromCall(n: IdeNode[T], f: V, sq: T, d: Fact) {
