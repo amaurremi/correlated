@@ -128,8 +128,7 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   lazy val explodedGraphIterator: Iterator[IdeNode[T]] =
     supergraphIterator flatMap ideNodes
 
-
-  private[this] def supergraphIterator: Iterator[T] = 
+  private[this] def supergraphIterator: Iterator[T] =
     supergraph.iterator.asScala
 
   /**

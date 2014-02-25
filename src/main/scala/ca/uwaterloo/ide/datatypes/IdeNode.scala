@@ -12,7 +12,7 @@ sealed trait IdeNode[T] {
 }
 
 object IdeNode {
-  
+
   def apply[T, P](
     node: T,
     fact: Fact

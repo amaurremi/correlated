@@ -13,7 +13,7 @@ trait EdgeFunctions[T, V <: IdeFunction[V]] {
   def callStartD2s: (T, Fact, T) => Seq[Fact] =
     (n1, d1, n2) =>
       callStartFns(n1, d1, n2) map { _.d2 }
-  
+
   def callReturnEdges: EdgeFn[T, V]
 
   def endReturnEdges: EdgeFn[T, V]

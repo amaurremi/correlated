@@ -5,7 +5,13 @@ import com.ibm.wala.util.collections.Heap
 import java.util
 import scala.collection.JavaConverters._
 
-abstract class Worklist[E] extends Heap[E](100) {
+object Worklist {
+  val Capacity: Int = 100
+}
+
+import Worklist.Capacity
+
+abstract class Worklist[E](capacity: Int = Capacity) extends Heap[E](capacity) {
 
   override def compareElements(elt1: E, elt2: E) = false // todo
 }
