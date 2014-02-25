@@ -120,8 +120,6 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     } yield propagate(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
   }
 
-  // todo map for line 28 on page 147
-
   private[this] def propagate(e: IdeEdge[T], f: V) {
     val jf = jumpFn(e)
     val f2 = f ⊓ jf
