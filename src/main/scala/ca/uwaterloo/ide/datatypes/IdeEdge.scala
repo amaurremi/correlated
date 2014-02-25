@@ -9,8 +9,8 @@ case class IdeEdge[T](source: IdeNode[T], target: IdeNode[T]) {
 
 object IdeEdge {
 
-  def apply[T, P](pathEdge: PathEdge[T], supergraph: ISupergraph[T, P]): IdeEdge[T] =
+  def apply[T, P](pathEdge: PathEdge[T])(implicit supergraph: ISupergraph[T, P]): IdeEdge[T] =
     IdeEdge(
-      IdeNode(pathEdge.getEntry, Fact(pathEdge.getD1), supergraph),
-      IdeNode(pathEdge.getTarget, Fact(pathEdge.getD2), supergraph))
+      IdeNode(pathEdge.getEntry, Fact(pathEdge.getD1)),
+      IdeNode(pathEdge.getTarget, Fact(pathEdge.getD2)))
 }

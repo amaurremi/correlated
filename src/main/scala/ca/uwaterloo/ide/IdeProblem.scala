@@ -26,7 +26,9 @@ trait IdeProblem[T, P, F, V <: IdeFunction[V]] extends TabulationProblem[T, P, F
 
   val zeroFact: Fact
 
-  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](getSupergraph, nonZeroFacts + zeroFact)
+  implicit val supergraph = getSupergraph
+
+  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](nonZeroFacts + zeroFact)
 
   // todo input should have zero element, main methods can be taken from WALA
 }

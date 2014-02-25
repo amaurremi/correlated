@@ -4,8 +4,9 @@ import com.ibm.wala.dataflow.IFDS.ISupergraph
 import scala.collection.JavaConverters._
 
 class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
-  supergraph: ISupergraph[T, P],
   allFacts: Set[Fact]
+)(
+  implicit supergraph: ISupergraph[T, P]
 ) {
 
   def followingNodes(n: T): Iterator[T] =
@@ -69,7 +70,7 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
       d1     <- allFacts
       d2     <- allFacts
       (c, r) <- allCallReturnPairs
-    } yield IdeEdge(IdeNode(c, d1, supergraph), IdeNode(r, d2, supergraph))
+    } yield IdeEdge(IdeNode(c, d1), IdeNode(r, d2))
 
   /**
    * All intra-procedural edges from the start of a procedure.
@@ -79,7 +80,7 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
       d1     <- allFacts
       d2     <- allFacts
       (s, n) <- intraNodePairsFromStart
-    } yield IdeEdge(IdeNode(s, d1, supergraph), IdeNode(n, d2, supergraph))
+    } yield IdeEdge(IdeNode(s, d1), IdeNode(n, d2))
   }
 
   private[this] def intraNodePairsFromStart: Iterator[(T, T)] = {
@@ -107,8 +108,8 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   lazy val getCallNodes: P => Seq[T] = {
     proc =>
       val procEntryNodes = supergraph getEntriesForProcedure proc flatMap ideNodes
-      procEntryNodes flatMap edgesWithTarget collect {
-        case IdeEdge(CallNode(c, _), _) => c
+      procEntryNodes flatMap edgesWithTarget collect { // todo shouldn't be done through IdeEdge
+        case IdeEdge(s, _) if s.isCallNode => s.n
       }
   }
 
@@ -132,8 +133,8 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
    * All nodes that are not call nodes or start nodes.
    */
   lazy val notCallOrStartNodes: Iterator[IdeNode[T]] =
-    explodedGraphIterator filter {
-      case CallNode(_, _) | StartNode(_, _) => false
-      case _                                => true
+    explodedGraphIterator filterNot {
+      n =>
+        n.isCallNode || n.isStartNode
     }
 }

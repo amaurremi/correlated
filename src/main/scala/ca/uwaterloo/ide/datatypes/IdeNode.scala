@@ -4,30 +4,27 @@ import com.ibm.wala.dataflow.IFDS.ISupergraph
 
 sealed trait IdeNode[T] {
   val n: T
-  val d: Fact 
+  val d: Fact
+  val isStartNode: Boolean
+  val isExitNode: Boolean
+  val isReturnNode: Boolean
+  val isCallNode: Boolean
 }
-
-case class CallNode[T](n: T, d: Fact) extends IdeNode[T]
-case class ReturnNode[T](n: T, d: Fact) extends IdeNode[T]
-case class StartNode[T](n: T, d: Fact) extends IdeNode[T]
-case class ExitNode[T](n: T, d: Fact) extends IdeNode[T]
-case class OtherNode[T](n: T, d: Fact) extends IdeNode[T]
 
 object IdeNode {
   
   def apply[T, P](
-    n: T, 
-    d: Fact,
-    supergraph: ISupergraph[T, P]
-  ): IdeNode[T] = // todo: is it bad to use implicits like that?
-    if (supergraph.isEntry(n)) // todo: in WALA, there is no explicit entry node
-      StartNode(n, d)
-    else if (supergraph.isCall(n))
-      CallNode(n, d)
-    else if (supergraph.isExit(n)) // todo: in WALA, there is no explicit exit node
-      ExitNode(n, d)
-    else if (supergraph.isReturn(n))
-      ReturnNode(n, d)
-    else 
-      OtherNode(n, d)
+    node: T,
+    fact: Fact
+  )(
+    implicit supergraph: ISupergraph[T, P]
+  ): IdeNode[T] =
+    new IdeNode[T] {
+      override val n = node
+      override val d = fact
+      override val isStartNode = supergraph isEntry node
+      override val isReturnNode = supergraph isReturn node
+      override val isExitNode = supergraph isExit node
+      override val isCallNode = supergraph isCall node
+    }
 }

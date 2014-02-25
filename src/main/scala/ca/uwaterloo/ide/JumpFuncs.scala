@@ -24,7 +24,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     })
     // [6]
     jumpFn ++ mutableMap(seeds map {
-        IdeEdge(_, getSupergraph) -> Id // todo:  here, jumpFn != Top, but we can ignore that for forwardExitD4s. right?
+        IdeEdge(_) -> Id // todo:  here, jumpFn != Top, but we can ignore that for forwardExitD4s. right?
     })
   }
 
@@ -35,12 +35,15 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       })
 
   /**
-   * Maps (c, sp, d1) to EdgeFn(d4, f) for line 21
+   * Maps (c, sp, d1) to EdgeFn(d4, f)
+   * [21]
    */
   private[this] val forwardExitD4s = new HashSetMultiMap[(T, T, Fact), Fact]
+  // todo do we need to prove that the algorithm will finish?
 
   /**
-   * Maps (sq, c, d4) to d3s if JumpFn(sq, d3 -> c, d4) != Top
+   * Maps (sq, c, d4) to (d3, jumpFn) if JumpFn(sq, d3 -> c, d4) != Top
+   * [28]
    */
   private[this] val forwardExitD3s = new HashSetMultiMap[(T, T, Fact), (Fact, V)]
 
@@ -49,11 +52,11 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       val e = pathWorklist.take()
       val f = jumpFn(e)
       val n = e.target
-      n match {
-        case _: CallNode[T]    => forwardCallNode(e, f)
-        case en: ExitNode[T]   => forwardExitNode(n, f)
-        case _                 => forwardOtherNode(e, f)
-      }
+      if (n.isCallNode)
+        forwardCallNode(e, f)
+      if (n.isExitNode)
+        forwardExitNode(n, f)
+      forwardAnyNode(e, f) // todo is it correct to do this always, without conditions?
     }
     jumpFn
   }
@@ -70,13 +73,13 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       sq <- targetStartNodes(node)
       d3 <- edgeFunctions.callStartD2s(node, d2, sq)
       _   = forwardExitFromCall(n, f, sq, d3) // todo ugly?
-      sqn = IdeNode(sq, d3, getSupergraph)
+      sqn = IdeNode(sq, d3)
     } yield propagate(IdeEdge(sqn, sqn), Id)
     // [14-16]
     for {
       r                       <- returnNodes(node)
       FactFunPair(d3, edgeFn) <- edgeFunctions.callReturnEdges(node, d2, r)
-      rn                       = IdeNode(r, d3, getSupergraph)
+      rn                       = IdeNode(r, d3)
       re                       = IdeEdge(e.source, rn)
       _                        = propagate(re, edgeFn ◦ f)
       // [17-18]
@@ -91,8 +94,8 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       d4                    <- forwardExitD4s.get(c, n.n, n.d).asScala
       FactFunPair(`d4`, f4) <- edgeFunctions.callStartFns(c, d4, n.n)
       FactFunPair(d5, f5)   <- edgeFunctions.endReturnEdges(n.n, n.d, r)
-      rn                     = IdeNode(r, d5, getSupergraph)
-      sumEdge                = IdeEdge(IdeNode(c, d4, getSupergraph), rn)
+      rn                     = IdeNode(r, d5)
+      sumEdge                = IdeEdge(IdeNode(c, d4), rn)
       sumF                   = summaryFn(sumEdge)
       f$                     = (f5 ◦ f ◦ f4) ⊓ sumF
       if f$ != sumF
@@ -101,7 +104,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       sq                    <- startNodes(c)
       (d3, f3)              <- forwardExitD3s.get(sq, c, d4).asScala
       // [29]
-    } yield propagate(IdeEdge(IdeNode(sq, d3, getSupergraph), rn), f$ ◦ f3)
+    } yield propagate(IdeEdge(IdeNode(sq, d3), rn), f$ ◦ f3)
   }
 
   private[this] def forwardExitFromCall(n: IdeNode[T], f: V, sq: T, d: Fact) {
@@ -109,12 +112,12 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     forwardExitNode(n, f)
   }
 
-  private[this] def forwardOtherNode(e: IdeEdge[T], f: V) {
+  private[this] def forwardAnyNode(e: IdeEdge[T], f: V) {
     val n = e.target
     for {
       m                       <- followingNodes(n.n)
       FactFunPair(d3, edgeFn) <- edgeFunctions.otherSuccEdges(n.n, n.d, m)
-    } yield propagate(IdeEdge(e.source, IdeNode(m, d3, getSupergraph)), edgeFn ◦ f)
+    } yield propagate(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
   }
 
   // todo map for line 28 on page 147
