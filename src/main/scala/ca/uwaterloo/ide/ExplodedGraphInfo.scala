@@ -39,8 +39,11 @@ class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   /**
    * Returns the start node of the argument's enclosing procedure.
    */
-  lazy val startNodes: T => Array[_ <: T] = // todo: in general, not sure to which scala collections WALA's collections should be converted
-    supergraph getEntriesForProcedure enclProc(_)
+  lazy val startNodes: T => Iterator[T] = { // todo: in general, not sure to which scala collections WALA's collections should be converted
+    n =>
+      val nodes = supergraph getEntriesForProcedure enclProc(n)
+      nodes.view.toIterator
+  }
 
   def callReturnPairs(node: T): Seq[(T, T)] = {
     val proc = enclProc(node)
