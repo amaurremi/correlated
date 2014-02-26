@@ -45,8 +45,9 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
       f  = jumpFunc(e)
       if f != Top
       t  = e.target
-    } yield
+    } {
       vals += t -> (vals(t) ⊓ f(vals(e.source)))
+    }
     vals
   }
 
@@ -56,7 +57,9 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     for {
       sq                      <- targetStartNodes(cn)
       FactFunPair(dPrime, edgeFn) <- edgeFunctions.callStartFns(cn, cd, sq)
-    } yield propagateValue(IdeNode(sq, dPrime), edgeFn(vals(IdeNode(cn, cd))))
+    } {
+      propagateValue(IdeNode(sq, dPrime), edgeFn(vals(IdeNode(cn, cd))))
+    }
   }
 
   private[this] def computeStartNode(p: P) {
@@ -65,8 +68,9 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
       e <- edgesWithTarget(c)
       f2 = jumpFunc(e)
       if f2 != Top
-    } yield
+    } {
       propagateValue(e.target, f2(vals(e.source)))
+    }
   }
 
   private[this] def propagateValue(n: IdeNode[T], v: LatticeNum) {
