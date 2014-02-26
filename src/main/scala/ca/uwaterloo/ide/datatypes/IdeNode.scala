@@ -22,9 +22,9 @@ object IdeNode {
     new IdeNode[T] {
       override val n = node
       override val d = fact
-      override val isStartNode = supergraph isEntry node
-      override val isReturnNode = supergraph isReturn node
-      override val isExitNode = supergraph isExit node
-      override val isCallNode = supergraph isCall node
+      override lazy val isStartNode = supergraph isEntry node
+      override lazy val isReturnNode = supergraph isReturn node
+      override lazy val isExitNode = supergraph isExit node
+      override lazy val isCallNode = supergraph isCall node
     }
 }
