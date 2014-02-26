@@ -24,7 +24,7 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     })
     // [6]
     jumpFn ++ mutableMap(seeds map {
-        IdeEdge(_) -> Id // todo:  here, jumpFn != Top, but we can ignore that for forwardExitD4s. right?
+        IdeEdge(_) -> Id
     })
   }
 
@@ -39,7 +39,6 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
    * [21]
    */
   private[this] val forwardExitD4s = new HashSetMultiMap[(T, T, Fact), Fact]
-  // todo do we need to prove that the algorithm will finish?
 
   /**
    * Maps (sq, c, d4) to (d3, jumpFn) if JumpFn(sq, d3 -> c, d4) != Top
@@ -56,7 +55,8 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
         forwardCallNode(e, f)
       if (n.isExitNode)
         forwardExitNode(n, f)
-      forwardAnyNode(e, f) // todo is it correct to do this always, without conditions?
+      if (!n.isCallNode && !n.isExitNode)
+        forwardAnyNode(e, f)
     }
     jumpFn
   }
@@ -72,20 +72,24 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
     for {
       sq <- targetStartNodes(node)
       d3 <- edgeFunctions.callStartD2s(node, d2, sq)
-      _   = forwardExitFromCall(n, f, sq, d3) // todo ugly?
-      sqn = IdeNode(sq, d3)
-    } yield propagate(IdeEdge(sqn, sqn), Id)
+    } {
+      forwardExitFromCall(n, f, sq, d3)
+      val sqn = IdeNode(sq, d3)
+      propagate(IdeEdge(sqn, sqn), Id)
+    }
     // [14-16]
     for {
       r                       <- returnNodes(node)
       FactFunPair(d3, edgeFn) <- edgeFunctions.callReturnEdges(node, d2, r)
       rn                       = IdeNode(r, d3)
       re                       = IdeEdge(e.source, rn)
-      _                        = propagate(re, edgeFn ◦ f)
+    } {
+      propagate(re, edgeFn ◦ f)
       // [17-18]
-      f3                       = summaryFn(IdeEdge(n, rn))
-      if f3 != Top
-    } yield propagate(re, f3 ◦ f)
+      val f3 = summaryFn(IdeEdge(n, rn))
+      if (f3 != Top)
+        propagate(re, f3 ◦ f)
+    }
   }
 
   private[this] def forwardExitNode(n: IdeNode[T], f: V) {
@@ -99,12 +103,23 @@ class JumpFuncs[T, P, F, V <: IdeFunction[V]](
       sumF                   = summaryFn(sumEdge)
       fPrime                 = (f5 ◦ f ◦ f4) ⊓ sumF
       if fPrime != sumF
+    } {
       // [26]
-      _                     <- summaryFn += sumEdge -> fPrime
-      sq                    <- startNodes(c)
-      (d3, f3)              <- forwardExitD3s.get(sq, c, d4).asScala
+      summaryFn += sumEdge -> fPrime
       // [29]
-    } yield propagate(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
+      forwardExitPropagate(c, d4, rn, fPrime)
+    }
+  }
+
+
+  private[this] def forwardExitPropagate(c: T, d4: Fact, rn: IdeNode[T], fPrime: V) {
+    for {
+      sq <- startNodes(c)
+      (d3, f3) <- forwardExitD3s.get(sq, c, d4).asScala
+    } {
+      // [29]
+      propagate(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
+    }
   }
 
   private[this] def forwardExitFromCall(n: IdeNode[T], f: V, sq: T, d: Fact) {

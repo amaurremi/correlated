@@ -14,7 +14,7 @@ abstract class Worklist[E](
   capacity: Int = Worklist.capacity
 ) extends Heap[E](capacity) {
 
-  initialElements map insert // todo I'm not sure about whether it's correct to use Heap like taht
+  initialElements map insert // todo I'm not sure about whether it's correct to use Heap like that
 
   override def compareElements(elt1: E, elt2: E) = false // todo
 }
