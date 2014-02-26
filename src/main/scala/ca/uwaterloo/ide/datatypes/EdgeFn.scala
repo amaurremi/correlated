@@ -1,6 +1,5 @@
 package ca.uwaterloo.ide
 
-// todo: pass n, d2, and m instead of the whole edge. return d3 plus function
 case class FactFunPair[T, V <: IdeFunction[V]](
   d2: Fact,
   edgeFn: V
