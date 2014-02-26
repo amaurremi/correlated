@@ -6,7 +6,7 @@ import scala.collection.JavaConverters._
 class ExplodedGraphInfo[T, P, V <: IdeFunction[V]](
   allFacts: Set[Fact]
 )(
-  implicit supergraph: ISupergraph[T, P]
+  implicit supergraph: ISupergraph[T, P] // replace implicit supergraph passing by cake pattern
 ) {
 
   def followingNodes(n: T): Iterator[T] =
