@@ -34,10 +34,10 @@ trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform {
       new IdeNode {
         override val n = node
         override val d = fact
-        override lazy val isStartNode = supergraph isEntry node
+        override lazy val isStartNode  = supergraph isEntry node
         override lazy val isReturnNode = supergraph isReturn node
-        override lazy val isExitNode = supergraph isExit node
-        override lazy val isCallNode = supergraph isCall node
+        override lazy val isExitNode   = supergraph isExit node
+        override lazy val isCallNode   = supergraph isCall node
       }
   }
 

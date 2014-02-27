@@ -1,6 +1,6 @@
 package ca.uwaterloo.ide
 
-trait IdeSolver extends JumpFuncs with ComputeValues with ExplodedGraphInfo { this: IdeProblem =>
+trait IdeSolver extends JumpFuncs with ComputeValues with TraverseGraph { this: IdeProblem =>
 
   /**
    * Runs the IDE analysis defined in IdeProblem.
