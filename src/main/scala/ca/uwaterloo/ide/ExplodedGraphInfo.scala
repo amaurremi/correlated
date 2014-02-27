@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import scala.collection.JavaConverters._
 
-trait ExplodedGraphInfo { this: Supergraph with IdeTypes with IdeNodes with IdeEdges =>
+trait ExplodedGraphInfo { this: ExplodedGraphTypes =>
 
   def followingNodes(n: Node): Iterator[Node] =
     supergraph.getSuccNodes(n).asScala

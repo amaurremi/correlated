@@ -4,7 +4,7 @@ import scala.collection.mutable
 
 // p. 149 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
 // with applications to constant propagation"
-trait ComputeValues { this: IdeProblem with ExplodedGraphInfo with IdeNodes with IdeEdges =>
+trait ComputeValues { this: IdeProblem with ExplodedGraphInfo =>
 
   private[this] val vals = mutable.Map[IdeNode, LatticeNum]()
 

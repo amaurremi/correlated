@@ -1,6 +1,6 @@
 package ca.uwaterloo.ide
 
-trait IdeProblem extends IdeTypes with IdeConstants with FactInfo with Supergraph with FlowFunctions {
+trait IdeProblem extends ExplodedGraphTypes with FlowFunctions with IdeConstants {
 
   /**
    * The main method nodes that should be the entry points for the analysis

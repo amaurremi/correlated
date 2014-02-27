@@ -1,10 +1,12 @@
 package ca.uwaterloo.ide
 
-class IdeSolver { this: IdeProblem with JumpFuncs with ComputeValues =>
+trait IdeSolver extends JumpFuncs with ComputeValues with ExplodedGraphInfo { this: IdeProblem =>
 
-  // todo: modify edges in super graph?
+  /**
+   * Runs the IDE analysis defined in IdeProblem.
+   */
   def solve() = {
-    val jumpFuncs = computeJumpFuncs
-    computeValues(jumpFuncs)
+    // computeJumpFuncs corresponds to Phase I of the algorithm, computeValues corresponds to Phase II.
+    computeValues(computeJumpFuncs)
   }
 }

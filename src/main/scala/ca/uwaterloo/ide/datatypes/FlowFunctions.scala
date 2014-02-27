@@ -5,7 +5,7 @@ package ca.uwaterloo.ide
  * for which we know n, d1, and m, return all
  * d2s plus the corresponding edge IDE functions.
  */
-trait FlowFunctions { this: IdeTypes =>
+trait FlowFunctions { this: ExplodedGraphTypes =>
 
   case class FactFunPair(
     d2: Fact,

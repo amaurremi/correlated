@@ -1,6 +1,6 @@
 package ca.uwaterloo.ide
 
-trait IdeConstants { this: IdeTypes =>
+trait IdeConstants { this: ExplodedGraphTypes =>
 
   /**
    * Represents λl.⊤

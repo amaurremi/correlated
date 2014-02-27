@@ -6,7 +6,7 @@ import scala.collection.mutable
 
 // p. 147 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
 // with applications to constant propagation"
-trait JumpFuncs { this: IdeProblem with ExplodedGraphInfo with IdeEdges with IdeNodes =>
+trait JumpFuncs { this: IdeProblem with ExplodedGraphInfo =>
 
   private[this] val pathWorklist = new mutable.Queue[IdeEdge]
 
