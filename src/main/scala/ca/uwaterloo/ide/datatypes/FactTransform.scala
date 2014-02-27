@@ -1,13 +1,14 @@
 package ca.uwaterloo.ide
 
-trait FactInfo extends IdeTypes { // todo rename
+trait FactTransform { this: ExplodedGraphTypes =>
+  
   /**
    * Transform into an integer for WALA usage
    */
   val factToInt: Fact => Int
 
   /**
-   * Transform integer to a fact to use facts from WALA
+   * Transform integer to a T
    */
   val intToFact: Int => Fact
 }
