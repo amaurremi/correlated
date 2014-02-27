@@ -8,7 +8,7 @@ import ca.uwaterloo.ide._
  * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
  * with applications to constant propagation"
  */
-case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunction[ConstantPropagationF] {
+case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunctionTrait[ConstantPropagationF] {
 
   override def apply(arg: LatticeNum): LatticeNum = (Num(a) * arg + Num(b)) ⊓ c
 

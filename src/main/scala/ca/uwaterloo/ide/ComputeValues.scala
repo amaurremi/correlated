@@ -1,40 +1,28 @@
 package ca.uwaterloo.ide
 
-import com.ibm.wala.dataflow.IFDS.ISupergraph
+import scala.collection.mutable
 
 // p. 149 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
 // with applications to constant propagation"
-class ComputeValues[T, P, F, V <: IdeFunction[V]](
-  problem: IdeProblem[T, P, F, V],
-  jumpFunc: JumpFn[T, V]
-)(
-  implicit supergraph: ISupergraph[T, P]
-) {
+trait ComputeValues { this: IdeProblem with ExplodedGraphInfo with IdeNodes with IdeEdges =>
 
-  import Util._
-  import problem._
-  import explodedGraphInfo._
+  private[this] val vals = mutable.Map[IdeNode, LatticeNum]()
 
-  private[this] lazy val vals: Values[T] = {
-    // [1]
-    val tops = mutableMap(explodedGraphIterator map {
-      _ -> ⊤
-    })
-    // [2]
-    val bottoms = mutableMap(seedNodes(initialSeeds)(supergraph) map {
-      _ -> ⊥
-    })
-    tops ++ bottoms
+  private[this] lazy val nodeWorklist = mutable.Queue[IdeNode]()
+
+  private[this] def initialize() {
+    nodeWorklist += ??? // todo findOrCreate
+    // [1-2]
+    vals += ??? // todo findOrCreate
   }
 
-  private[this] lazy val nodeWorklist = new NodeWorklist(initialSeeds, zeroFact) // todo represent in same way as other sets and maps
-
-  def compute: Values[T] = {
+  def computeValues(jumpFunc: Map[IdeEdge, IdeFunction]): Map[IdeNode, LatticeNum]  = {
+    initialize()
     // Phase II(i)
     while (!nodeWorklist.isEmpty) {
-      val node = nodeWorklist.take()
+      val node = nodeWorklist.dequeue()
       if (node.isStartNode)
-        computeStartNode(enclProc(node.n))
+        computeStartNode(enclProc(node.n), jumpFunc)
       if (node.isCallNode)
         computeCallNode(node)
     }
@@ -48,21 +36,21 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     } {
       vals += t -> (vals(t) ⊓ f(vals(e.source)))
     }
-    vals
+    vals.toMap
   }
 
-  private[this] def computeCallNode(c: IdeNode[T]) {
+  private[this] def computeCallNode(c: IdeNode) {
     val cn = c.n
     val cd = c.d
     for {
-      sq                      <- targetStartNodes(cn)
-      FactFunPair(dPrime, edgeFn) <- edgeFunctions.callStartFns(cn, cd, sq)
+      sq                          <- targetStartNodes(cn)
+      FactFunPair(dPrime, edgeFn) <- callStartFns(cn, cd, sq)
     } {
       propagateValue(IdeNode(sq, dPrime), edgeFn(vals(IdeNode(cn, cd))))
     }
   }
 
-  private[this] def computeStartNode(p: P) {
+  private[this] def computeStartNode(p: Procedure, jumpFunc: Map[IdeEdge, IdeFunction]) {
     for {
       c <- getCallIdeNodes(p)
       e <- edgesWithTarget(c)
@@ -73,12 +61,12 @@ class ComputeValues[T, P, F, V <: IdeFunction[V]](
     }
   }
 
-  private[this] def propagateValue(n: IdeNode[T], v: LatticeNum) {
+  private[this] def propagateValue(n: IdeNode, v: LatticeNum) {
     val ln = vals(n)
     val v2 = v ⊓ ln
     if (v2 != ln) {
       vals += n -> v2
-      nodeWorklist insert n
+      nodeWorklist enqueue n
     }
   }
 }

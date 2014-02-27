@@ -1,6 +1,9 @@
 package ca.uwaterloo.ide
 
-trait IdeFunction[F <: IdeFunction[F]] {
+/**
+ * An IDE function that corresponds to an edge in the exploded supergraph
+ */
+trait IdeFunctionTrait[F <: IdeFunctionTrait[F]] {
 
   def apply(arg: LatticeNum): LatticeNum 
 

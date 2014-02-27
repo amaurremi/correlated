@@ -1,34 +1,9 @@
 package ca.uwaterloo.ide
 
-import com.ibm.wala.dataflow.IFDS._
-
-/**
- * @tparam V type of IdeFunction implementation
- */
-trait IdeProblem[T, P, F, V <: IdeFunction[V]] extends TabulationProblem[T, P, F]{
+trait IdeProblem extends IdeTypes with IdeConstants with FactInfo with Supergraph with FlowFunctions {
 
   /**
-   * Represents λl.⊤
+   * The main method nodes that should be the entry points for the analysis
    */
-  val Top: V
-
-  /**
-   * Represents λl.l
-   */
-  val Id: V
-
-  /**
-   * The flow function that corresponds to an exploded graph edge
-   */
-  val edgeFunctions: EdgeFunctions[T, V]
-
-  val nonZeroFacts: Set[Fact]
-
-  val zeroFact: Fact
-
-  implicit val supergraph = getSupergraph
-
-  val explodedGraphInfo = new ExplodedGraphInfo[T, P, V](nonZeroFacts + zeroFact)
-
-  // todo input should have zero element, main methods can be taken from WALA
+  val entryPoints: Seq[Node] // todo don't like name
 }
