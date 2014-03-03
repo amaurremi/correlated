@@ -46,12 +46,11 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
 
   private[this] def computeCallNode(c: IdeNode) {
     val cn = c.n
-    val cd = c.d
     for {
       sq                          <- targetStartNodes(cn)
-      FactFunPair(dPrime, edgeFn) <- callStartFns(cn, cd, sq)
+      FactFunPair(dPrime, edgeFn) <- callStartFns(c, sq)
     } {
-      propagateValue(IdeNode(sq, dPrime), edgeFn(vals(IdeNode(cn, cd))))
+      propagateValue(IdeNode(sq, dPrime), edgeFn(vals(c)))
     }
   }
 
@@ -61,7 +60,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
   private[this] def computeStartNode(node: IdeNode, jumpFunc: Map[IdeEdge, IdeFunction]) {
     for {
       c      <- callNodesInProc(enclProc(node.n))
-      d2     <- otherSuccEdges(node.n, node.d, c) map { _.d2 }
+      d2     <- otherSuccEdges(node, c) map { _.d2 }
       target  = IdeNode(c, d2)
       f2      = jumpFunc(IdeEdge(node, target))
       if f2 != Top

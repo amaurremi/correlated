@@ -19,7 +19,7 @@ trait FlowFunctions { this: ExplodedGraphTypes =>
    *   (n, d1) -> (m, d2)
    * along with the corresponding edge functions.
    */
-  type EdgeFn = (Node, Fact, Node) => Seq[FactFunPair] // todo make of type (IdeNode, Node) => ...
+  type EdgeFn = (IdeNode, Node) => Seq[FactFunPair]
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
@@ -44,7 +44,7 @@ trait FlowFunctions { this: ExplodedGraphTypes =>
   /**
    * Helper function analogous to callStartFns, but returns only the factoids, without the edge functions.
    */
-  def callStartD2s: (Node, Fact, Node) => Seq[Fact] =
-    (n1, d1, n2) =>
-      callStartFns(n1, d1, n2) map { _.d2 }
+  def callStartD2s: (IdeNode, Node) => Seq[Fact] =
+    (node1, n2) =>
+      callStartFns(node1, n2) map { _.d2 }
 }

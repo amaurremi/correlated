@@ -65,10 +65,9 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     val n = e.target
     // [12-13]
     val node = n.n
-    val d2   = n.d
     for {
       sq <- targetStartNodes(node)
-      d3 <- callStartD2s(node, d2, sq)
+      d3 <- callStartD2s(n, sq)
     } {
       forwardExitFromCall(n, f, sq, d3)
       val sqn = IdeNode(sq, d3)
@@ -77,7 +76,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     // [14-16]
     for {
       r                       <- returnNodes(node)
-      FactFunPair(d3, edgeFn) <- callReturnEdges(node, d2, r)
+      FactFunPair(d3, edgeFn) <- callReturnEdges(n, r)
       rn                       = IdeNode(r, d3)
       re                       = IdeEdge(e.source, rn)
     } {
@@ -93,8 +92,8 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     for {
       (c, r)                <- callReturnPairs(n.n)
       d4                    <- forwardExitD4s.get(c, n.n, n.d).asScala
-      FactFunPair(`d4`, f4) <- callStartFns(c, d4, n.n)
-      FactFunPair(d5, f5)   <- endReturnEdges(n.n, n.d, r)
+      FactFunPair(`d4`, f4) <- callStartFns(IdeNode(c, d4), n.n)
+      FactFunPair(d5, f5)   <- endReturnEdges(n, r)
       rn                     = IdeNode(r, d5)
       sumEdge                = IdeEdge(IdeNode(c, d4), rn)
       sumF                   = summaryFn(sumEdge)
@@ -128,7 +127,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     val n = e.target
     for {
       m                       <- followingNodes(n.n)
-      FactFunPair(d3, edgeFn) <- otherSuccEdges(n.n, n.d, m)
+      FactFunPair(d3, edgeFn) <- otherSuccEdges(n, m)
     } yield propagate(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
   }
 
