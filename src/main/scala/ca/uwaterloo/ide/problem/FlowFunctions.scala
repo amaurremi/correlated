@@ -13,9 +13,13 @@ trait FlowFunctions { this: ExplodedGraphTypes =>
   )
 
   /**
-   *
+   * Given partial information for an edge:
+   *   n, d1, m
+   * returns d2 such that there exists an edge in the exploded graph:
+   *   (n, d1) -> (m, d2)
+   * along with the corresponding edge functions.
    */
-  type EdgeFn = (Node, Fact, Node) => Seq[FactFunPair]
+  type EdgeFn = (Node, Fact, Node) => Seq[FactFunPair] // todo make of type (IdeNode, Node) => ...
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.

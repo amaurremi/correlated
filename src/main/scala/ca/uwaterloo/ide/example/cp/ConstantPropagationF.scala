@@ -5,7 +5,7 @@ import ca.uwaterloo.ide._
 /**
  * Represents a function
  * λl . (a * l + b) ⊓ c
- * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
+ * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow analysis
  * with applications to constant propagation"
  */
 case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunctionTrait[ConstantPropagationF] {

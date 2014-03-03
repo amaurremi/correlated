@@ -12,9 +12,6 @@ trait IdeConstants { this: ExplodedGraphTypes =>
    */
   val Id: IdeFunction
 
-  // todo remove
-  val nonZeroFacts: Set[Fact]
-
   /**
    * Representation of the Λ factoid
    */

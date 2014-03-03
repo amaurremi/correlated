@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import scala.collection.mutable
 
-// p. 149 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
+// p. 149 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow analysis
 // with applications to constant propagation"
 trait ComputeValues { this: IdeProblem with TraverseGraph =>
 
@@ -22,19 +22,22 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     while (!nodeWorklist.isEmpty) {
       val node = nodeWorklist.dequeue()
       if (node.isStartNode)
-        computeStartNode(enclProc(node.n), jumpFunc)
+        computeStartNode(node, jumpFunc)
       if (node.isCallNode)
         computeCallNode(node)
     }
     // Phase II(ii)
-    for {
-      n <- notCallOrStartNodes
-      e <- edgesWithTarget(n)
-      f  = jumpFunc(e)
-      if f != Top
-      t  = e.target
+    for { // todo correct (differs from paper)?
+      // todo MARIANNA works only if JumpFn doesn't contain tops
+      e <- jumpFunc.keys
+      sp = e.source
+      if sp.isStartNode
+      n = e.target
+      if !(n.isCallNode || n.isStartNode)
+      fPrime = jumpFunc(e)
+      if fPrime != Top // todo should be unnecessary
     } {
-      vals += t -> (vals(t) ⊓ f(vals(e.source)))
+      vals += n -> vals(n) ⊓ fPrime(vals(sp))
     }
     vals.toMap
   }
@@ -50,14 +53,18 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     }
   }
 
-  private[this] def computeStartNode(p: Procedure, jumpFunc: Map[IdeEdge, IdeFunction]) {
+  /**
+   * [8-10]
+   */
+  private[this] def computeStartNode(node: IdeNode, jumpFunc: Map[IdeEdge, IdeFunction]) {
     for {
-      c <- getCallIdeNodes(p)
-      e <- edgesWithTarget(c)
-      f2 = jumpFunc(e)
+      c      <- callNodesInProc(enclProc(node.n))
+      d2     <- otherSuccEdges(node.n, node.d, c) map { _.d2 }
+      target  = IdeNode(c, d2)
+      f2      = jumpFunc(IdeEdge(node, target))
       if f2 != Top
     } {
-      propagateValue(e.target, f2(vals(e.source)))
+      propagateValue(target, f2(vals(node)))
     }
   }
 
