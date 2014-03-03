@@ -34,14 +34,10 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     }
     // Phase II(ii)
     for { // todo correct (differs from paper)?
-      // todo MARIANNA works only if JumpFn doesn't contain tops
-      e <- jumpFunc.keys
-      sp = e.source
+      (IdeEdge(sp, n), fPrime) <- jumpFunc
+      if fPrime != Top
       if sp.isStartNode
-      n = e.target
       if !(n.isCallNode || n.isStartNode)
-      fPrime = jumpFunc(e)
-      if fPrime != Top // todo should be unnecessary
     } {
       vals += n -> vals(n) ⊓ fPrime(vals(sp))
     }
