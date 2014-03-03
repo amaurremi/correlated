@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.util.collections.HashSetMultiMap
 import scala.collection.JavaConverters._
-import scala.collection.mutable
+import scala.collection.{breakOut, mutable}
 
 // p. 147 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
 // with applications to constant propagation"
@@ -10,9 +10,9 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
 
   private[this] val pathWorklist = new mutable.Queue[IdeEdge]
 
-  private[this] val jumpFn = mutable.Map[IdeEdge, IdeFunction]()
+  private[this] val jumpFn = mutable.Map[IdeEdge, IdeFunction]() withDefaultValue Top
 
-  private[this] val summaryFn = mutable.Map[IdeEdge, IdeFunction]()
+  private[this] val summaryFn = mutable.Map[IdeEdge, IdeFunction]() withDefaultValue Top
 
   def initialize() {
     // [5]
@@ -23,9 +23,11 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     }
     pathWorklist enqueue (edges: _*)
     // [1-2 + 6]
-    jumpFn += ??? // todo findOrCreate
+    jumpFn ++= (entryPoints map {
+      ep =>
+        IdeEdge(IdeNode(ep, zeroFact), IdeNode(ep, zeroFact)) -> Id
+    })(breakOut)
     // [3-4]
-    summaryFn += ??? // todo findOrCreate
   }
 
   /**
