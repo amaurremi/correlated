@@ -1,19 +1,25 @@
 package ca.uwaterloo.ide
 
-import scala.collection.mutable
+import scala.collection.{breakOut, mutable}
 
 // p. 149 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow analysis
 // with applications to constant propagation"
 trait ComputeValues { this: IdeProblem with TraverseGraph =>
 
-  private[this] val vals = mutable.Map[IdeNode, LatticeNum]()
+  /**
+   * [1]
+   */
+  private[this] val vals = mutable.Map[IdeNode, LatticeNum]() withDefaultValue ⊤
 
   private[this] lazy val nodeWorklist = mutable.Queue[IdeNode]()
 
   private[this] def initialize() {
-    nodeWorklist += ??? // todo findOrCreate
-    // [1-2]
-    vals += ??? // todo findOrCreate
+    // [3]
+    nodeWorklist ++= entryPoints map { IdeNode(_, zeroFact) }
+    // [2]
+    vals ++= (entryPoints map {
+      IdeNode(_, zeroFact) -> ⊥
+    })(breakOut)
   }
 
   def computeValues(jumpFunc: Map[IdeEdge, IdeFunction]): Map[IdeNode, LatticeNum]  = {
