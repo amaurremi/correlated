@@ -10,6 +10,11 @@ trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform {
   type Fact
 
   /**
+   * The type for a lattice element
+   */
+  type LatticeElem <: Lattice[LatticeElem]
+
+  /**
    * The type for IDE functions that correspond to the edges in the exploded supergraph
    */
   type IdeFunction <: IdeFunctionTrait[IdeFunction]
@@ -17,7 +22,7 @@ trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform {
   /**
    * A node in the exploded supergraph
    */
-  trait IdeNode {
+  trait IdeNode { // todo override equals?
     val n: Node
     val d: Fact
     val isStartNode: Boolean

@@ -10,22 +10,22 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
 
   private[this] val pathWorklist = new mutable.Queue[IdeEdge]
 
-  private[this] val jumpFn = mutable.Map[IdeEdge, IdeFunction]() withDefaultValue Top
+  private[this] val jumpFn = mutable.Map[IdeEdge, IdeFunction]() withDefaultValue λTop
 
-  private[this] val summaryFn = mutable.Map[IdeEdge, IdeFunction]() withDefaultValue Top
+  private[this] val summaryFn = mutable.Map[IdeEdge, IdeFunction]() withDefaultValue λTop
 
   def initialize() {
     // [5]
     val edges = entryPoints map {
       e =>
-        val zeroNode = IdeNode(e, zeroFact)
+        val zeroNode = IdeNode(e, Λ)
         IdeEdge(zeroNode, zeroNode)
     }
     pathWorklist enqueue (edges: _*)
     // [1-2 + 6]
     jumpFn ++= (entryPoints map {
       ep =>
-        IdeEdge(IdeNode(ep, zeroFact), IdeNode(ep, zeroFact)) -> Id
+        IdeEdge(IdeNode(ep, Λ), IdeNode(ep, Λ)) -> Id
     })(breakOut)
     // [3-4]
   }
@@ -83,7 +83,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       propagate(re, edgeFn ◦ f)
       // [17-18]
       val f3 = summaryFn(IdeEdge(n, rn))
-      if (f3 != Top)
+      if (f3 != λTop)
         propagate(re, f3 ◦ f)
     }
   }
@@ -136,7 +136,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     val f2 = f ⊓ jf
     if (f2 != jf) {
       jumpFn += e -> f2
-      if (f2 != Top)
+      if (f2 != λTop)
         forwardExitD3s.put((e.source.n, e.target.n, e.target.d), (e.source.d, f2))
       pathWorklist enqueue e
     }

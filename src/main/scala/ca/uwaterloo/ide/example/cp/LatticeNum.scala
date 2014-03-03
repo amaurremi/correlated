@@ -1,8 +1,9 @@
-package ca.uwaterloo.ide
+package ca.uwaterloo.ide.example.cp
+
 
 // todo make generic
 
-sealed trait LatticeNum {
+sealed trait LatticeNum extends LatticeElem {
   def + (n:LatticeNum): LatticeNum
   def - (n: LatticeNum): LatticeNum
   def * (n: LatticeNum): LatticeNum

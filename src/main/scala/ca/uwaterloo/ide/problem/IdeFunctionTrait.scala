@@ -3,9 +3,9 @@ package ca.uwaterloo.ide
 /**
  * An IDE function that corresponds to an edge in the exploded supergraph
  */
-trait IdeFunctionTrait[F <: IdeFunctionTrait[F]] {
+trait IdeFunctionTrait[F <: IdeFunctionTrait[F]] { this: ExplodedGraphTypes =>
 
-  def apply(arg: LatticeNum): LatticeNum 
+  def apply(arg: LatticeElem): LatticeElem
 
   /**
    * Meet operator

@@ -5,7 +5,7 @@ trait IdeConstants { this: ExplodedGraphTypes =>
   /**
    * Represents λl.⊤
    */
-  val Top: IdeFunction
+  val λTop: IdeFunction
 
   /**
    * Represents λl.l
@@ -13,7 +13,17 @@ trait IdeConstants { this: ExplodedGraphTypes =>
   val Id: IdeFunction
 
   /**
-   * Representation of the Λ factoid
+   * Representation of the Λ (zero) factoid
    */
-  val zeroFact: Fact
+  val Λ: Fact
+
+  /**
+   * Lattice top element
+   */
+  val Top: LatticeElem
+
+  /**
+   * Lattice bottom element
+   */
+  val Bottom: LatticeElem
 }

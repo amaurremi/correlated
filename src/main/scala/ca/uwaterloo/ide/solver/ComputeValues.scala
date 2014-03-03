@@ -9,20 +9,20 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
   /**
    * [1]
    */
-  private[this] val vals = mutable.Map[IdeNode, LatticeNum]() withDefaultValue ⊤
+  private[this] val vals = mutable.Map[IdeNode, LatticeElem]() withDefaultValue Top
 
   private[this] lazy val nodeWorklist = mutable.Queue[IdeNode]()
 
   private[this] def initialize() {
     // [3]
-    nodeWorklist ++= entryPoints map { IdeNode(_, zeroFact) }
+    nodeWorklist ++= entryPoints map { IdeNode(_, Λ) }
     // [2]
     vals ++= (entryPoints map {
-      IdeNode(_, zeroFact) -> ⊥
+      IdeNode(_, Λ) -> Bottom
     })(breakOut)
   }
 
-  def computeValues(jumpFunc: Map[IdeEdge, IdeFunction]): Map[IdeNode, LatticeNum]  = {
+  def computeValues(jumpFunc: Map[IdeEdge, IdeFunction]): Map[IdeNode, LatticeElem]  = {
     initialize()
     // Phase II(i)
     while (!nodeWorklist.isEmpty) {
@@ -35,7 +35,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     // Phase II(ii)
     for { // todo correct (differs from paper)?
       (IdeEdge(sp, n), fPrime) <- jumpFunc
-      if fPrime != Top
+      if fPrime != λTop
       if sp.isStartNode
       if !(n.isCallNode || n.isStartNode)
     } {
@@ -63,13 +63,13 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
       d2     <- otherSuccEdges(node, c) map { _.d2 }
       target  = IdeNode(c, d2)
       f2      = jumpFunc(IdeEdge(node, target))
-      if f2 != Top
+      if f2 != λTop
     } {
       propagateValue(target, f2(vals(node)))
     }
   }
 
-  private[this] def propagateValue(n: IdeNode, v: LatticeNum) {
+  private[this] def propagateValue(n: IdeNode, v: LatticeElem) {
     val ln = vals(n)
     val v2 = v ⊓ ln
     if (v2 != ln) {

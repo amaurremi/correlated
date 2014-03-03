@@ -8,9 +8,9 @@ import ca.uwaterloo.ide._
  * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow analysis
  * with applications to constant propagation"
  */
-case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunctionTrait[ConstantPropagationF] {
+case class ConstantPropagationF(a: Long, b: Long, c: LatticeElem) extends IdeFunctionTrait[ConstantPropagationF] {
 
-  override def apply(arg: LatticeNum): LatticeNum = (Num(a) * arg + Num(b)) ⊓ c
+  override def apply(arg: LatticeElem): LatticeElem = (Num(a) * arg + Num(b)) ⊓ c
 
   /**
    * Meet operator
@@ -26,7 +26,7 @@ case class ConstantPropagationF(a: Long, b: Long, c: LatticeNum) extends IdeFunc
           ConstantPropagationF(1, 0, ⊥)
     }
 
-  private def equiv(a2: Long, b2: Long, c2: LatticeNum): Boolean = {
+  private def equiv(a2: Long, b2: Long, c2: LatticeElem): Boolean = {
     val l: Double = (b - b2) / (a2 - a)
     l.isWhole() && c == (Num(a * l.toInt + b) ⊓ c ⊓ c2)
   }
