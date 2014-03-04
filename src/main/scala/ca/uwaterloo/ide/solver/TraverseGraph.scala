@@ -61,9 +61,6 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
       nodesInProc(_, proc, acc :+ startNode)
     }
 
-  private[this] def supergraphIterator: Iterator[Node] =
-    supergraph.iterator.asScala
-
   /**
    * All call nodes inside of a given procedure
    */
@@ -74,13 +71,4 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
         n <- nodesInProc(s, p)
         if supergraph isCall n
       } yield n
-
-  /**
-   * All nodes that are not call nodes or start nodes.
-   */
-  lazy val notCallOrStartNodes: Iterator[Node] =
-    supergraphIterator filterNot {
-      n =>
-        (supergraph isCall n) || (supergraph isEntry n)
-    }
 }
