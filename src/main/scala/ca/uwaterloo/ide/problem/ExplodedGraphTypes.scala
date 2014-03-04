@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.PathEdge
 
-trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform with Lattices {
+trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform with Lattices with ToAnalyze {
 
   /**
    * The type for propagated factoids
