@@ -3,7 +3,7 @@ package ca.uwaterloo.ide
 /**
  * An IDE function that corresponds to an edge in the exploded supergraph
  */
-trait IdeFunctionTrait[F <: IdeFunctionTrait[F]] { this: ExplodedGraphTypes =>
+trait IdeFunctions[LatticeElem, F <: IdeFunctions[LatticeElem, F]] {
 
   def apply(arg: LatticeElem): LatticeElem
 
