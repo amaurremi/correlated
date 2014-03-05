@@ -11,14 +11,14 @@ import scala.collection.JavaConverters._
 
 class ConstantPropagationProblem(fileName: String) extends IdeProblem {
 
-  implicit val config =
+  private[this] val config =
     ConfigFactory.load(
       fileName,
       ConfigParseOptions.defaults().setAllowMissing(false),
       ConfigResolveOptions.defaults()
     )
-  private[this] val fcgb = FlexibleCallGraphBuilder()
-  private[this] val callGraph: CallGraph = fcgb.cg
+  private[this] val builder = FlexibleCallGraphBuilder()(config)
+  private[this] val callGraph: CallGraph = builder.cg
 
   override type Node = BasicBlockInContext[IExplodedBasicBlock]
   override type Procedure = CGNode
@@ -34,8 +34,8 @@ class ConstantPropagationProblem(fileName: String) extends IdeProblem {
   override val Id: IdeFunction = CpFunction(1, 0, ⊤)
   override val λTop: IdeFunction = CpFunction(1, 0, ⊤) // todo correct?
 
-  override val entryPoints: Seq[Node] = callGraph.getEntrypointNodes.asScala.toSeq map ???
-  override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, fcgb._cache)
+  override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
+  override val entryPoints: Seq[Node] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure // todo not sure
 
   /**
    * Functions for all other (inter-procedural) edges.
