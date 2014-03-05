@@ -2,10 +2,10 @@ package ca.uwaterloo.ide.example.cp
 
 import ca.uwaterloo.ide.{IdeFunctions, IdeProblem}
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
-import com.ibm.wala.ipa.callgraph.{AnalysisCache, CallGraph, CGNode}
+import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
+import com.typesafe.config.{ConfigResolveOptions, ConfigFactory, ConfigParseOptions}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
 
@@ -83,7 +83,7 @@ class ConstantPropagationProblem(fileName: String) extends IdeProblem {
 
     private def equiv(a2: Long, b2: Long, c2: LatticeElem): Boolean = {
       val l: Double = (b - b2) / (a2 - a)
-      l.isWhole() && c == (Num(a * l.toInt + b) ⊓ c ⊓ c2)
+      l.isWhole && c == (Num(a * l.toInt + b) ⊓ c ⊓ c2)
     }
 
     override def ◦(f: CpFunction): CpFunction =
