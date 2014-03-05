@@ -1,13 +1,27 @@
 package ca.uwaterloo.ide.example.cp
 
 import ca.uwaterloo.ide.{IdeFunctions, IdeProblem}
-import com.ibm.wala.dataflow.IFDS.ISupergraph
-import com.ibm.wala.ipa.callgraph.{CGNode, AnalysisCache, CallGraph}
+import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
+import com.ibm.wala.ipa.callgraph.{AnalysisCache, CallGraph, CGNode}
+import com.ibm.wala.ipa.cfg.BasicBlockInContext
+import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
+import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
+import scala.collection.JavaConverters._
 
 class ConstantPropagationProblem(fileName: String) extends IdeProblem {
 
-  override type Node = CGNode
-  override type Procedure = CallGraph
+  implicit val config =
+    ConfigFactory.load(
+      fileName,
+      ConfigParseOptions.defaults().setAllowMissing(false),
+      ConfigResolveOptions.defaults()
+    )
+  private[this] val fcgb = FlexibleCallGraphBuilder()
+  private[this] val callGraph: CallGraph = fcgb.cg
+
+  override type Node = BasicBlockInContext[IExplodedBasicBlock]
+  override type Procedure = CGNode
   override type IdeFunction = CpFunction
   override type Fact = Int
   override type LatticeElem = CpLatticeElem
@@ -20,10 +34,8 @@ class ConstantPropagationProblem(fileName: String) extends IdeProblem {
   override val Id: IdeFunction = CpFunction(1, 0, ⊤)
   override val λTop: IdeFunction = CpFunction(1, 0, ⊤) // todo correct?
 
-  override val entryPoints: Seq[Node] = ???
-  override val analysisCache: AnalysisCache = ???
-  override val callGraph: CallGraph = ???
-  override val supergraph: ISupergraph[Node, Procedure] = ???
+  override val entryPoints: Seq[Node] = callGraph.getEntrypointNodes.asScala.toSeq map ???
+  override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, fcgb._cache)
 
   /**
    * Functions for all other (inter-procedural) edges.
