@@ -1,41 +1,14 @@
 package ca.uwaterloo.ide.example.cp
 
-import ca.uwaterloo.ide.IdeProblem
-import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
-import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
-import com.ibm.wala.ipa.cfg.BasicBlockInContext
-import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.typesafe.config.{ConfigResolveOptions, ConfigFactory, ConfigParseOptions}
-import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
-import scala.collection.JavaConverters._
+class LinearConstantPropagation(fileName: String) extends ConstantPropagation(fileName) {
 
-class ConstantPropagationProblem(fileName: String) extends IdeProblem {
-
-  private[this] val config =
-    ConfigFactory.load(
-      fileName,
-      ConfigParseOptions.defaults().setAllowMissing(false),
-      ConfigResolveOptions.defaults()
-    )
-  private[this] val builder = FlexibleCallGraphBuilder()(config)
-  private[this] val callGraph: CallGraph = builder.cg
-
-  override type Node        = BasicBlockInContext[IExplodedBasicBlock]
-  override type Procedure   = CGNode
   override type IdeFunction = CpFunction
-  override type Fact        = Int
   override type LatticeElem = CpLatticeElem
 
-  override val intToFact: Int => Fact = identity
-  override val factToInt: Fact => Int = identity
   override val Bottom: LatticeElem    = ⊥
   override val Top: LatticeElem       = ⊤
-  override val Λ: Fact                = 0
   override val Id: IdeFunction        = CpFunction(1, 0, ⊤)
   override val λTop: IdeFunction      = CpFunction(1, 0, ⊤) // todo correct?
-
-  override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
-  override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure // todo not sure
 
   /**
    * Functions for all other (inter-procedural) edges.
