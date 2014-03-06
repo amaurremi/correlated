@@ -17,12 +17,12 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem {
       ConfigParseOptions.defaults().setAllowMissing(false),
       ConfigResolveOptions.defaults()
     )
-  private[this] val builder = FlexibleCallGraphBuilder()(config)
+  private[this] val builder              = FlexibleCallGraphBuilder()(config)
   private[this] val callGraph: CallGraph = builder.cg
 
-  override type Node        = BasicBlockInContext[IExplodedBasicBlock]
-  override type Procedure   = CGNode
-  override type Fact        = Int
+  override type Node      = BasicBlockInContext[IExplodedBasicBlock]
+  override type Procedure = CGNode
+  override type Fact      = Int
 
   override val intToFact: Int => Fact = identity
   override val factToInt: Fact => Int = identity

@@ -5,10 +5,10 @@ class LinearConstantPropagation(fileName: String) extends ConstantPropagation(fi
   override type IdeFunction = CpFunction
   override type LatticeElem = CpLatticeElem
 
-  override val Bottom: LatticeElem    = ⊥
-  override val Top: LatticeElem       = ⊤
-  override val Id: IdeFunction        = CpFunction(1, 0, ⊤)
-  override val λTop: IdeFunction      = CpFunction(1, 0, ⊤) // todo correct?
+  override val Bottom: LatticeElem = ⊥
+  override val Top: LatticeElem    = ⊤
+  override val Id: IdeFunction     = CpFunction(1, 0, ⊤)
+  override val λTop: IdeFunction   = CpFunction(1, 0, ⊤) // todo correct?
 
   /**
    * Functions for all other (inter-procedural) edges.

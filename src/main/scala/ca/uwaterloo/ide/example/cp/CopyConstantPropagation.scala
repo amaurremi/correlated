@@ -5,10 +5,10 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   override type IdeFunction = CpFunction
   override type LatticeElem = CpLatticeElem
 
-  override val Bottom: LatticeElem    = ⊥
-  override val Top: LatticeElem       = ⊤
-  override val Id: IdeFunction        = CpFunction(⊤)
-  override val λTop: IdeFunction      = CpFunction(⊤) // todo correct?
+  override val Bottom: LatticeElem = ⊥
+  override val Top: LatticeElem    = ⊤
+  override val Id: IdeFunction     = CpFunction(⊤)
+  override val λTop: IdeFunction   = CpFunction(⊤) // todo correct?
 
   /**
    * Functions for all other (inter-procedural) edges.
