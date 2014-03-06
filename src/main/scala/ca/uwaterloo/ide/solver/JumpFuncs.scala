@@ -92,7 +92,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     for {
       (c, r)                <- callReturnPairs(n.n)
       d4                    <- forwardExitD4s.get(c, n.n, n.d).asScala
-      FactFunPair(`d4`, f4) <- callStartFns(IdeNode(c, d4), n.n)
+      FactFunPair(`d4`, f4) <- callStartEdges(IdeNode(c, d4), n.n)
       FactFunPair(d5, f5)   <- endReturnEdges(n, r)
       rn                     = IdeNode(r, d5)
       sumEdge                = IdeEdge(IdeNode(c, d4), rn)

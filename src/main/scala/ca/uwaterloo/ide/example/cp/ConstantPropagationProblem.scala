@@ -20,22 +20,22 @@ class ConstantPropagationProblem(fileName: String) extends IdeProblem {
   private[this] val builder = FlexibleCallGraphBuilder()(config)
   private[this] val callGraph: CallGraph = builder.cg
 
-  override type Node = BasicBlockInContext[IExplodedBasicBlock]
-  override type Procedure = CGNode
+  override type Node        = BasicBlockInContext[IExplodedBasicBlock]
+  override type Procedure   = CGNode
   override type IdeFunction = CpFunction
-  override type Fact = Int
+  override type Fact        = Int
   override type LatticeElem = CpLatticeElem
 
   override val intToFact: Int => Fact = identity
   override val factToInt: Fact => Int = identity
-  override val Bottom: LatticeElem = ⊥
-  override val Top: LatticeElem = ⊤
-  override val Λ: Fact = 0
-  override val Id: IdeFunction = CpFunction(1, 0, ⊤)
-  override val λTop: IdeFunction = CpFunction(1, 0, ⊤) // todo correct?
+  override val Bottom: LatticeElem    = ⊥
+  override val Top: LatticeElem       = ⊤
+  override val Λ: Fact                = 0
+  override val Id: IdeFunction        = CpFunction(1, 0, ⊤)
+  override val λTop: IdeFunction      = CpFunction(1, 0, ⊤) // todo correct?
 
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
-  override val entryPoints: Seq[Node] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure // todo not sure
+  override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure // todo not sure
 
   /**
    * Functions for all other (inter-procedural) edges.
@@ -55,7 +55,7 @@ class ConstantPropagationProblem(fileName: String) extends IdeProblem {
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  override def callStartFns: EdgeFn = ???
+  override def callStartEdges: EdgeFn = ???
 
   /**
    * Represents a function
@@ -63,7 +63,7 @@ class ConstantPropagationProblem(fileName: String) extends IdeProblem {
    * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow analysis
    * with applications to constant propagation"
    */
-  case class CpFunction(a: Long, b: Long, c: LatticeElem) extends IdeFunctions[LatticeElem, CpFunction] {
+  case class CpFunction(a: Long, b: Long, c: LatticeElem) extends IdeFunctionI[CpFunction] {
 
     override def apply(arg: LatticeElem): LatticeElem = (Num(a) * arg + Num(b)) ⊓ c
 

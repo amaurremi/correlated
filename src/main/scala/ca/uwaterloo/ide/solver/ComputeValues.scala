@@ -48,7 +48,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     val cn = c.n
     for {
       sq                          <- targetStartNodes(cn)
-      FactFunPair(dPrime, edgeFn) <- callStartFns(c, sq)
+      FactFunPair(dPrime, edgeFn) <- callStartEdges(c, sq)
     } {
       propagateValue(IdeNode(sq, dPrime), edgeFn(vals(c)))
     }
