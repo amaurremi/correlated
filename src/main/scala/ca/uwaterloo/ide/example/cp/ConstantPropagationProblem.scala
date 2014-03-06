@@ -1,6 +1,6 @@
 package ca.uwaterloo.ide.example.cp
 
-import ca.uwaterloo.ide.{IdeFunctions, IdeProblem}
+import ca.uwaterloo.ide.IdeProblem
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
@@ -63,7 +63,7 @@ class ConstantPropagationProblem(fileName: String) extends IdeProblem {
    * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow analysis
    * with applications to constant propagation"
    */
-  case class CpFunction(a: Long, b: Long, c: LatticeElem) extends IdeFunctionI[CpFunction] {
+  case class CpFunction(a: Long, b: Long, c: LatticeElem) extends IdeFunctionI {
 
     override def apply(arg: LatticeElem): LatticeElem = (Num(a) * arg + Num(b)) ⊓ c
 
@@ -99,7 +99,7 @@ class ConstantPropagationProblem(fileName: String) extends IdeProblem {
       }
   }
 
-  trait CpLatticeElem extends Lattice[CpLatticeElem] {
+  trait CpLatticeElem extends Lattice {
     def +(n:CpLatticeElem): CpLatticeElem
     def -(n: CpLatticeElem): CpLatticeElem
     def *(n: CpLatticeElem): CpLatticeElem

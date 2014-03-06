@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.PathEdge
 
-trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform with IdeFunctions {
+trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform {
 
   /**
    * The type for propagated factoids
@@ -12,7 +12,45 @@ trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform with IdeFunc
   /**
    * The type for IDE functions that correspond to the edges in the exploded supergraph
    */
-  type IdeFunction <: IdeFunctionI[IdeFunction]
+  type IdeFunction <: IdeFunctionI
+
+  /**
+   * The type for a lattice element for the set L
+   */
+  type LatticeElem <: Lattice
+
+  /**
+   * A lattice for elements of the set L
+   */
+  trait Lattice {
+
+    def ⊓(el: LatticeElem): LatticeElem
+
+    override def equals(o: Any): Boolean
+  }
+
+  /**
+   * An IDE function that corresponds to an edge in the exploded supergraph
+   */
+  trait IdeFunctionI {
+
+    def apply(arg: LatticeElem): LatticeElem
+
+    /**
+     * Meet operator
+     */
+    def ⊓(f: IdeFunction): IdeFunction
+
+    /**
+     * Compose operator
+     */
+    def ◦(f: IdeFunction): IdeFunction
+
+    /**
+     * It's necessary to implement the equals method on IDE functions.
+     */
+    override def equals(obj: Any): Boolean
+  }
 
   /**
    * A node in the exploded supergraph
