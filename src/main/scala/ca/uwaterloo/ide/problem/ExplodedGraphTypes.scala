@@ -62,6 +62,15 @@ trait ExplodedGraphTypes extends SuperGraphTypes {
     val isExitNode: Boolean
     val isReturnNode: Boolean
     val isCallNode: Boolean
+
+    override def equals(obj: scala.Any): Boolean =
+      obj match {
+        case node: IdeNode => node.n == n && node.d == d
+        case _             => false
+      }
+
+    override def hashCode: Int =
+      41 * (41 + n.hashCode) + d.hashCode
   }
 
   object IdeNode {
