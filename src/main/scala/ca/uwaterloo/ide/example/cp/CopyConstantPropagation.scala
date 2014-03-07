@@ -42,7 +42,9 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  override def callReturnEdges: EdgeFn = ???
+  override def callReturnEdges: EdgeFn =
+    (ideN1, _) =>
+      Set(FactFunPair(ideN1.d, Id)) // todo not for global variables
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
