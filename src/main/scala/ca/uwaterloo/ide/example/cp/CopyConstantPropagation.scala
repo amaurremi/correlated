@@ -20,36 +20,53 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       val d1 = ideN1.d
       val idFactFunPairSet = Set(FactFunPair(d1, Id))
       n2.getLastInstruction match {
-        case assignment: SSAPutInstruction | SSAStoreIndirectInstruction =>
-          val assignedVal = assignment.getVal
-          val variable    = assignment.getRef // todo
-          val symbolTable = supergraph.getProcOf(n2).getIR.getSymbolTable
-          if (symbolTable isConstant assignedVal) {
-            if (d1 == Λ)
-              idFactFunPairSet + FactFunPair(variable, CpFunction(Num(assignedVal)))
-            else Set.empty
-          } else idFactFunPairSet
-        case _ =>
+        case assignment: SSAPutInstruction           =>
+          edgesForAssignment(assignment, n2, d1, idFactFunPairSet)
+        case assignment: SSAStoreIndirectInstruction =>
+          ???
+        case _                                       =>
           idFactFunPairSet
       }
     }
 
+
+  def edgesForAssignment(
+    assignment: SSAPutInstruction,
+    n2: Node,
+    d1: Fact,
+    idFactFunPairSet: Set[FactFunPair]
+  ): Set[FactFunPair] = {
+    val assignedVal = assignment.getVal
+    val symbolTable = (supergraph getProcOf n2).getIR.getSymbolTable
+    if (symbolTable isConstant assignedVal) {
+      if (d1 == Λ)
+        idFactFunPairSet + FactFunPair(CpFact(Some(assignment)), CpFunction(Num(assignedVal)))
+      else Set.empty
+    } else idFactFunPairSet
+  }
+
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  override def endReturnEdges: EdgeFn = ???
+  override def endReturnEdges: EdgeFn =
+    callStartEdges // todo
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
   override def callReturnEdges: EdgeFn =
     (ideN1, _) =>
-      Set(FactFunPair(ideN1.d, Id)) // todo not for global variables
+      Set(FactFunPair(ideN1.d, Id)) // todo not for fields/static variables
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  override def callStartEdges: EdgeFn = ???
+  override def callStartEdges: EdgeFn =
+    (ideN1, n2) =>
+      if (ideN1.d == Λ)
+        Set(FactFunPair(Λ, Id))
+      else Set.empty
+    // todo substitution for parameters. For now, we assume functions don't take parameters and that there are no fields/static variables
 
   /**
    * Represents a function

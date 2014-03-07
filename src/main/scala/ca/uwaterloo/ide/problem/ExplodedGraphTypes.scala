@@ -2,7 +2,7 @@ package ca.uwaterloo.ide
 
 import com.ibm.wala.dataflow.IFDS.PathEdge
 
-trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform {
+trait ExplodedGraphTypes extends SuperGraphTypes {
 
   /**
    * The type for propagated factoids (corresponds to elements of the set D)
@@ -83,11 +83,4 @@ trait ExplodedGraphTypes extends SuperGraphTypes with FactTransform {
    * An edge in the exploded supergraph
    */
   case class IdeEdge(source: IdeNode, target: IdeNode)
-
-  object IdeEdge {
-    def apply(pathEdge: PathEdge[Node]): IdeEdge =
-      IdeEdge(
-        IdeNode(pathEdge.getEntry, intToFact(pathEdge.getD1)),
-        IdeNode(pathEdge.getTarget, intToFact(pathEdge.getD2)))
-  }
 }
