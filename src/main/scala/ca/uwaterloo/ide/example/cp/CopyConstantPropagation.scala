@@ -1,5 +1,7 @@
 package ca.uwaterloo.ide.example.cp
 
+import com.ibm.wala.ssa.{SSAStoreIndirectInstruction, SSAPutInstruction}
+
 class CopyConstantPropagation(fileName: String) extends ConstantPropagation(fileName) {
 
   override type IdeFunction = CpFunction
@@ -13,7 +15,24 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  override def otherSuccEdges: EdgeFn = ???
+  override def otherSuccEdges: EdgeFn =
+    (ideN1, n2) => {
+      val d1 = ideN1.d
+      val idFactFunPairSet = Set(FactFunPair(d1, Id))
+      n2.getLastInstruction match {
+        case assignment: SSAPutInstruction | SSAStoreIndirectInstruction =>
+          val assignedVal = assignment.getVal
+          val variable    = assignment.getRef // todo
+          val symbolTable = supergraph.getProcOf(n2).getIR.getSymbolTable
+          if (symbolTable isConstant assignedVal) {
+            if (d1 == Λ)
+              idFactFunPairSet + FactFunPair(variable, CpFunction(Num(assignedVal)))
+            else Set.empty
+          } else idFactFunPairSet
+        case _ =>
+          idFactFunPairSet
+      }
+    }
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
