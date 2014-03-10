@@ -55,7 +55,7 @@ trait ExplodedGraphTypes extends SuperGraphTypes {
   /**
    * A node in the exploded supergraph
    */
-  trait IdeNode { // todo override equals?
+  trait IdeNode {
     val n: Node
     val d: Fact
     val isStartNode: Boolean

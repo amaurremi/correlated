@@ -17,15 +17,14 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   def initialize() {
     // [5]
     val edges = entryPoints map {
-      e =>
-        val zeroNode = IdeNode(e, Λ)
+      ep =>
+        val zeroNode = IdeNode(ep, Λ)
         IdeEdge(zeroNode, zeroNode)
     }
     pathWorklist enqueue (edges: _*)
     // [1-2 + 6]
-    jumpFn ++= (entryPoints map {
-      ep =>
-        IdeEdge(IdeNode(ep, Λ), IdeNode(ep, Λ)) -> Id
+    jumpFn ++= (edges map {
+      _ -> Id
     })(breakOut)
     // [3-4]
   }
