@@ -71,6 +71,8 @@ trait ExplodedGraphTypes extends SuperGraphTypes {
 
     override def hashCode: Int =
       41 * (41 + n.hashCode) + d.hashCode
+
+    override def toString: String = "IdeNode(" + n.toString + ", " + d.toString + ")"
   }
 
   object IdeNode {

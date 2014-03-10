@@ -127,7 +127,9 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     for {
       m                       <- followingNodes(n.n)
       FactFunPair(d3, edgeFn) <- otherSuccEdges(n, m)
-    } yield propagate(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
+    } {
+      propagate(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
+    }
   }
 
   private[this] def propagate(e: IdeEdge, f: IdeFunction) {
