@@ -9,8 +9,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
 
   override val Bottom: LatticeElem = ⊥
   override val Top: LatticeElem    = ⊤
-  override val Id: IdeFunction     = CpFunction(⊤)
-  override val λTop: IdeFunction   = CpFunction(⊤) // todo correct?
+  override val Id: IdeFunction     = CpFunction(⊤, l = true)
+  override val λTop: IdeFunction   = CpFunction(⊤)
 
   /**
    * Functions for all other (inter-procedural) edges.
@@ -70,22 +70,30 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
 
   /**
    * Represents a function
-   * λl . (a * l + b) ⊓ c
-   * as described on p. 153 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow analysis
-   * with applications to constant propagation"
+   * λl . l ⊓ c
+   * @param l if true, the function is of type λl . l ⊓ c
+   *          if false, it's a constant function of type λl . c
    */
-  case class CpFunction(c: LatticeElem) extends IdeFunctionI {
+  case class CpFunction(
+    c: LatticeElem, 
+    l: Boolean = false
+  ) extends IdeFunctionI {
 
-    override def apply(arg: LatticeElem): LatticeElem = arg ⊓ c
+    override def apply(arg: LatticeElem): LatticeElem =
+      if (l) c ⊓ arg
+      else c
 
-    /**
-     * Meet operator
-     */
-    override def ⊓(f: CpFunction): CpFunction = CpFunction(c ⊓ f.c)
+    override def ⊓(f: CpFunction): CpFunction =
+      CpFunction(c ⊓ f.c, l || f.l)
 
-    override def ◦(f: CpFunction): CpFunction = ⊓(f) // todo correct?
+    override def ◦(f: CpFunction): CpFunction =
+      if (l) CpFunction(c ⊓ f.c, l)
+      else this
   }
 
+  /**
+   * Represents lattice elements for the set L
+   */
   trait CpLatticeElem extends Lattice {
     def ⊓(n: CpLatticeElem): CpLatticeElem
   }

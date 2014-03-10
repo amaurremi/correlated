@@ -10,9 +10,9 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
 
   private[this] val pathWorklist = new mutable.Queue[IdeEdge]
 
-  private[this] val jumpFn = mutable.Map[IdeEdge, IdeFunction]() withDefaultValue λTop
+  private[this] val jumpFn = mutable.Map[IdeEdge, IdeFunction]() withDefault { _ => λTop } // for some reason, withDefalutValue doesn't work
 
-  private[this] val summaryFn = mutable.Map[IdeEdge, IdeFunction]() withDefaultValue λTop
+  private[this] val summaryFn = mutable.Map[IdeEdge, IdeFunction]() withDefault { _ => λTop }
 
   def initialize() {
     // [5]
