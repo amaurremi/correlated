@@ -33,13 +33,13 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    * Maps (c, sp, d1) to EdgeFn(d4, f)
    * [21]
    */
-  private[this] val forwardExitD4s = new HashSetMultiMap[(Node, Node, Fact), Fact]
+  private[this] val forwardExitD4s = new HashSetMultiMap[(Node, IdeNode), Fact]
 
   /**
    * Maps (sq, c, d4) to (d3, jumpFn) if JumpFn(sq, d3 -> c, d4) != Top
    * [28]
    */
-  private[this] val forwardExitD3s = new HashSetMultiMap[(Node, Node, Fact), (Fact, IdeFunction)]
+  private[this] val forwardExitD3s = new HashSetMultiMap[(Node, IdeNode), (Fact, IdeFunction)]
 
   def computeJumpFuncs: Map[IdeEdge, IdeFunction] = {
     initialize()
@@ -90,7 +90,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   private[this] def forwardExitNode(n: IdeNode, f: IdeFunction) {
     for {
       (c, r)                <- callReturnPairs(n.n)
-      d4                    <- forwardExitD4s.get(c, n.n, n.d).asScala
+      d4                    <- forwardExitD4s.get(c, n).asScala
       FactFunPair(`d4`, f4) <- callStartEdges(IdeNode(c, d4), n.n)
       FactFunPair(d5, f5)   <- endReturnEdges(n, r)
       rn                     = IdeNode(r, d5)
@@ -110,7 +110,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   private[this] def forwardExitPropagate(c: Node, d4: Fact, rn: IdeNode, fPrime: IdeFunction) {
     for {
       sq <- startNodes(c)
-      (d3, f3) <- forwardExitD3s.get(sq, c, d4).asScala
+      (d3, f3) <- forwardExitD3s.get(sq, IdeNode(c, d4)).asScala
     } {
       // [29]
       propagate(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
@@ -118,7 +118,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   }
 
   private[this] def forwardExitFromCall(n: IdeNode, f: IdeFunction, sq: Node, d: Fact) {
-    forwardExitD4s.put((n.n, sq, d), n.d)
+    forwardExitD4s.put((n.n, IdeNode(sq, d)), n.d)
     forwardExitNode(n, f)
   }
 
@@ -138,7 +138,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     if (f2 != jf) {
       jumpFn += e -> f2
       if (f2 != λTop)
-        forwardExitD3s.put((e.source.n, e.target.n, e.target.d), (e.source.d, f2))
+        forwardExitD3s.put((e.source.n, e.target), (e.source.d, f2))
       pathWorklist enqueue e
     }
   }
