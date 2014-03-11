@@ -12,6 +12,24 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   override val Id: IdeFunction     = CpFunction(⊤, l = true)
   override val λTop: IdeFunction   = CpFunction(⊤)
 
+  // todo remove
+  // javap -c -cp <jar name or dir name> <class file name>
+  // JavaLanguage$JavaInstructionFactory$1      <=> SSAArrayLengthInstruction
+  // JavaLanguage$JavaInstructionFactory$2      <=> SSAArrayLoadInstruction
+  // JavaLanguage$JavaInstructionFactory$3      <=> SSAArrayStoreInstruction  <- assignment
+  // JavaLanguage$JavaInstructionFactory$4      <=> SSABinaryOpInstruction
+  // JavaLanguage$JavaInstructionFactory$5      <=> SSACheckCastInstruction
+  // JavaLanguage$JavaInstructionFactory$6      <=> SSAConversionInstruction
+  // JavaLanguage$JavaInstructionFactory$7, 8   <=> SSAGetInstruction
+  // JavaLanguage$JavaInstructionFactory$9, 10  <=> SSAInvokeInstruction
+  // JavaLanguage$JavaInstructionFactory$11     <=> SSAMonitorInstruction
+  // JavaLanguage$JavaInstructionFactory$12     <=> SSANewInstruction
+  // JavaLanguage$JavaInstructionFactory$13     <=> SSAPhiInstruction
+  // JavaLanguage$JavaInstructionFactory$14, 15 <=> SSAPutInstruction         <- assignment
+  // JavaLanguage$JavaInstructionFactory$16     <=> SSAThrowInstruction
+  // JavaLanguage$JavaInstructionFactory$17     <=> SSALoadMetadataInstruction
+  // JavaLanguage$JavaInstructionFactory$18     <=> SSANewInstruction
+
   /**
    * Functions for all other (inter-procedural) edges.
    */
@@ -20,11 +38,10 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       val d1 = ideN1.d
       val idFactFunPairSet = Set(FactFunPair(d1, Id))
       n2.getLastInstruction match {
-        case assignment: SSAPutInstruction           =>
+        case assignment: SSAPutInstruction =>
           edgesForAssignment(assignment, n2, d1, idFactFunPairSet)
-        case assignment: SSAStoreIndirectInstruction =>
-          ???
-        case _                                       =>
+        case x                                       =>
+          if (x != null) println(x.getClass)
           idFactFunPairSet
       }
     }

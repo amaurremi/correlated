@@ -9,7 +9,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
   /**
    * [1]
    */
-  private[this] val vals = mutable.Map[IdeNode, LatticeElem]() withDefaultValue Top
+  private[this] val vals = mutable.Map[IdeNode, LatticeElem]() withDefault { _ => Top }
 
   private[this] lazy val nodeWorklist = mutable.Queue[IdeNode]()
 

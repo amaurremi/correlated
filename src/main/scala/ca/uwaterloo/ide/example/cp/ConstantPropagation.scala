@@ -31,7 +31,7 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure // todo not sure
 
   /**
-   * @param instruction Nothing represents the Λ fact, Some(...) represents instructions that ocrrespond to variable assignments.
+   * @param instruction Nothing represents the Λ fact, Some(...) represents instructions that correspond to variable assignments.
    */
   case class CpFact(instruction: Option[SSAInstruction])
 }

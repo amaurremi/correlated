@@ -119,7 +119,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
 
   private[this] def forwardExitFromCall(n: IdeNode, f: IdeFunction, sq: Node, d: Fact) {
     forwardExitD4s.put((n.n, IdeNode(sq, d)), n.d)
-    forwardExitNode(n, f)
+    if (n.isExitNode) forwardExitNode(n, f)
   }
 
   private[this] def forwardAnyNode(e: IdeEdge, f: IdeFunction) {
