@@ -54,7 +54,7 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
     solvedResult map {
       case (n, e) =>
         println(ideNodeString(n))
-        println(" -> ")
+        println("-> ")
         println(e.toString)
         println()
     }

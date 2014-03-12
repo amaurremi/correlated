@@ -38,9 +38,9 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       val d1 = ideN1.d
       val idFactFunPairSet = Set(FactFunPair(d1, Id))
       n2.getLastInstruction match {
-        case assignment: SSAPutInstruction =>
+        case assignment: SSAPutInstruction           =>
           edgesForAssignment(assignment, assignment.getVal, n2, d1, idFactFunPairSet)
-        case assignment: SSAArrayStoreInstruction =>
+        case assignment: SSAArrayStoreInstruction    =>
           edgesForAssignment(assignment, assignment.getValue, n2, d1, idFactFunPairSet)
         case x                                       =>
           idFactFunPairSet
