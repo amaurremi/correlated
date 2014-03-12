@@ -1,6 +1,8 @@
 package ca.uwaterloo.ide.example.cp
 
-import com.ibm.wala.ssa.{SSAInstruction, SSAArrayStoreInstruction, SSAPutInstruction}
+import com.ibm.wala.ssa._
+import scala.collection.JavaConverters._
+import scala.Some
 
 class CopyConstantPropagation(fileName: String) extends ConstantPropagation(fileName) {
 
@@ -36,28 +38,55 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   override def otherSuccEdges: EdgeFn =
     (ideN1, n2) => {
       val d1 = ideN1.d
-      val idFactFunPairSet = Set(FactFunPair(d1, Id))
       n2.getLastInstruction match {
-        case assignment: SSAPutInstruction           =>
-          edgesForAssignment(assignment, assignment.getVal, n2, d1, idFactFunPairSet)
-        case assignment: SSAArrayStoreInstruction    =>
-          edgesForAssignment(assignment, assignment.getValue, n2, d1, idFactFunPairSet)
-        case x                                       =>
-          idFactFunPairSet
+        case assignment: SSAPutInstruction        =>
+          edgesForAssignment(assignment, n2, d1)
+        case assignment: SSAArrayStoreInstruction =>
+          edgesForAssignment(assignment, n2, d1)
+        case _                                    =>
+          Set(FactFunPair(d1, Id))
       }
+    }
+
+  private[this] def getLVar(instr: SSAInstruction, n: Node): Int =
+    instr match {
+      case assignment: SSAPutInstruction        =>
+        assignment.getRef
+      case assignment: SSAArrayStoreInstruction =>
+        ((supergraph getProcOf n).getIR.iterateNormalInstructions().asScala collectFirst {
+          case instruction: SSAArrayLoadInstruction
+            if instruction.getArrayRef == assignment.getArrayRef && instruction.getIndex == assignment.getIndex =>
+              instruction.getDef
+        }).get
+      case _                                    =>
+        throw new IllegalArgumentException("lvar retrieval on non-assignment statement " + instr.toString)
+    }
+
+  private[this] def getRVal(instr: SSAInstruction): Int =
+    instr match {
+      case assignment: SSAPutInstruction        =>
+        assignment.getVal
+      case assignment: SSAArrayStoreInstruction =>
+        assignment.getValue
+      case _                                    =>
+        throw new IllegalArgumentException("rval retrieval on non-assignment statement " + instr.toString)
     }
 
   def edgesForAssignment(
     assignment: SSAInstruction,
-    assignedVal: Int,
     n2: Node,
-    d1: Fact,
-    idFactFunPairSet: Set[FactFunPair]
+    d1: Fact
   ): Set[FactFunPair] = {
+    val assignedVal = getRVal(assignment)
     val symbolTable = (supergraph getProcOf n2).getIR.getSymbolTable
+    val idFactFunPairSet = Set(FactFunPair(d1, Id))
     if (symbolTable isConstant assignedVal) {
       if (d1 == Λ)
-        idFactFunPairSet + FactFunPair(CpFact(Some(assignment)), CpFunction(Num(assignedVal)))
+        idFactFunPairSet +
+          FactFunPair(
+            SomeFact(n2.getMethod.getReference, getLVar(assignment, n2)),
+            CpFunction(Num(assignedVal))
+          )
       else Set.empty
     } else idFactFunPairSet
   }
@@ -79,11 +108,28 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
   override def callStartEdges: EdgeFn =
-    (ideN1, n2) =>
-      if (ideN1.d == Λ)
-        Set(FactFunPair(Λ, Id))
-      else Set.empty
-    // todo substitution for parameters. For now, we assume functions don't take parameters and that there are no fields/static variables
+    (ideN1, n2) => {
+      val callInstr = ideN1.n.getLastInstruction.asInstanceOf[SSAInvokeInstruction] // todo match doesn't work
+      getParNumber(ideN1.d, callInstr) match {
+        case Some(num) =>
+          Set.empty // TODO TODO TODO
+        case None      =>
+          Set(FactFunPair(ideN1.d, Id))
+      }
+    }
+  
+  /**
+   * If the variable corresponding to this fact is passed as a parameter to this call instruction,
+   * returns the number of the parameter.
+   */
+  private[this] def getParNumber(fact: Fact, callInstr: SSAInvokeInstruction): Option[Int] =
+    fact match {
+      case SomeFact(m, v) =>
+        0 to callInstr.getNumberOfParameters - 1 collectFirst { // todo starting with 0 because we're assuming it's a static method
+          case i if callInstr.getUse(i) == v => v
+        }
+      case Lambda         => None
+    }
 
   /**
    * Represents a function

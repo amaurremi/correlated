@@ -9,6 +9,7 @@ import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
+import com.ibm.wala.types.MethodReference
 
 abstract class ConstantPropagation(fileName: String) extends IdeProblem with IdeSolver {
 
@@ -34,20 +35,26 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   override type Procedure = CGNode
   override type Fact      = CpFact
 
-  override val Λ: Fact    = CpFact(None)
+  override val Λ: Fact    = Lambda
 
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure // todo not sure
 
   /**
-   * @param instruction Nothing represents the Λ fact, Some(...) represents instructions that correspond to variable assignments.
+   * Represents a fact for the set D
    */
-  case class CpFact(instruction: Option[SSAInstruction]) {
-    override def toString: String =
-      instruction match {
-        case None        => "Λ"
-        case Some(instr) => if (instr != null) instr.toString else "null"
-      }
+  abstract sealed class CpFact
+
+  /**
+   * @param v The value number that corresponds to the left-hand-side variable in an assignment
+   */
+  case class SomeFact(method: MethodReference, v: Int) extends CpFact
+
+  /**
+   * Represents the Λ fact
+   */
+  case object Lambda extends CpFact {
+    override def toString: String = "Λ"
   }
 
   def printResult() {
