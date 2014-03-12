@@ -53,7 +53,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       case assignment: SSAPutInstruction        =>
         assignment.getRef
       case assignment: SSAArrayStoreInstruction =>
-        ((supergraph getProcOf n).getIR.iterateNormalInstructions().asScala collectFirst {
+        (enclProc(n).getIR.iterateNormalInstructions().asScala collectFirst { // todo inefficient
           case instruction: SSAArrayLoadInstruction
             if instruction.getArrayRef == assignment.getArrayRef && instruction.getIndex == assignment.getIndex =>
               instruction.getDef
@@ -78,7 +78,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     d1: Fact
   ): Set[FactFunPair] = {
     val assignedVal = getRVal(assignment)
-    val symbolTable = (supergraph getProcOf n2).getIR.getSymbolTable
+    val symbolTable = enclProc(n2).getIR.getSymbolTable
     val idFactFunPairSet = Set(FactFunPair(d1, Id))
     if (symbolTable isConstant assignedVal) {
       if (d1 == Λ)
@@ -111,9 +111,10 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     (ideN1, n2) => {
       val callInstr = ideN1.n.getLastInstruction.asInstanceOf[SSAInvokeInstruction] // todo match doesn't work
       getParNumber(ideN1.d, callInstr) match {
-        case Some(num) =>
-          Set.empty // TODO TODO TODO
-        case None      =>
+        case Some(argNum) => // are we passing d1 as an argument to the function?
+          val targetFact = SomeFact(n2.getMethod.getReference, enclProc(n2).getIR.getSymbolTable.getParameter(argNum))
+          Set(FactFunPair(targetFact, Id))
+        case None         =>
           Set(FactFunPair(ideN1.d, Id))
       }
     }
@@ -125,8 +126,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   private[this] def getParNumber(fact: Fact, callInstr: SSAInvokeInstruction): Option[Int] =
     fact match {
       case SomeFact(m, v) =>
-        0 to callInstr.getNumberOfParameters - 1 collectFirst { // todo starting with 0 because we're assuming it's a static method
-          case i if callInstr.getUse(i) == v => v
+        0 to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
+          callInstr.getUse(_) == v
         }
       case Lambda         => None
     }

@@ -10,7 +10,7 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   /**
    * Returns the enclosing procedure of a given node.
    */
-  def enclProc: Node => Procedure = supergraph.getProcOf
+  lazy val enclProc: Node => Procedure = supergraph.getProcOf
 
   /**
    * Given a call node n, returns the start nodes of n's target procedures.
