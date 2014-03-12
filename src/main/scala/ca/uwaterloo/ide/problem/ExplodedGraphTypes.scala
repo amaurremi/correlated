@@ -1,7 +1,5 @@
 package ca.uwaterloo.ide
 
-import com.ibm.wala.dataflow.IFDS.PathEdge
-
 trait ExplodedGraphTypes extends SuperGraphTypes {
 
   /**

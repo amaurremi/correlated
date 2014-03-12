@@ -9,8 +9,8 @@ class CopyConstantPropagationSpec extends FunSpec {
 
   describe("CopyConstantPropagation") {
     it("propagates the zero fact") {
-      val ccs = new CopyConstantPropagation("LocalVars").solve()
-      assert(true)
+      val ccs = new CopyConstantPropagation("LocalVars")
+      ccs.printResult()
     }
   }
 }

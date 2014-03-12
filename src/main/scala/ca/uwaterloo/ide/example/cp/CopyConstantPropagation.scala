@@ -1,6 +1,6 @@
 package ca.uwaterloo.ide.example.cp
 
-import com.ibm.wala.ssa.{SSAStoreIndirectInstruction, SSAPutInstruction}
+import com.ibm.wala.ssa.{SSAInstruction, SSAArrayStoreInstruction, SSAPutInstruction}
 
 class CopyConstantPropagation(fileName: String) extends ConstantPropagation(fileName) {
 
@@ -39,21 +39,21 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       val idFactFunPairSet = Set(FactFunPair(d1, Id))
       n2.getLastInstruction match {
         case assignment: SSAPutInstruction =>
-          edgesForAssignment(assignment, n2, d1, idFactFunPairSet)
+          edgesForAssignment(assignment, assignment.getVal, n2, d1, idFactFunPairSet)
+        case assignment: SSAArrayStoreInstruction =>
+          edgesForAssignment(assignment, assignment.getValue, n2, d1, idFactFunPairSet)
         case x                                       =>
-          if (x != null) println(x.getClass)
           idFactFunPairSet
       }
     }
 
-
   def edgesForAssignment(
-    assignment: SSAPutInstruction,
+    assignment: SSAInstruction,
+    assignedVal: Int,
     n2: Node,
     d1: Fact,
     idFactFunPairSet: Set[FactFunPair]
   ): Set[FactFunPair] = {
-    val assignedVal = assignment.getVal
     val symbolTable = (supergraph getProcOf n2).getIR.getSymbolTable
     if (symbolTable isConstant assignedVal) {
       if (d1 == Λ)
@@ -117,10 +117,12 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
 
   case object ⊤ extends CpLatticeElem {
     override def ⊓(n: CpLatticeElem) = n
+    override def toString: String = "top"
   }
 
   case object ⊥ extends CpLatticeElem {
     override def ⊓(n: CpLatticeElem) = ⊥
+    override def toString: String = "bottom"
   }
 
   case class Num(n: Long) extends CpLatticeElem {
@@ -128,5 +130,6 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       case Num(n2) => if (n == n2) ln else ⊥
       case _       => ln ⊓ this
     }
+    override def toString: String = n.toString
   }
 }

@@ -4,13 +4,22 @@ import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
+import com.ibm.wala.ssa.SSAInstruction
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
-import com.ibm.wala.ssa.SSAInstruction
 
 abstract class ConstantPropagation(fileName: String) extends IdeProblem with IdeSolver {
+
+  val ideNodeString: IdeNode => String =
+    node => {
+      val instr = node.n.getLastInstruction
+      "IdeNode(\n  n: " + node.n.toString +
+              "\n  d: " + node.d.toString +
+              "\n  instruction: " + (if (instr == null) "null" else instr.toString) +
+      ")"
+    }
 
   private[this] val config =
     ConfigFactory.load(
@@ -33,5 +42,21 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   /**
    * @param instruction Nothing represents the Λ fact, Some(...) represents instructions that correspond to variable assignments.
    */
-  case class CpFact(instruction: Option[SSAInstruction])
+  case class CpFact(instruction: Option[SSAInstruction]) {
+    override def toString: String =
+      instruction match {
+        case None        => "Λ"
+        case Some(instr) => if (instr != null) instr.toString else "null"
+      }
+  }
+
+  def printResult() {
+    solvedResult map {
+      case (n, e) =>
+        println(ideNodeString(n))
+        println(" -> ")
+        println(e.toString)
+        println()
+    }
+  }
 }
