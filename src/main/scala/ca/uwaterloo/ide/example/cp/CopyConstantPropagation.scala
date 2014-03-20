@@ -57,10 +57,10 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       case instruction: SSAArrayLoadInstruction
         if instruction.getArrayRef == arrayRef && instruction.getIndex == arrayInd =>
           val method: MethodReference = n.getMethod.getReference
-        val fact = SomeFact(method, ArrayElement(arrayRef, arrayInd))
-        val valNum: Int = instruction.getDef
-        valNumsToArrayElems += (valNum, method) -> fact
-        arrayElemsToValNums += fact -> valNum
+          val fact = SomeFact(method, ArrayElement(arrayRef, arrayInd))
+          val valNum: Int = instruction.getDef
+          valNumsToArrayElems += (valNum, method) -> fact
+          arrayElemsToValNums += fact -> valNum
     }
   }
 
@@ -73,7 +73,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
         throw new IllegalArgumentException("lvar retrieval on non-assignment statement " + instr.toString)
     }
 
-  private[this] val valNumsToArrayElems = mutable.Map[(ValueNumber, MethodReference), CpFact]() // todo BidiMap?
+  private[this] val valNumsToArrayElems = mutable.Map[(ValueNumber, MethodReference), CpFact]() // todo bidirectional map?
   private[this] val arrayElemsToValNums = mutable.Map[CpFact, ValueNumber]()
 
   private[this] def getRVal(instr: SSAInstruction): ValueNumber =
@@ -109,20 +109,23 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
   override def endReturnEdges: EdgeFn =
-    callStartEdges // todo
+    idEdges
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
   override def callReturnEdges: EdgeFn =
+    idEdges // todo not for fields/static variables
+
+
+  private[this] def idEdges: EdgeFn =
     (ideN1, _) =>
-      Set(FactFunPair(ideN1.d, Id)) // todo not for fields/static variables
+      Set(FactFunPair(ideN1.d, Id))
 
   private[this] def getArrayElemFromParameterNum(n: Node, argNum: Int): CpFact = {
     val valNumber = enclProc(n).getIR.getSymbolTable.getParameter(argNum)
     val method: MethodReference = n.getMethod.getReference
-    // if we invoke this method, we assume that valNumsToArrayElems contains the necessary entry.
-    valNumsToArrayElems(valNumber, method) // todo make lazy val with reference getter
+    SomeFact(method, ElemInTargetMethod(valNumber))
   }
 
   /**
@@ -208,6 +211,6 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       case Num(n2) => if (n == n2) ln else ⊥
       case _       => ln ⊓ this
     }
-    override def toString: String = "variable " + n.toString
+    override def toString: String = "variable value " + n.toString
   }
 }

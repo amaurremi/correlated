@@ -6,6 +6,8 @@ import scala.collection.{breakOut, mutable}
 // with applications to constant propagation"
 trait ComputeValues { this: IdeProblem with TraverseGraph =>
 
+  private[this] type JumpFn = Map[IdeEdge, IdeFunction]
+
   /**
    * [1]
    */
@@ -22,7 +24,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     })(breakOut)
   }
 
-  def computeValues(jumpFunc: Map[IdeEdge, IdeFunction]): Map[IdeNode, LatticeElem]  = {
+  def computeValues(jumpFunc: JumpFn): Map[IdeNode, LatticeElem]  = {
     initialize()
     // Phase II(i)
     while (!nodeWorklist.isEmpty) {
@@ -54,13 +56,19 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     }
   }
 
+  def getJumpFnTargetFacts(ideNode1: IdeNode, node2: Node, jumpFn: JumpFn): Set[Fact] =
+    (jumpFn.keys collect {
+      case IdeEdge(source, IdeNode(n, d)) if source == ideNode1 && n == node2 =>
+        d
+    })(breakOut)
+
   /**
    * [8-10]
    */
-  private[this] def computeStartNode(node: IdeNode, jumpFunc: Map[IdeEdge, IdeFunction]) {
+  private[this] def computeStartNode(node: IdeNode, jumpFunc: JumpFn) {
     for {
       c      <- callNodesInProc(enclProc(node.n))
-      d2     <- otherSuccEdges(node, c) map { _.d2 }
+      d2     <- getJumpFnTargetFacts(node, c, jumpFunc)
       target  = IdeNode(c, d2)
       f2      = jumpFunc(IdeEdge(node, target))
       if f2 != λTop

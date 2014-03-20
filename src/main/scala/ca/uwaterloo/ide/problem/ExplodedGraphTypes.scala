@@ -74,10 +74,7 @@ trait ExplodedGraphTypes extends SuperGraphTypes {
   }
 
   object IdeNode {
-    def apply(
-      node: Node,
-      fact: Fact
-    ): IdeNode =
+    def apply(node: Node, fact: Fact): IdeNode =
       new IdeNode {
         override val n = node
         override val d = fact
@@ -86,6 +83,8 @@ trait ExplodedGraphTypes extends SuperGraphTypes {
         override lazy val isExitNode   = supergraph isExit node
         override lazy val isCallNode   = supergraph isCall node
       }
+
+    def unapply(node: IdeNode): Option[(Node, Fact)] = Some(node.n, node.d)
   }
 
   /**
