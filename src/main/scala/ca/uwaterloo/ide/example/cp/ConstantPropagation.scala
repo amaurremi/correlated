@@ -46,9 +46,15 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   abstract sealed class CpFact
 
   /**
-   * @param v The value number that corresponds to the left-hand-side variable in an assignment
+   * @param arrayElem The array element that corresponds to the left-hand-side variable in an assignment
    */
-  case class SomeFact(method: MethodReference, v: Int) extends CpFact
+  case class SomeFact(method: MethodReference, arrayElem: ArrayElement) extends CpFact
+
+  /**
+   * @param array The value number of the array element's array
+   * @param index The value number of the array element's index
+   */
+  case class ArrayElement(array: Int, index: Int)
 
   /**
    * Represents the Λ fact

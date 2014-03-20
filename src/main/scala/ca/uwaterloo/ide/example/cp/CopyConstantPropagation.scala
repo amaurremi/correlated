@@ -1,8 +1,9 @@
 package ca.uwaterloo.ide.example.cp
 
+import collection.mutable
 import com.ibm.wala.ssa._
+import com.ibm.wala.types.MethodReference
 import scala.collection.JavaConverters._
-import scala.Some
 
 class CopyConstantPropagation(fileName: String) extends ConstantPropagation(fileName) {
 
@@ -13,8 +14,9 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   override val Top: LatticeElem    = ⊤
   override val Id: IdeFunction     = CpFunction(⊤, l = true)
   override val λTop: IdeFunction   = CpFunction(⊤)
+  
+  private[this] type ValueNumber = Int
 
-  // todo remove
   // javap -c -cp <jar name or dir name> <class file name>
   // JavaLanguage$JavaInstructionFactory$1      <=> SSAArrayLengthInstruction
   // JavaLanguage$JavaInstructionFactory$2      <=> SSAArrayLoadInstruction
@@ -48,21 +50,33 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       }
     }
 
-  private[this] def getLVar(instr: SSAInstruction, n: Node): Int =
+  def updateArrayElementValNums(assignment: SSAArrayStoreInstruction, n: Node) = {
+    val arrayRef = assignment.getArrayRef
+    val arrayInd = assignment.getIndex
+    enclProc(n).getIR.iterateNormalInstructions().asScala collectFirst { // todo inefficient
+      case instruction: SSAArrayLoadInstruction
+        if instruction.getArrayRef == arrayRef && instruction.getIndex == arrayInd =>
+          val method: MethodReference = n.getMethod.getReference
+        val fact = SomeFact(method, ArrayElement(arrayRef, arrayInd))
+        val valNum: Int = instruction.getDef
+        valNumsToArrayElems += (valNum, method) -> fact
+        arrayElemsToValNums += fact -> valNum
+    }
+  }
+
+  private[this] def getLVar(instr: SSAInstruction, n: Node): ArrayElement =
     instr match {
-      case assignment: SSAPutInstruction        =>
-        assignment.getRef
       case assignment: SSAArrayStoreInstruction =>
-        (enclProc(n).getIR.iterateNormalInstructions().asScala collectFirst { // todo inefficient
-          case instruction: SSAArrayLoadInstruction
-            if instruction.getArrayRef == assignment.getArrayRef && instruction.getIndex == assignment.getIndex =>
-              instruction.getDef
-        }).get
+        updateArrayElementValNums(assignment, n)
+        ArrayElement(assignment.getArrayRef, assignment.getIndex)
       case _                                    =>
         throw new IllegalArgumentException("lvar retrieval on non-assignment statement " + instr.toString)
     }
 
-  private[this] def getRVal(instr: SSAInstruction): Int =
+  private[this] val valNumsToArrayElems = mutable.Map[(ValueNumber, MethodReference), CpFact]() // todo BidiMap?
+  private[this] val arrayElemsToValNums = mutable.Map[CpFact, ValueNumber]()
+
+  private[this] def getRVal(instr: SSAInstruction): ValueNumber =
     instr match {
       case assignment: SSAPutInstruction        =>
         assignment.getVal
@@ -104,15 +118,23 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     (ideN1, _) =>
       Set(FactFunPair(ideN1.d, Id)) // todo not for fields/static variables
 
+  private[this] def getArrayElemFromParameterNum(n: Node, argNum: Int): CpFact = {
+    val valNumber = enclProc(n).getIR.getSymbolTable.getParameter(argNum)
+    val method: MethodReference = n.getMethod.getReference
+    // if we invoke this method, we assume that valNumsToArrayElems contains the necessary entry.
+    valNumsToArrayElems(valNumber, method) // todo make lazy val with reference getter
+  }
+
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
+  // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's an args[] element of the main method)
   override def callStartEdges: EdgeFn =
     (ideN1, n2) => {
       val callInstr = ideN1.n.getLastInstruction.asInstanceOf[SSAInvokeInstruction] // todo match doesn't work
-      getParNumber(ideN1.d, callInstr) match {
+      getParameterNumber(ideN1.d, callInstr) match {
         case Some(argNum) => // are we passing d1 as an argument to the function?
-          val targetFact = SomeFact(n2.getMethod.getReference, enclProc(n2).getIR.getSymbolTable.getParameter(argNum))
+          val targetFact = getArrayElemFromParameterNum(n2, argNum)
           Set(FactFunPair(targetFact, Id))
         case None         =>
           Set(FactFunPair(ideN1.d, Id))
@@ -123,11 +145,12 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
    * If the variable corresponding to this fact is passed as a parameter to this call instruction,
    * returns the number of the parameter.
    */
-  private[this] def getParNumber(fact: Fact, callInstr: SSAInvokeInstruction): Option[Int] =
+  private[this] def getParameterNumber(fact: Fact, callInstr: SSAInvokeInstruction): Option[Int] =
     fact match {
-      case SomeFact(m, v) =>
+      case f: SomeFact =>
+        val valNum = arrayElemsToValNums(f)
         0 to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
-          callInstr.getUse(_) == v
+          callInstr.getUse(_) == valNum
         }
       case Lambda         => None
     }
@@ -153,6 +176,14 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     override def ◦(f: CpFunction): CpFunction =
       if (l) CpFunction(c ⊓ f.c, l)
       else this
+
+    override def toString: String =
+      if (l && c == ⊤)
+        "id"
+      else
+        "λl . " +
+          (if (l) "l  ⊓ " else "") +
+          c.toString
   }
 
   /**
@@ -177,6 +208,6 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       case Num(n2) => if (n == n2) ln else ⊥
       case _       => ln ⊓ this
     }
-    override def toString: String = n.toString
+    override def toString: String = "variable " + n.toString
   }
 }
