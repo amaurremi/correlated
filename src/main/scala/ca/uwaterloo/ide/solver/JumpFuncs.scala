@@ -99,7 +99,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       (c, r)               <- callReturnPairs(node)
       d4                   <- forwardExitD4s.get(c, n).asScala
       FactFunPair(d1, f4)  <- callStartEdges(IdeNode(c, d4), sp.n)
-      if n.d == d1 // todo just include n.d into pattern matching?
+      if sp.d == d1 // todo just include sp.d into pattern matching?
       FactFunPair(d5, f5)  <- endReturnEdges(n, r)
       rn                    = IdeNode(r, d5)
       sumEdge               = IdeEdge(IdeNode(c, d4), rn)
@@ -116,8 +116,8 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
 
 
   private[this] def forwardExitPropagate(
-    oldE: IdeEdge,
-    oldF: IdeFunction
+    e: IdeEdge,
+    f: IdeFunction
   )(
     c: Node,
     d4: Fact,
@@ -127,9 +127,10 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     for {
       sq <- startNodes(c)
       (d3, f3) <- forwardExitD3s.get(sq, IdeNode(c, d4)).asScala
+      if f3 != λTop
     } {
       // [29]
-      propagate(oldE, oldF)(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
+      propagate(e, f)(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
     }
   }
 
