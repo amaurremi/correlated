@@ -53,7 +53,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       if (n.isCallNode)
         forwardCallNode(e, f)
       if (n.isExitNode)
-        forwardExitNode(n, f)
+        forwardExitNode(e, f)
       if (!n.isCallNode && !n.isExitNode)
         forwardAnyNode(e, f)
     }
@@ -65,14 +65,14 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    */
   private[this] def forwardCallNode(e: IdeEdge, f: IdeFunction) {
     val n = e.target
-    val partialPropagate = propagate(e.target, f) _
+    val partialPropagate = propagate(e, f) _
     // [12-13]
     val node = n.n
     for {
       sq <- targetStartNodes(node)
       d3 <- callStartD2s(n, sq)
     } {
-      forwardExitFromCall(n, f, sq, d3) //
+      forwardExitFromCall(e, f, sq, d3)
       val sqn = IdeNode(sq, d3)
       partialPropagate(IdeEdge(sqn, sqn), Id)
     }
@@ -91,28 +91,32 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     }
   }
 
-  private[this] def forwardExitNode(n: IdeNode, f: IdeFunction) {
+  private[this] def forwardExitNode(e: IdeEdge, f: IdeFunction) {
+    val sp = e.source
+    val n = e.target
+    val node = n.n
     for {
-      (c, r)                <- callReturnPairs(n.n)
-      d4                    <- forwardExitD4s.get(c, n).asScala
-      FactFunPair(`d4`, f4) <- callStartEdges(IdeNode(c, d4), n.n)
-      FactFunPair(d5, f5)   <- endReturnEdges(n, r)
-      rn                     = IdeNode(r, d5)
-      sumEdge                = IdeEdge(IdeNode(c, d4), rn)
-      sumF                   = summaryFn(sumEdge)
-      fPrime                 = (f5 ◦ f ◦ f4) ⊓ sumF
+      (c, r)               <- callReturnPairs(node)
+      d4                   <- forwardExitD4s.get(c, n).asScala
+      FactFunPair(d1, f4)  <- callStartEdges(IdeNode(c, d4), sp.n)
+      if n.d == d1 // todo just include n.d into pattern matching?
+      FactFunPair(d5, f5)  <- endReturnEdges(n, r)
+      rn                    = IdeNode(r, d5)
+      sumEdge               = IdeEdge(IdeNode(c, d4), rn)
+      sumF                  = summaryFn(sumEdge)
+      fPrime                = (f5 ◦ f ◦ f4) ⊓ sumF
       if fPrime != sumF
     } {
       // [26]
       summaryFn += sumEdge -> fPrime
       // [29]
-      forwardExitPropagate(n, f)(c, d4, rn, fPrime)
+      forwardExitPropagate(e, f)(c, d4, rn, fPrime)
     }
   }
 
 
   private[this] def forwardExitPropagate(
-    oldN: IdeNode,
+    oldE: IdeEdge,
     oldF: IdeFunction
   )(
     c: Node,
@@ -125,7 +129,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       (d3, f3) <- forwardExitD3s.get(sq, IdeNode(c, d4)).asScala
     } {
       // [29]
-      propagate(oldN, oldF)(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
+      propagate(oldE, oldF)(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
     }
   }
 
@@ -133,18 +137,19 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    * To get d4 values in line [21], we need to remember all tuples (c, d4, sp) when we encounter them
    * in the call-processing procedure.
    */
-  private[this] def forwardExitFromCall(n: IdeNode, f: IdeFunction, sq: Node, d: Fact) {
+  private[this] def forwardExitFromCall(e: IdeEdge, f: IdeFunction, sq: Node, d: Fact) {
+    val n = e.target
     forwardExitD4s.put((n.n, IdeNode(sq, d)), n.d)
-    if (n.isExitNode) forwardExitNode(n, f)
+    if (n.isExitNode) forwardExitNode(e, f)
   }
 
   /**
    * For line [28], we need to retrieve all d3 values that match the condition. When we encounter
    * them here, we store them in the forwardExitD3s map.
    */
-  private[this] def forwardExitFromPropagate(e: IdeEdge, f2: IdeFunction, oldN: IdeNode, oldF: IdeFunction) {
+  private[this] def forwardExitFromPropagate(e: IdeEdge, f2: IdeFunction, oldE: IdeEdge, oldF: IdeFunction) {
     forwardExitD3s.put((e.source.n, e.target), (e.source.d, f2))
-    if (oldN.isExitNode) forwardExitNode(oldN, oldF)
+    if (oldE.target.isExitNode) forwardExitNode(oldE, oldF)
   }
 
   private[this] def forwardAnyNode(e: IdeEdge, f: IdeFunction) {
@@ -153,20 +158,20 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       m                       <- followingNodes(n.n)
       FactFunPair(d3, edgeFn) <- otherSuccEdges(n, m)
     } {
-      propagate(e.target, f)(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
+      propagate(e, f)(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
     }
   }
 
   /**
-   * @param oldN Needed for repeating forwardExitNode
+   * @param oldE Needed for repeating forwardExitNode
    * @param oldF Needed for repeating forwardExitNode
    */
-  private[this] def propagate(oldN: IdeNode, oldF: IdeFunction)(e: IdeEdge, f: IdeFunction) {
+  private[this] def propagate(oldE: IdeEdge, oldF: IdeFunction)(e: IdeEdge, f: IdeFunction) {
     val jf = jumpFn(e)
     val f2 = f ⊓ jf
     if (f2 != jf) {
       jumpFn += e -> f2
-      if (f2 != λTop) forwardExitFromPropagate(e, f2, oldN, oldF) // todo check with Ondrej if that method makes sense
+      if (f2 != λTop) forwardExitFromPropagate(e, f2, oldE, oldF) // todo check with Ondrej if that method makes sense
       pathWorklist enqueue e
     }
   }

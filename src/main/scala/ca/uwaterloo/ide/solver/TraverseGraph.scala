@@ -18,6 +18,9 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   def targetStartNodes(n: Node): Iterator[Node] =
     (supergraph getCalledNodes n).asScala
 
+  /**
+   * Return-site nodes that correspond to call node n
+   */
   def returnNodes(n: Node): Iterator[Node] = {
     targetStartNodes(n) flatMap { s =>
       supergraph.getReturnSites(n, enclProc(s)).asScala
@@ -37,10 +40,8 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
    * Given the exit node of procedure p, returns all pairs (c, r), where c calls p with corresponding
    * return-site node r.
    */
-  def callReturnPairs(exit: Node): Seq[(Node, Node)] = { // todo is this correct?
-    assert(supergraph isExit exit, "non-exit node passed to TraverseGraph.callReturnPairs")
+  def callReturnPairs(exit: Node): Iterator[(Node, Node)] = { // todo is this correct?
     for {
-      s <- startNodes(exit)
       r <- (supergraph getSuccNodes exit).asScala // todo this should give us the return sites we're looking for. is that right?
       if supergraph isReturn r
       c <- supergraph.getCallSites(r, enclProc(exit)).asScala
