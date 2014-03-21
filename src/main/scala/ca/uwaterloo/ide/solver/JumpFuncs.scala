@@ -10,8 +10,10 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
 
   private[this] val pathWorklist = new mutable.Queue[IdeEdge]
 
+  // [1-2]
   private[this] val jumpFn = mutable.Map[IdeEdge, IdeFunction]() withDefault { _ => λTop } // for some reason, withDefalutValue doesn't work
 
+  // [3-4]
   private[this] val summaryFn = mutable.Map[IdeEdge, IdeFunction]() withDefault { _ => λTop }
 
   def initialize() {
@@ -22,11 +24,10 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
         IdeEdge(zeroNode, zeroNode)
     }
     pathWorklist enqueue (edges: _*)
-    // [1-2 + 6]
+    // [6]
     jumpFn ++= (edges map {
       _ -> Id
     })(breakOut)
-    // [3-4]
   }
 
   /**
@@ -43,7 +44,9 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
 
   def computeJumpFuncs: Map[IdeEdge, IdeFunction] = {
     initialize()
+    // [7-33]
     while (pathWorklist.size > 0) {
+      // [8-9] e = (sp, d1) -> (n, d2)
       val e = pathWorklist.dequeue()
       val f = jumpFn(e)
       val n = e.target
@@ -62,15 +65,16 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    */
   private[this] def forwardCallNode(e: IdeEdge, f: IdeFunction) {
     val n = e.target
+    val partialPropagate = propagate(e.target, f) _
     // [12-13]
     val node = n.n
     for {
       sq <- targetStartNodes(node)
       d3 <- callStartD2s(n, sq)
     } {
-      forwardExitFromCall(n, f, sq, d3)
+      forwardExitFromCall(n, f, sq, d3) //
       val sqn = IdeNode(sq, d3)
-      propagate(IdeEdge(sqn, sqn), Id)
+      partialPropagate(IdeEdge(sqn, sqn), Id)
     }
     // [14-16]
     for {
@@ -79,11 +83,11 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       rn                       = IdeNode(r, d3)
       re                       = IdeEdge(e.source, rn)
     } {
-      propagate(re, edgeFn ◦ f)
+      partialPropagate(re, edgeFn ◦ f)
       // [17-18]
       val f3 = summaryFn(IdeEdge(n, rn))
       if (f3 != λTop)
-        propagate(re, f3 ◦ f)
+        partialPropagate(re, f3 ◦ f)
     }
   }
 
@@ -102,24 +106,45 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       // [26]
       summaryFn += sumEdge -> fPrime
       // [29]
-      forwardExitPropagate(c, d4, rn, fPrime)
+      forwardExitPropagate(n, f)(c, d4, rn, fPrime)
     }
   }
 
 
-  private[this] def forwardExitPropagate(c: Node, d4: Fact, rn: IdeNode, fPrime: IdeFunction) {
+  private[this] def forwardExitPropagate(
+    oldN: IdeNode,
+    oldF: IdeFunction
+  )(
+    c: Node,
+    d4: Fact,
+    rn: IdeNode,
+    fPrime: IdeFunction
+  ) {
     for {
       sq <- startNodes(c)
       (d3, f3) <- forwardExitD3s.get(sq, IdeNode(c, d4)).asScala
     } {
       // [29]
-      propagate(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
+      propagate(oldN, oldF)(IdeEdge(IdeNode(sq, d3), rn), fPrime ◦ f3)
     }
   }
 
+  /**
+   * To get d4 values in line [21], we need to remember all tuples (c, d4, sp) when we encounter them
+   * in the call-processing procedure.
+   */
   private[this] def forwardExitFromCall(n: IdeNode, f: IdeFunction, sq: Node, d: Fact) {
     forwardExitD4s.put((n.n, IdeNode(sq, d)), n.d)
     if (n.isExitNode) forwardExitNode(n, f)
+  }
+
+  /**
+   * For line [28], we need to retrieve all d3 values that match the condition. When we encounter
+   * them here, we store them in the forwardExitD3s map.
+   */
+  private[this] def forwardExitFromPropagate(e: IdeEdge, f2: IdeFunction, oldN: IdeNode, oldF: IdeFunction) {
+    forwardExitD3s.put((e.source.n, e.target), (e.source.d, f2))
+    if (oldN.isExitNode) forwardExitNode(oldN, oldF)
   }
 
   private[this] def forwardAnyNode(e: IdeEdge, f: IdeFunction) {
@@ -128,17 +153,20 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       m                       <- followingNodes(n.n)
       FactFunPair(d3, edgeFn) <- otherSuccEdges(n, m)
     } {
-      propagate(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
+      propagate(e.target, f)(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
     }
   }
 
-  private[this] def propagate(e: IdeEdge, f: IdeFunction) {
+  /**
+   * @param oldN Needed for repeating forwardExitNode
+   * @param oldF Needed for repeating forwardExitNode
+   */
+  private[this] def propagate(oldN: IdeNode, oldF: IdeFunction)(e: IdeEdge, f: IdeFunction) {
     val jf = jumpFn(e)
     val f2 = f ⊓ jf
     if (f2 != jf) {
       jumpFn += e -> f2
-      if (f2 != λTop)
-        forwardExitD3s.put((e.source.n, e.target), (e.source.d, f2))
+      if (f2 != λTop) forwardExitFromPropagate(e, f2, oldN, oldF) // todo check with Ondrej if that method makes sense
       pathWorklist enqueue e
     }
   }

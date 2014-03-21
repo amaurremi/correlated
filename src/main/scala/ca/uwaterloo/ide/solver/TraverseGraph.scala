@@ -16,7 +16,7 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
    * Given a call node n, returns the start nodes of n's target procedures.
    */
   def targetStartNodes(n: Node): Iterator[Node] =
-    supergraph.getCalledNodes(n).asScala
+    (supergraph getCalledNodes n).asScala
 
   def returnNodes(n: Node): Iterator[Node] = {
     targetStartNodes(n) flatMap { s =>
