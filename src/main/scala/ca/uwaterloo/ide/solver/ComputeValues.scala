@@ -16,17 +16,18 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
   private[this] lazy val nodeWorklist = mutable.Queue[IdeNode]()
 
   private[this] def initialize() {
-    // [3]
-    nodeWorklist ++= entryPoints map { IdeNode(_, Λ) }
     // [2]
     vals ++= (entryPoints map {
       IdeNode(_, Λ) -> Bottom
     })(breakOut)
+    // [3]
+    nodeWorklist ++= entryPoints map { IdeNode(_, Λ) }
   }
 
   def computeValues(jumpFunc: JumpFn): Map[IdeNode, LatticeElem]  = {
-    initialize()
     // Phase II(i)
+    initialize()
+    // [4-17]
     while (!nodeWorklist.isEmpty) {
       val node = nodeWorklist.dequeue()
       if (node.isStartNode)
@@ -38,9 +39,9 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     for { // todo correct (differs from paper)?
       (IdeEdge(sp, n), fPrime) <- jumpFunc
       if fPrime != λTop
-      if sp.isStartNode
       if !(n.isCallNode || n.isStartNode)
     } {
+      assert(sp.isStartNode, "Wrong jump function computation: source edge is not a start node")
       vals += n -> vals(n) ⊓ fPrime(vals(sp))
     }
     vals.toMap
@@ -56,24 +57,23 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     }
   }
 
-  def getJumpFnTargetFacts(ideNode1: IdeNode, node2: Node, jumpFn: JumpFn): Set[Fact] =
-    (jumpFn.keys collect {
-      case IdeEdge(source, IdeNode(n, d)) if source == ideNode1 && n == node2 =>
-        d
+  private[this] def getJumpFnTargetFacts(ideNode1: IdeNode, node2: Node, jumpFn: JumpFn): Set[FactFunPair] =
+    (jumpFn collect {
+      case (IdeEdge(source, IdeNode(n, d)), f)
+        if source == ideNode1 && n == node2 =>
+          FactFunPair(d, f)
     })(breakOut)
 
   /**
    * [8-10]
    */
-  private[this] def computeStartNode(node: IdeNode, jumpFunc: JumpFn) {
+  private[this] def computeStartNode(sp: IdeNode, jumpFunc: JumpFn) {
     for {
-      c      <- callNodesInProc(enclProc(node.n))
-      d2     <- getJumpFnTargetFacts(node, c, jumpFunc)
-      target  = IdeNode(c, d2)
-      f2      = jumpFunc(IdeEdge(node, target))
-      if f2 != λTop
+      c                           <- callNodesInProc(enclProc(sp.n))
+      FactFunPair(dPrime, fPrime) <- getJumpFnTargetFacts(sp, c, jumpFunc)
+      if fPrime != λTop
     } {
-      propagateValue(target, f2(vals(node)))
+      propagateValue(IdeNode(c, dPrime), fPrime(vals(sp)))
     }
   }
 
