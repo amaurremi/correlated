@@ -73,7 +73,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
         throw new IllegalArgumentException("lvar retrieval on non-assignment statement " + instr.toString)
     }
 
-  private[this] val valNumsToArrayElems = mutable.Map[(ValueNumber, MethodReference), CpFact]() // todo bidirectional map?
+  private[this] val valNumsToArrayElems = mutable.Map[(ValueNumber, MethodReference), CpFact]()
   private[this] val arrayElemsToValNums = mutable.Map[CpFact, ValueNumber]()
 
   private[this] def getRVal(instr: SSAInstruction): ValueNumber =
@@ -177,7 +177,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       CpFunction(c ⊓ f.c, l || f.l)
 
     override def ◦(f: CpFunction): CpFunction =
-      if (l) CpFunction(c ⊓ f.c, l)
+      if (l) CpFunction(c ⊓ f.c, f.l)
       else this
 
     override def toString: String =

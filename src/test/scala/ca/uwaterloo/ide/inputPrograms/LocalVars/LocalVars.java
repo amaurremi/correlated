@@ -7,7 +7,8 @@ public class LocalVars {
        f(args[1]);
     }
 
-    static void f(String s) {
+    static String f(String s) {
+        return s;
 //      int[] f2 = new int[10];
 //      f2[0] = s;
     }
