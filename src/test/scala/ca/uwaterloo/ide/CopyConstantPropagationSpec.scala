@@ -8,9 +8,9 @@ import org.scalatest.junit.JUnitRunner
 class CopyConstantPropagationSpec extends FunSpec {
 
   describe("CopyConstantPropagation") {
-    it("propagates the zero fact") {
+    it("propagates constants inter-procedurally") {
       val ccs = new CopyConstantPropagation("LocalVars")
-      ccs.printResult()
+      ccs.printResult(withNullInstructions = false)
     }
   }
 }

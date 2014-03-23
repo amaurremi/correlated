@@ -69,9 +69,9 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
     override def toString: String = "Λ"
   }
 
-  def printResult() {
-    solvedResult map {
-      case (n, e) =>
+  def printResult(withNullInstructions: Boolean = false) {
+    solvedResult collect {
+      case (n, e) if withNullInstructions || n.n.getLastInstruction != null =>
         println(ideNodeString(n))
         println("-> ")
         println(e.toString)
