@@ -4,8 +4,8 @@ import scala.collection.JavaConverters._
 
 trait TraverseGraph { this: ExplodedGraphTypes =>
 
-  def followingNodes(n: Node): Iterator[Node] =
-    supergraph.getSuccNodes(n).asScala
+  def followingNodes(n: Node): Seq[Node] =
+    supergraph.getSuccNodes(n).asScala.toSeq
 
   /**
    * Returns the enclosing procedure of a given node.
