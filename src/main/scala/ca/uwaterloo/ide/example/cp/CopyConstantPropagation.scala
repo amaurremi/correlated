@@ -54,7 +54,12 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
   override def endReturnEdges: EdgeFn =
-    idEdges
+    (ideN1, n2) => {
+      n2.getLastInstruction match {
+        case assignment: SSAArrayStoreInstruction =>
+          edgesForAssignment(assignment, n2, ideN1.d)
+      }
+    }
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
@@ -70,7 +75,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     (ideN1, n2) => {
       val callInstr = ideN1.n.getLastInstruction.asInstanceOf[SSAInvokeInstruction] // todo match doesn't work
       getParameterNumber(ideN1.d, callInstr) match {
-        case Some(argNum) => // are we passing d1 as an argument to the function?
+        case Some(argNum) => // checks if we are passing d1 as an argument to the function
           val targetFact = getArrayElemFromParameterNum(n2, argNum)
           Set(FactFunPair(targetFact, Id))
         case None         =>

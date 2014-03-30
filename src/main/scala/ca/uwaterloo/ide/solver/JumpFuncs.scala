@@ -97,7 +97,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     val node = n.n
     for {
       (c, r)               <- callReturnPairs(node)
-      d4                   <- forwardExitD4s.get(c, n).asScala
+      d4                   <- forwardExitD4s.get(c, sp).asScala
       FactFunPair(d1, f4)  <- callStartEdges(IdeNode(c, d4), sp.n)
       if sp.d == d1 // todo just include sp.d into pattern matching?
       FactFunPair(d5, f5)  <- endReturnEdges(n, r)
