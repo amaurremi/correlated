@@ -4,36 +4,45 @@ import com.ibm.wala.ssa.{SSAReturnInstruction, SSAArrayStoreInstruction, SSAInst
 
 trait ConstantPropagationTester { this: ConstantPropagation =>
 
-  def getInstruction(node: IdeNode): SSAInstruction = node.n.getLastInstruction
- 
-  def isArrayAssignment(node: IdeNode): Boolean =
-    getInstruction(node) match {
-      case n: SSAArrayStoreInstruction => true
-      case _                           => false
-    }
-  
-  def isReturn(node: IdeNode): Boolean =
-    getInstruction(node) match {
-      case n: SSAReturnInstruction => true
-      case _                       => false  
-    }
-  
-  def nonLambdaFact(node: IdeNode): Boolean = node.d != Lambda
-
-  def isInMainMethod(node: IdeNode): Boolean =
-    entryPoints exists { enclProc(_) == enclProc(node.n) }
-
-  def getAssignmentVals(inMain: Boolean, nonLambda: Boolean = true, expectedNumber: Int = 1) =
+  /**
+   * Let A be the set of all the assignment instruction nodes in the input program.
+   * This method returns the LatticeVal elements corresponding to the node.
+   * @param inMain If true, considers only assignment instructions inside of the main method.
+   *               Otherwise, considers only assignment instructions outside of the main method.
+   *               There is no option to consider all assignment statements in the program.
+   * @param nonLambda If true, does not consider Λ facts. Otherwise, considers only Λ facts.
+   * @param expectedNumber The expected number of assignment statements returned by this method.
+   */
+  def getAssignmentVals(
+    inMain: Boolean, 
+    nonLambda: Boolean = true, 
+    expectedNumber: Int = 1
+  ): Iterable[LatticeElem] =
     getInstructionVals(ArrayAssignment, inMain, nonLambda, expectedNumber)
 
-  def getReturnVals(inMain: Boolean, nonLambda: Boolean = true, expectedNumber: Int = 1) =
-    getInstructionVals(ReturnStatement, inMain, nonLambda, expectedNumber)
+  /**
+   * Analogous to getAssignmentVals, but for return instead of assignment instructions.
+   */
+  def getReturnVals(
+    inMain: Boolean, 
+    nonLambda: Boolean = true, 
+    expectedNumber: Int = 1
+  ): Iterable[LatticeElem] =
+    getInstructionVals(Return, inMain, nonLambda, expectedNumber)
 
-  private[this] def getInstructionVals(instr: InstructionType, inMain: Boolean, nonLambda: Boolean, expectedNumber: Int) = {
-    val isCorrectInstruction = instr match {
-      case ArrayAssignment => isArrayAssignment _
-      case ReturnStatement => isReturn _
-    }
+  private[this] def getInstruction(node: IdeNode): SSAInstruction = node.n.getLastInstruction
+
+  private[this] def nonLambdaFact(node: IdeNode): Boolean = node.d != Lambda
+
+  private[this] def isInMainMethod(node: IdeNode): Boolean =
+    entryPoints exists { enclProc(_) == enclProc(node.n) }
+
+  private[this] def getInstructionVals(
+    instr: InstructionType, 
+    inMain: Boolean, 
+    nonLambda: Boolean, expectedNumber: Int
+  ): Iterable[LatticeElem] = {
+    val isCorrectInstruction = instr.doesMatch
     val instructionVals = solvedResult collect {
       case (node, value)
         if isCorrectInstruction(node) && (nonLambda == nonLambdaFact(node) && (inMain == isInMainMethod(node))) =>
@@ -45,14 +54,33 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
   }
 
   private[this] trait InstructionType {
-    def name: String
+
+    def instrName: String
+
+    def doesMatch: IdeNode => Boolean
   }
 
   private[this] case object ArrayAssignment extends InstructionType {
-    override def name: String = "assignment"
+
+    override def instrName = "assignment"
+
+    override def doesMatch =
+      node =>
+        getInstruction(node) match {
+          case n: SSAArrayStoreInstruction => true
+          case _                           => false
+        }
   }
 
-  private[this] case object ReturnStatement extends InstructionType{
-    override def name: String = "return statement"
+  private[this] case object Return extends InstructionType{
+
+    override def instrName = "return statement"
+
+    override def doesMatch =
+      node =>
+        getInstruction(node) match {
+          case n: SSAReturnInstruction => true
+          case _                       => false
+        }
   }
 }
