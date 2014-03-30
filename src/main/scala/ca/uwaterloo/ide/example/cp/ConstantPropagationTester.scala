@@ -40,7 +40,8 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
   private[this] def getInstructionVals(
     instr: InstructionType, 
     inMain: Boolean, 
-    nonLambda: Boolean, expectedNumber: Int
+    nonLambda: Boolean,
+    expectedNumber: Int
   ): Iterable[LatticeElem] = {
     val isCorrectInstruction = instr.doesMatch
     val instructionVals = solvedResult collect {
@@ -49,7 +50,9 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
           value
     }
     val inOrOutside = if (inMain) "inside" else "outside"
-    assert(instructionVals.size == expectedNumber, "There is (are) " + expectedNumber + " " + instr.toString + "(s) " + inOrOutside + " the main method")
+    val (verb, plural) = if (expectedNumber == 1) ("is ", " ") else ("are ", "s ")
+    val size = instructionVals.size
+    assert(size == expectedNumber, "There " + verb + expectedNumber + " " + instr.instrName + plural + inOrOutside + " the main method, and not " + size)
     instructionVals
   }
 

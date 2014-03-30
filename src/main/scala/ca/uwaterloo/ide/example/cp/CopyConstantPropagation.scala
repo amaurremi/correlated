@@ -58,6 +58,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       n2.getLastInstruction match {
         case assignment: SSAArrayStoreInstruction =>
           edgesForAssignment(assignment, n2, ideN1.d)
+        case _                                    =>
+          Set(FactFunPair(ideN1.d, Id))
       }
     }
 
