@@ -50,7 +50,35 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       }
     }
 
-  def updateArrayElementValNums(assignment: SSAArrayStoreInstruction, n: Node) = {
+  /**
+   * Functions for inter-procedural edges from an end node to the return node of the callee function.
+   */
+  override def endReturnEdges: EdgeFn =
+    idEdges
+
+  /**
+   * Functions for intra-procedural edges from a call to the corresponding return edges.
+   */
+  override def callReturnEdges: EdgeFn =
+    idEdges // todo not for fields/static variables
+
+  /**
+   * Functions for inter-procedural edges from a call node to the corresponding start edges.
+   */
+  // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's an args[] element of the main method)
+  override def callStartEdges: EdgeFn =
+    (ideN1, n2) => {
+      val callInstr = ideN1.n.getLastInstruction.asInstanceOf[SSAInvokeInstruction] // todo match doesn't work
+      getParameterNumber(ideN1.d, callInstr) match {
+        case Some(argNum) => // are we passing d1 as an argument to the function?
+          val targetFact = getArrayElemFromParameterNum(n2, argNum)
+          Set(FactFunPair(targetFact, Id))
+        case None         =>
+          Set(FactFunPair(ideN1.d, Id))
+      }
+    }
+
+  private[this] def updateArrayElementValNums(assignment: SSAArrayStoreInstruction, n: Node) = {
     val arrayRef = assignment.getArrayRef
     val arrayInd = assignment.getIndex
     enclProc(n).getIR.iterateNormalInstructions().asScala collectFirst { // todo inefficient
@@ -86,7 +114,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
         throw new IllegalArgumentException("rval retrieval on non-assignment statement " + instr.toString)
     }
 
-  def edgesForAssignment(
+  private[this] def edgesForAssignment(
     assignment: SSAInstruction,
     n2: Node,
     d1: Fact
@@ -105,19 +133,6 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     else idFactFunPairSet
   }
 
-  /**
-   * Functions for inter-procedural edges from an end node to the return node of the callee function.
-   */
-  override def endReturnEdges: EdgeFn =
-    idEdges
-
-  /**
-   * Functions for intra-procedural edges from a call to the corresponding return edges.
-   */
-  override def callReturnEdges: EdgeFn =
-    idEdges // todo not for fields/static variables
-
-
   private[this] def idEdges: EdgeFn =
     (ideN1, _) =>
       Set(FactFunPair(ideN1.d, Id))
@@ -128,22 +143,6 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     SomeFact(method, ElemInTargetMethod(valNumber))
   }
 
-  /**
-   * Functions for inter-procedural edges from a call node to the corresponding start edges.
-   */
-  // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's an args[] element of the main method)
-  override def callStartEdges: EdgeFn =
-    (ideN1, n2) => {
-      val callInstr = ideN1.n.getLastInstruction.asInstanceOf[SSAInvokeInstruction] // todo match doesn't work
-      getParameterNumber(ideN1.d, callInstr) match {
-        case Some(argNum) => // are we passing d1 as an argument to the function?
-          val targetFact = getArrayElemFromParameterNum(n2, argNum)
-          Set(FactFunPair(targetFact, Id))
-        case None         =>
-          Set(FactFunPair(ideN1.d, Id))
-      }
-    }
-  
   /**
    * If the variable corresponding to this fact is passed as a parameter to this call instruction,
    * returns the number of the parameter.
