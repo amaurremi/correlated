@@ -5,7 +5,7 @@ trait IdeSolver extends JumpFuncs with ComputeValues with TraverseGraph { this: 
   /**
    * Runs the IDE analysis defined in IdeProblem.
    */
-  def solvedResult: Map[IdeNode, LatticeElem] = {
+  lazy val solvedResult: Map[IdeNode, LatticeElem] = {
     // computeJumpFuncs corresponds to Phase I of the algorithm, computeValues corresponds to Phase II.
     computeValues(computeJumpFuncs)
   }
