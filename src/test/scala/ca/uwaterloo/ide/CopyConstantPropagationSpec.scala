@@ -8,8 +8,18 @@ import org.scalatest.junit.JUnitRunner
 class CopyConstantPropagationSpec extends FunSpec {
 
   describe("CopyConstantPropagation") {
-    it("propagates constants inter-procedurally") {
-      val ccs = new CopyConstantPropagation("LocalVars")
+//    it("propagates constants intra-procedurally") {
+//      val ccs = new CopyConstantPropagation("LocalVars")
+//      ccs.printResult(withNullInstructions = false)
+//    }
+
+//    it("propagates constants along the call-start edge") {
+//      val ccs = new CopyConstantPropagation("FunctionCall")
+//      ccs.printResult(withNullInstructions = false)
+//    }
+
+    it("propagates constants along the end-return edge") {
+      val ccs = new CopyConstantPropagation("Return")
       ccs.printResult(withNullInstructions = false)
     }
   }

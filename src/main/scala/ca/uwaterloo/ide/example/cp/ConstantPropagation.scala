@@ -12,15 +12,6 @@ import scala.collection.JavaConverters._
 
 abstract class ConstantPropagation(fileName: String) extends IdeProblem with IdeSolver {
 
-  val ideNodeString: IdeNode => String =
-    node => {
-      val instr = node.n.getLastInstruction
-      "IdeNode(\n  n: " + node.n.toString +
-              "\n  d: " + node.d.toString +
-              "\n  instruction: " + (if (instr == null) "null" else instr.toString) +
-      ")"
-    }
-
   private[this] val config =
     ConfigFactory.load(
       fileName,
@@ -39,6 +30,15 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure // todo not sure
 
+  val ideNodeString: IdeNode => String =
+    node => {
+      val instr = node.n.getLastInstruction
+      "IdeNode(\n  n: " + (if (instr == null) "null" else instr.toString) +
+        "\n  d: " + node.d.toString +
+        "\n  method: " + (if (instr == null) "null" else node.n.getMethod.getName.toString) +
+        ")"
+    }
+
   /**
    * Represents a fact for the set D
    */
@@ -47,7 +47,9 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   /**
    * @param elem The array element that corresponds to the left-hand-side variable in an assignment
    */
-  case class SomeFact(method: MethodReference, elem: FactElem) extends CpFact
+  case class SomeFact(method: MethodReference, elem: FactElem) extends CpFact {
+    override def toString: String = elem.toString + " in " + method.getName.toString + "()"
+  }
 
   abstract class FactElem
 

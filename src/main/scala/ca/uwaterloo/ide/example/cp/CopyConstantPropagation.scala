@@ -94,15 +94,15 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     val assignedVal = getRVal(assignment)
     val symbolTable = enclProc(n2).getIR.getSymbolTable
     val idFactFunPairSet = Set(FactFunPair(d1, Id))
-    if (symbolTable isConstant assignedVal) {
-      if (d1 == Λ)
-        idFactFunPairSet +
-          FactFunPair(
-            SomeFact(n2.getMethod.getReference, getLVar(assignment, n2)),
-            CpFunction(Num(assignedVal))
-          )
-      else Set.empty
-    } else idFactFunPairSet
+    if (d1 == Λ)
+      idFactFunPairSet +
+        FactFunPair(
+          SomeFact(n2.getMethod.getReference, getLVar(assignment, n2)),
+          if (symbolTable isConstant assignedVal)
+            CpFunction(Num(assignedVal, n2.getMethod.getReference))
+          else Id
+        )
+    else idFactFunPairSet
   }
 
   /**
@@ -206,11 +206,11 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     override def toString: String = "bottom"
   }
 
-  case class Num(n: Long) extends CpLatticeElem {
+  case class Num(n: Long, method: MethodReference) extends CpLatticeElem {
     override def ⊓(ln: CpLatticeElem) = ln match {
-      case Num(n2) => if (n == n2) ln else ⊥
+      case Num(n2, method2) => if (n == n2 && method == method2) ln else ⊥
       case _       => ln ⊓ this
     }
-    override def toString: String = "variable value " + n.toString
+    override def toString: String = "variable value " + n.toString + " in " + method.getName.toString + "()"
   }
 }
