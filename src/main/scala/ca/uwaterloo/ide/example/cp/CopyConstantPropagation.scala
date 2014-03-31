@@ -72,21 +72,29 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     val n1 = ideN1.n
     val d1 = ideN1.d
     val idFactFunPairSet = Set(FactFunPair(d1, Id))
-    n1.getLastInstruction match {
-      case returnInstr: SSAReturnInstruction =>
-        val returnValue = returnInstr.getResult
-        val symbolTable = enclProc(n1).getIR.getSymbolTable // todo what if we return something like a function parameter (which is not in the symbol table)?
-        if (d1 == Λ)
-          idFactFunPairSet +
-            FactFunPair(
-              SomeFact(n2.getMethod.getReference, getLVar(assignment, n2)),
-              if (symbolTable isConstant returnValue)
-                CpFunction(Num(returnValue, n1.getMethod.getReference))
-              else Id
-            )
-        else idFactFunPairSet
-      case _                                 => idFactFunPairSet
-    }
+    val ir = enclProc(n1).getIR
+    val returnValue: Option[ValueNumber] = getSingleReturnValue(ir)
+    val symbolTable = ir.getSymbolTable // todo what if we return something like a function parameter (which is not in the symbol table)?
+    if (d1 == Λ)
+      idFactFunPairSet +
+        FactFunPair(
+          SomeFact(n2.getMethod.getReference, getLVar(assignment, n2)),
+          returnValue match {
+            case Some(retVal) if symbolTable isConstant retVal =>
+              CpFunction(Num(retVal, n1.getMethod.getReference))
+            case _                                             =>
+              Id
+          }
+        )
+    else idFactFunPairSet
+  }
+
+  private[this] def getSingleReturnValue(ir: IR): Option[ValueNumber] = {
+    val returns: Set[ValueNumber] = (ir.iterateAllInstructions().asScala collect { // todo is this correct??? THIS IS IMPORTANT SINCE IT STRONGLY DIFFERS FROM THE PAPER
+      case instr: SSAReturnInstruction => instr.getResult
+    }).toSet
+    if (returns.size == 1) Some(returns.head)
+    else None
   }
 
   /**
