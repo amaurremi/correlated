@@ -88,7 +88,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   }
 
   private[this] def getSingleReturnValue(node: Node): Option[ValueNumber] = {
-    val returns: Set[ValueNumber] = (instructionsInProc(node) collect { // todo is this correct??? THIS IS IMPORTANT SINCE IT STRONGLY DIFFERS FROM THE PAPER
+    val returns: Set[ValueNumber] = (instructionsInProc(node) collect { // this is an inefficient implementation. A better way is to keep track of return values in a method using CpFacts
       case instr: SSAReturnInstruction => instr.getResult
     }).toSet
     if (returns.size == 1) Some(returns.head)
@@ -107,13 +107,16 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's an args[] element of the main method)
   override def callStartEdges: EdgeFn =
     (ideN1, n2) => {
-      val callInstr = ideN1.n.getLastInstruction.asInstanceOf[SSAInvokeInstruction] // todo match doesn't work
-      getParameterNumber(ideN1.d, callInstr) match {
-        case Some(argNum) => // checks if we are passing d1 as an argument to the function
-          val targetFact = getArrayElemFromParameterNum(n2, argNum)
-          Set(FactFunPair(targetFact, Id))
-        case None         =>
-          Set(FactFunPair(ideN1.d, Id))
+      ideN1.n.getLastInstruction match {
+        case callInstr: SSAInvokeInstruction =>
+          getParameterNumber(ideN1.d, callInstr) match {
+            case Some(argNum) => // checks if we are passing d1 as an argument to the function
+              val targetFact = getArrayElemFromParameterNum(n2, argNum)
+              Set(FactFunPair(targetFact, Id))
+            case None         =>
+              Set(FactFunPair(ideN1.d, Id))
+          }
+        case _ => throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
       }
     }
 
@@ -184,6 +187,10 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       CpFunction(⊤)
     else Id
 
+  /**
+   * Given the node whose instruction is an assignment, and
+   * Returns true if the
+   */
   private[this] def isCall(value: ValueNumber, node: Node): Boolean =
     instructionsInProc(node) exists {
       case instr: SSAInvokeInstruction
