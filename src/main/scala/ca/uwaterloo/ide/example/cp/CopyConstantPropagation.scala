@@ -57,11 +57,37 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     (ideN1, n2) => {
       n2.getLastInstruction match {
         case assignment: SSAArrayStoreInstruction =>
-          edgesForAssignment(assignment, n2, ideN1.d)
+          edgesForCallAssignment(assignment, ideN1, n2)
         case _                                    =>
           Set(FactFunPair(ideN1.d, Id))
       }
     }
+
+
+  private[this] def edgesForCallAssignment(
+    assignment: SSAArrayStoreInstruction,
+    ideN1: IdeNode,
+    n2: Node
+  ): Set[FactFunPair] = {
+    val n1 = ideN1.n
+    val d1 = ideN1.d
+    val idFactFunPairSet = Set(FactFunPair(d1, Id))
+    n1.getLastInstruction match {
+      case returnInstr: SSAReturnInstruction =>
+        val returnValue = returnInstr.getResult
+        val symbolTable = enclProc(n1).getIR.getSymbolTable // todo what if we return something like a function parameter (which is not in the symbol table)?
+        if (d1 == Λ)
+          idFactFunPairSet +
+            FactFunPair(
+              SomeFact(n2.getMethod.getReference, getLVar(assignment, n2)),
+              if (symbolTable isConstant returnValue)
+                CpFunction(Num(returnValue, n1.getMethod.getReference))
+              else Id
+            )
+        else idFactFunPairSet
+      case _                                 => idFactFunPairSet
+    }
+  }
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
@@ -212,7 +238,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     override def toString: String = "bottom"
   }
 
-  case class Num(n: Long, method: MethodReference) extends CpLatticeElem {
+  case class Num(n: ValueNumber, method: MethodReference) extends CpLatticeElem {
     override def ⊓(ln: CpLatticeElem) = ln match {
       case Num(n2, method2) => if (n == n2 && method == method2) ln else ⊥
       case _       => ln ⊓ this
