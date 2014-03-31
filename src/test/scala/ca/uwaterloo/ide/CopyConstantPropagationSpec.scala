@@ -8,7 +8,7 @@ import org.scalatest.junit.JUnitRunner
 class CopyConstantPropagationSpec extends FunSpec {
 
   describe("CopyConstantPropagation") {
-   /* it("propagates constants intra-procedurally") {
+    it("propagates constants intra-procedurally") {
       val ccs = new CopyConstantPropagation("LocalVars") with ConstantPropagationTester
       import ccs._
 
@@ -24,10 +24,10 @@ class CopyConstantPropagationSpec extends FunSpec {
       val assignmentVals = getAssignmentVals(inMain = true)
       val returnNodeVals = getReturnVals(inMain = false)
       assertResult(assignmentVals, "The assigned value in main should be propagated to the return node in f")(returnNodeVals)
-    }*/
+    }
 
     it("propagates constants along the end-return edge") {
-      val ccs = new CopyConstantPropagation("Return")
+      val ccs = new CopyConstantPropagation("Return") with ConstantPropagationTester
       import ccs._
 
       val fAssignmentVals = getAssignmentVals(inMain = false)

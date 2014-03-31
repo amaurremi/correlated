@@ -10,7 +10,7 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
    * @param inMain If true, considers only assignment instructions inside of the main method.
    *               Otherwise, considers only assignment instructions outside of the main method.
    *               There is no option to consider all assignment statements in the program.
-   * @param nonLambda If true, does not consider Λ facts. Otherwise, considers only Λ facts.
+   * @param nonLambda If true, does not include Λ facts. Otherwise, considers only Λ facts.
    * @param expectedNumber The expected number of assignment statements returned by this method.
    */
   def getAssignmentVals(
@@ -21,7 +21,7 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
     getInstructionVals(ArrayAssignment, inMain, nonLambda, expectedNumber)
 
   /**
-   * Analogous to getAssignmentVals, but for return instead of assignment instructions.
+   * Analogous to getAssignmentVals, but for return (instead of assignment) instructions.
    */
   def getReturnVals(
     inMain: Boolean, 
@@ -44,14 +44,19 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
     expectedNumber: Int
   ): Iterable[LatticeElem] = {
     val isCorrectInstruction = instr.doesMatch
-    val instructionVals = solvedResult collect {
+    val instructionVals      = solvedResult collect {
       case (node, value)
         if isCorrectInstruction(node) && (nonLambda == nonLambdaFact(node) && (inMain == isInMainMethod(node))) =>
-          value
+        value
     }
-    val inOrOutside = if (inMain) "inside" else "outside"
-    val (verb, plural) = if (expectedNumber == 1) ("is ", " ") else ("are ", "s ")
-    val size = instructionVals.size
+    val instructionVals2      = solvedResult collect {
+      case (node, value)
+        if isCorrectInstruction(node) && (nonLambda == nonLambdaFact(node) && (inMain == isInMainMethod(node))) =>
+        (node, value)
+    }
+    val inOrOutside          = if (inMain) "inside" else "outside"
+    val (verb, plural)       = if (expectedNumber == 1) ("is ", " ") else ("are ", "s ")
+    val size                 = instructionVals.size
     assert(size == expectedNumber, "There " + verb + expectedNumber + " " + instr.instrName + plural + inOrOutside + " the main method, and not " + size)
     instructionVals
   }

@@ -5,7 +5,7 @@ import com.ibm.wala.ssa._
 import com.ibm.wala.types.MethodReference
 import scala.collection.JavaConverters._
 
-class CopyConstantPropagation(fileName: String) extends ConstantPropagation(fileName) with ConstantPropagationTester {
+class CopyConstantPropagation(fileName: String) extends ConstantPropagation(fileName) {
 
   override type IdeFunction = CpFunction
   override type LatticeElem = CpLatticeElem
