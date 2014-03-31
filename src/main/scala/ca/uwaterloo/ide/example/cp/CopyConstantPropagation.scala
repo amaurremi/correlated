@@ -68,17 +68,16 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     ideN1: IdeNode,
     n2: Node
   ): Set[FactFunPair] = {
-    val n1 = ideN1.n
-    val d1 = ideN1.d
+    val n1               = ideN1.n
+    val d1               = ideN1.d
     val idFactFunPairSet = Set(FactFunPair(d1, Id))
-    val ir = enclProc(n1).getIR
-    val returnValue: Option[ValueNumber] = getSingleReturnValue(ir)
-    val symbolTable = ir.getSymbolTable // todo what if we return something like a function parameter (which is not in the symbol table)?
+    val optReturnVal     = getSingleReturnValue(n1)
+    val symbolTable      = enclProc(n1).getIR.getSymbolTable // todo what if we return something like a function parameter (which is not in the symbol table)?
     if (d1 == Λ)
       idFactFunPairSet +
         FactFunPair(
           SomeFact(n2.getMethod.getReference, getLVar(assignment, n2)),
-          returnValue match {
+          optReturnVal match {
             case Some(retVal) if symbolTable isConstant retVal =>
               CpFunction(Num(retVal, n1.getMethod.getReference))
             case _                                             =>
@@ -88,8 +87,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     else idFactFunPairSet
   }
 
-  private[this] def getSingleReturnValue(ir: IR): Option[ValueNumber] = {
-    val returns: Set[ValueNumber] = (ir.iterateAllInstructions().asScala collect { // todo is this correct??? THIS IS IMPORTANT SINCE IT STRONGLY DIFFERS FROM THE PAPER
+  private[this] def getSingleReturnValue(node: Node): Option[ValueNumber] = {
+    val returns: Set[ValueNumber] = (instructionsInProc(node) collect { // todo is this correct??? THIS IS IMPORTANT SINCE IT STRONGLY DIFFERS FROM THE PAPER
       case instr: SSAReturnInstruction => instr.getResult
     }).toSet
     if (returns.size == 1) Some(returns.head)
@@ -118,15 +117,19 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       }
     }
 
+  private[this] lazy val instructionsInProc =
+    (node: Node) =>
+      enclProc(node).getIR.iterateNormalInstructions().asScala
+
   private[this] def updateArrayElementValNums(assignment: SSAArrayStoreInstruction, n: Node) = {
     val arrayRef = assignment.getArrayRef
     val arrayInd = assignment.getIndex
-    enclProc(n).getIR.iterateNormalInstructions().asScala collectFirst { // todo inefficient
+    instructionsInProc(n) collectFirst { // todo inefficient
       case instruction: SSAArrayLoadInstruction
         if instruction.getArrayRef == arrayRef && instruction.getIndex == arrayInd =>
-          val method: MethodReference = n.getMethod.getReference
-          val fact = SomeFact(method, ArrayElement(arrayRef, arrayInd))
-          val valNum: Int = instruction.getDef
+          val method = n.getMethod.getReference
+          val fact   = SomeFact(method, ArrayElement(arrayRef, arrayInd))
+          val valNum = instruction.getDef
           valNumsToArrayElems += (valNum, method) -> fact
           arrayElemsToValNums += fact -> valNum
     }
@@ -159,19 +162,34 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     n2: Node,
     d1: Fact
   ): Set[FactFunPair] = {
-    val assignedVal = getRVal(assignment)
-    val symbolTable = enclProc(n2).getIR.getSymbolTable
+    val assignedVal      = getRVal(assignment)
     val idFactFunPairSet = Set(FactFunPair(d1, Id))
     if (d1 == Λ)
       idFactFunPairSet +
         FactFunPair(
           SomeFact(n2.getMethod.getReference, getLVar(assignment, n2)),
-          if (symbolTable isConstant assignedVal)
-            CpFunction(Num(assignedVal, n2.getMethod.getReference))
-          else Id
+          assignmentCpFunction(assignedVal, n2)
         )
     else idFactFunPairSet
   }
+
+
+  private[this] def assignmentCpFunction(
+    assignedVal: ValueNumber,
+    n2: Node
+  ): IdeFunction =
+    if (enclProc(n2).getIR.getSymbolTable isConstant assignedVal)
+      CpFunction(Num(assignedVal, n2.getMethod.getReference))
+    else if (isCall(assignedVal, n2))
+      CpFunction(⊤)
+    else Id
+
+  private[this] def isCall(value: ValueNumber, node: Node): Boolean =
+    instructionsInProc(node) exists {
+      case instr: SSAInvokeInstruction
+        if instr.getReturnValue(0) == value => true
+      case _                                => false
+    }
 
   private[this] def idEdges: EdgeFn =
     (ideN1, _) =>
@@ -179,7 +197,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
 
   private[this] def getArrayElemFromParameterNum(n: Node, argNum: Int): CpFact = {
     val valNumber = enclProc(n).getIR.getSymbolTable.getParameter(argNum)
-    val method: MethodReference = n.getMethod.getReference
+    val method    = n.getMethod.getReference
     SomeFact(method, ElemInTargetMethod(valNumber))
   }
 
