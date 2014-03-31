@@ -184,7 +184,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     if (enclProc(n2).getIR.getSymbolTable isConstant assignedVal)
       CpFunction(Num(assignedVal, n2.getMethod.getReference))
     else if (isCall(assignedVal, n2))
-      CpFunction(⊤)
+      λTop
     else Id
 
   /**

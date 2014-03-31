@@ -41,7 +41,6 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
       if fPrime != λTop
       if !(n.isCallNode || n.isStartNode)
     } {
-      assert(sp.isStartNode, "Wrong jump function computation: source edge is not a start node")
       vals += n -> vals(n) ⊓ fPrime(vals(sp))
     }
     vals.toMap
