@@ -63,7 +63,6 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       }
     }
 
-
   private[this] def edgesForCallAssignment(
     assignment: SSAArrayStoreInstruction,
     ideN1: IdeNode,
@@ -195,7 +194,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
         0 to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
           callInstr.getUse(_) == valNum
         }
-      case Lambda         => None
+      case Lambda      => None
     }
 
   /**
