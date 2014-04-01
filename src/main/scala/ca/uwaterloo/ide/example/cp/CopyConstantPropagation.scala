@@ -116,8 +116,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     updateAllArrayElementValNums(node)
     val method = node.getMethod
     fact match {
-      case sf@SomeFact(method2, ArrayElemByArrayAndIndex(arr, ind)) =>
-        arrayElemsToValNums.get(sf) map {
+      case SomeFact(method2, el@ArrayElemByArrayAndIndex(_, _)) =>
+        arrayElemsToValNums.get(el, method2) map {
           valNum =>
             SomeFact(method, ArrayElemByValNumber(valNum))
         }
@@ -137,8 +137,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
           case instr: SSAArrayLoadInstruction  =>
             val method = node.getMethod
             val valNum = instr.getDef
-            val fact   = SomeFact(method, ArrayElemByArrayAndIndex(instr.getArrayRef, instr.getIndex))
-            updateArrayMaps(fact, valNum, method)
+            val elem   = ArrayElemByArrayAndIndex(instr.getArrayRef, instr.getIndex)
+            updateArrayMaps(elem, valNum, method)
           case _                           => ()
         }
     }
@@ -150,13 +150,13 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     followingInstructions(n) collectFirst { // todo inefficient
       case instruction: SSAArrayLoadInstruction
         if instruction.getArrayRef == arrayRef && instruction.getIndex == arrayInd =>
-        updateArrayMaps(SomeFact(n.getMethod, ArrayElemByArrayAndIndex(arrayRef, arrayInd)), instruction.getDef, n.getMethod)
+        updateArrayMaps(ArrayElemByArrayAndIndex(arrayRef, arrayInd), instruction.getDef, n.getMethod)
     }
   }
 
-  private[this] def updateArrayMaps(fact: SomeFact, valNum: ValueNumber, method: IMethod) {
-    arrayElemsToValNums += fact -> valNum
-    valNumsToArrayElems += (valNum, method) -> fact
+  private[this] def updateArrayMaps(arrayElem: ArrayElemByArrayAndIndex, valNum: ValueNumber, method: IMethod) {
+    arrayElemsToValNums += (arrayElem, method) -> valNum
+    valNumsToArrayElems += (valNum, method) -> arrayElem
   }
 
   /**
@@ -184,7 +184,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     (ideN1, n2) => {
       ideN1.n.getLastInstruction match {
         case callInstr: SSAInvokeInstruction =>
-          getParameterNumber(ideN1.d, callInstr) match {
+          getParameterNumber(ideN1, callInstr) match {
             case Some(argNum) => // checks if we are passing d1 as an argument to the function
               val targetFact = getArrayElemFromParameterNum(n2, argNum)
               Set(FactFunPair(targetFact, Id))
@@ -207,8 +207,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     ArrayElemByArrayAndIndex(assignment.getArrayRef, assignment.getIndex)
   }
 
-  private[this] val valNumsToArrayElems = mutable.Map[(ValueNumber, IMethod), CpFact]()
-  private[this] val arrayElemsToValNums = mutable.Map[CpFact, ValueNumber]()
+  private[this] val valNumsToArrayElems = mutable.Map[(ValueNumber, IMethod), ArrayElemByArrayAndIndex]()
+  private[this] val arrayElemsToValNums = mutable.Map[(ArrayElemByArrayAndIndex, IMethod), ValueNumber]()
 
   private[this] def getRVal(n: Node): ValueNumber = {
     val assignment = getAssignmentInstr(n)
@@ -291,10 +291,16 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
    * If the variable corresponding to this fact is passed as a parameter to this call instruction,
    * returns the number of the parameter.
    */
-  private[this] def getParameterNumber(fact: Fact, callInstr: SSAInvokeInstruction): Option[Int] =
-    fact match {
-      case f: SomeFact =>
-        val valNum = arrayElemsToValNums(f)
+  private[this] def getParameterNumber(node: IdeNode, callInstr: SSAInvokeInstruction): Option[Int] =
+    node.d match {
+      case SomeFact(method, elem) =>
+        val valNum = elem match {
+          case byRefInd: ArrayElemByArrayAndIndex =>
+            updateAllArrayElementValNums(node.n)
+            arrayElemsToValNums(byRefInd, method)
+          case ArrayElemByValNumber(vn)           =>
+            vn
+        }
         0 to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
           callInstr.getUse(_) == valNum
         }
