@@ -31,9 +31,8 @@ class CopyConstantPropagationSpec extends FunSpec {
       import ccs._
 
       val fAssignmentVals = getAssignmentVals(inMain = false)
-      val returnNodeVals = getReturnVals(inMain = true)
-      assertResult(fAssignmentVals, "The assigned value in main should be propagated to the return node in f")(returnNodeVals)
-//      ccs.printResult(withNullInstructions = false)
+      val returnNodeVals  = getReturnVals(inMain = true)
+      assertResult(fAssignmentVals, "The value returned in f should be propagated to main")(returnNodeVals)
     }
   }
 }

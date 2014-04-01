@@ -1,11 +1,11 @@
 package ca.uwaterloo.ide.example.cp
 
 import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
+import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.types.MethodReference
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
@@ -47,7 +47,7 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   /**
    * @param elem The array element that corresponds to the left-hand-side variable in an assignment
    */
-  case class SomeFact(method: MethodReference, elem: FactElem) extends CpFact {
+  case class SomeFact(method: IMethod, elem: FactElem) extends CpFact {
     override def toString: String = elem.toString + " in " + method.getName.toString + "()"
   }
 
@@ -56,13 +56,13 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   /**
    * If we pass an array element as a parameter, we will loose the information about the array reference and index, so we only store the value number
    */
-  case class ElemInTargetMethod(valNum: Int) extends FactElem
+  case class ArrayElemByValNumber(valNum: Int) extends FactElem
 
   /**
    * @param array The value number of the array element's array
    * @param index The value number of the array element's index
    */
-  case class ArrayElement(array: Int, index: Int) extends FactElem
+  case class ArrayElemByArrayAndIndex(array: Int, index: Int) extends FactElem
 
   /**
    * Represents the Λ fact

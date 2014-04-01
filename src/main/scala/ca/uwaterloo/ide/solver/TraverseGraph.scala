@@ -4,8 +4,8 @@ import scala.collection.JavaConverters._
 
 trait TraverseGraph { this: ExplodedGraphTypes =>
 
-  def followingNodes(n: Node): Seq[Node] =
-    supergraph.getSuccNodes(n).asScala.toSeq
+  def followingNodes(n: Node): Iterator[Node] =
+    (supergraph getSuccNodes n).asScala
 
   /**
    * Returns the enclosing procedure of a given node.
@@ -51,6 +51,12 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   /**
    * All intra-procedural nodes from the start of a procedure.
    */
+  def allNodesInProc(node: Node): Seq[Node] =
+    for {
+      s <- startNodes(node)
+      n <- nodesInProc(s, enclProc(node))
+    } yield n
+
   private[this] def nodesInProc(
     startNode: Node,
     proc: Procedure,

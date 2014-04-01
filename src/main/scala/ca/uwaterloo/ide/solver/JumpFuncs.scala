@@ -114,7 +114,6 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     }
   }
 
-
   private[this] def forwardExitPropagate(
     e: IdeEdge,
     f: IdeFunction
@@ -156,7 +155,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   private[this] def forwardAnyNode(e: IdeEdge, f: IdeFunction) {
     val n = e.target
     for {
-      m                       <- followingNodes(n.n) :+ n.n // todo !!! is that correct: followingNodes should include n itself, because n can be the first node in the procedure
+      m                       <- followingNodes(n.n).toSeq :+ n.n // todo !!! is that correct: followingNodes should include n itself, because n can be the first node in the procedure
       FactFunPair(d3, edgeFn) <- otherSuccEdges(n, m)
     } {
       propagate(e, f)(IdeEdge(e.source, IdeNode(m, d3)), edgeFn ◦ f)
@@ -164,15 +163,15 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   }
 
   /**
-   * @param oldE Needed for repeating forwardExitNode
-   * @param oldF Needed for repeating forwardExitNode
+   * @param oldE IDE edge for this propagation. Needed for repeating forwardExitNode
+   * @param oldF Original IDE edge function for this propagation. Needed for repeating forwardExitNode
    */
   private[this] def propagate(oldE: IdeEdge, oldF: IdeFunction)(e: IdeEdge, f: IdeFunction) {
     val jf = jumpFn(e)
     val f2 = f ⊓ jf
     if (f2 != jf) {
       jumpFn += e -> f2
-      if (f2 != λTop) forwardExitFromPropagate(e, f2, oldE, oldF) // todo check with Ondrej if that method makes sense
+      if (f2 != λTop) forwardExitFromPropagate(e, f2, oldE, oldF) // todo check if that method makes sense
       pathWorklist enqueue e
     }
   }
