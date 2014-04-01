@@ -61,30 +61,6 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       }
     }
 
-  private[this] def edgesForCallAssignment(
-    ideN1: IdeNode,
-    n2: Node
-  ): Set[FactFunPair] = {
-    val n1               = ideN1.n
-    val d1               = ideN1.d
-    val idFactFunPairSet = Set(FactFunPair(d1, Id))
-    if (d1 == Λ)
-      idFactFunPairSet +
-        FactFunPair(
-          SomeFact(n2.getMethod, getLVar(n2)),
-          callAssignmentCpFunction(n1)
-        )
-    else getSingleReturnValue(n1) match {
-      case Some(retVal)
-        if retValSameAsFact(retVal, n1, d1) =>
-          Set(FactFunPair(
-            SomeFact(n2.getMethod, getLVar(n2)),
-            Id))
-      case _                                                       =>
-        idFactFunPairSet
-    }
-  }
-
   private[this] def callAssignmentCpFunction(n: Node): IdeFunction = {
     val optReturnVal = getSingleReturnValue(n)
     optReturnVal match {
@@ -132,14 +108,14 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     allNodesInProc(node) foreach {
       n =>
         n.getLastInstruction match {
-          case _: SSAArrayStoreInstruction =>
+          case _: SSAArrayStoreInstruction    =>
             updateArrayElementValNums(n)
-          case instr: SSAArrayLoadInstruction  =>
+          case instr: SSAArrayLoadInstruction =>
             val method = node.getMethod
             val valNum = instr.getDef
             val elem   = ArrayElemByArrayAndIndex(instr.getArrayRef, instr.getIndex)
             updateArrayMaps(elem, valNum, method)
-          case _                           => ()
+          case _                              => ()
         }
     }
 
@@ -179,7 +155,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's an args[] element of the main method)
+  // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's the args[] parameter of the main method)
   override def callStartEdges: EdgeFn =
     (ideN1, n2) => {
       ideN1.n.getLastInstruction match {
@@ -239,6 +215,30 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     else if (factIsRVal(d1, n2))
       Set(FactFunPair(fact, Id))
     else idFactFunPairSet
+  }
+
+  private[this] def edgesForCallAssignment(
+    ideN1: IdeNode,
+    n2: Node
+  ): Set[FactFunPair] = {
+    val n1               = ideN1.n
+    val d1               = ideN1.d
+    val idFactFunPairSet = Set(FactFunPair(d1, Id))
+    if (d1 == Λ)
+      idFactFunPairSet +
+        FactFunPair(
+          SomeFact(n2.getMethod, getLVar(n2)),
+          callAssignmentCpFunction(n1)
+        )
+    else getSingleReturnValue(n1) match {
+      case Some(retVal)
+        if retValSameAsFact(retVal, n1, d1) =>
+        Set(FactFunPair(
+          SomeFact(n2.getMethod, getLVar(n2)),
+          Id))
+      case _                                                       =>
+        idFactFunPairSet
+    }
   }
 
   /**

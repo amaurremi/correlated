@@ -18,7 +18,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
   private[this] def initialize() {
     // [2]
     vals ++= (entryPoints map {
-      IdeNode(_, Λ) -> Top // todo DIFFERS FROM PAPER
+      IdeNode(_, Λ) -> Bottom
     })(breakOut)
     // [3]
     nodeWorklist ++= entryPoints map { IdeNode(_, Λ) }
