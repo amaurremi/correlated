@@ -52,24 +52,21 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
   override def endReturnEdges: EdgeFn =
-    (ideN1, n2) => {
+    (ideN1, n2) =>
       n2.getLastInstruction match {
         case assignment: SSAArrayStoreInstruction =>
           edgesForCallAssignment(ideN1, n2)
         case _                                    =>
           Set(FactFunPair(ideN1.d, Id))
       }
-    }
 
-  private[this] def callAssignmentCpFunction(n: Node): IdeFunction = {
-    val optReturnVal = getSingleReturnValue(n)
-    optReturnVal match {
-      case Some(retVal) if enclProc(n).getIR.getSymbolTable isConstant retVal =>
-        CpFunction(Num(retVal, n.getMethod))
-      case _ =>
-        Id
+  private[this] def callAssignmentCpFunction(n: Node): Option[IdeFunction] =
+    getSingleReturnValue(n) flatMap {
+      retVal =>
+        if (enclProc(n).getIR.getSymbolTable isConstant retVal)
+          Some(CpFunction(Num(retVal, n.getMethod)))
+        else None
     }
-  }
 
   /**
    * If we have an assignment
@@ -225,17 +222,22 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     val d1               = ideN1.d
     val idFactFunPairSet = Set(FactFunPair(d1, Id))
     if (d1 == Λ)
-      idFactFunPairSet +
-        FactFunPair(
-          SomeFact(n2.getMethod, getLVar(n2)),
-          callAssignmentCpFunction(n1)
-        )
+      idFactFunPairSet ++
+        (callAssignmentCpFunction(n1) match {
+          case Some(f) =>
+            Set(FactFunPair(
+              SomeFact(n2.getMethod, getLVar(n2)),
+              f
+            ))
+          case _       =>
+            Set.empty
+        })
     else getSingleReturnValue(n1) match {
       case Some(retVal)
         if retValSameAsFact(retVal, n1, d1) =>
-        Set(FactFunPair(
-          SomeFact(n2.getMethod, getLVar(n2)),
-          Id))
+          Set(FactFunPair(
+            SomeFact(n2.getMethod, getLVar(n2)),
+            Id))
       case _                                                       =>
         idFactFunPairSet
     }
