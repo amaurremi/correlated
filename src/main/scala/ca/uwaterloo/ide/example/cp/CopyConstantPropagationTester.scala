@@ -2,7 +2,7 @@ package ca.uwaterloo.ide.example.cp
 
 import com.ibm.wala.ssa.{SSAReturnInstruction, SSAArrayStoreInstruction, SSAInstruction}
 
-trait ConstantPropagationTester { this: ConstantPropagation =>
+trait CopyConstantPropagationTester { this: CopyConstantPropagation =>
 
   /**
    * Let A be the set of all the assignment instruction nodes in the input program.
@@ -13,7 +13,7 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
    * @param nonLambda If true, does not include Λ facts. Otherwise, considers only Λ facts.
    * @param expectedNumber The expected number of assignment statements returned by this method.
    */
-  def getAssignmentVals(
+  def getValsAtAssignments(
     inMain: Boolean, 
     nonLambda: Boolean = true, 
     expectedNumber: Int = 1
@@ -23,13 +23,26 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
   /**
    * Analogous to getAssignmentVals, but for return (instead of assignment) instructions.
    */
-  def getReturnVals(
+  def getValsAtReturn(
     inMain: Boolean, 
     nonLambda: Boolean = true, 
     expectedNumber: Int = 1
   ): Iterable[LatticeElem] =
     getInstructionVals(Return, inMain, nonLambda, expectedNumber)
 
+  /**
+   * Returns lattice element corresponding to a value returned by the function outside of main.
+   * This method assumes there is only one function outside of main and that it returns exactly one value
+   * in all execution paths.
+   */
+  def getReturnVal: LatticeElem = {
+    val (retVal, node) = (solvedResult.keys collectFirst {
+      case n if !isInMainMethod(n) && n.n.getLastInstruction.isInstanceOf[SSAReturnInstruction] => // super ugly
+        n.n.getLastInstruction.asInstanceOf[SSAReturnInstruction].getResult -> n.n
+    }).get
+    Num(retVal, node.getMethod)
+  }
+  
   private[this] def getInstruction(node: IdeNode): SSAInstruction = node.n.getLastInstruction
 
   private[this] def nonLambdaFact(node: IdeNode): Boolean = node.d != Lambda
@@ -49,15 +62,10 @@ trait ConstantPropagationTester { this: ConstantPropagation =>
         if isCorrectInstruction(node) && (nonLambda == nonLambdaFact(node) && (inMain == isInMainMethod(node))) =>
         value
     }
-    val instructionVals2      = solvedResult collect {
-      case (node, value)
-        if isCorrectInstruction(node) && (nonLambda == nonLambdaFact(node) && (inMain == isInMainMethod(node))) =>
-        (node, value)
-    }
     val inOrOutside          = if (inMain) "inside" else "outside"
     val (verb, plural)       = if (expectedNumber == 1) ("is ", " ") else ("are ", "s ")
     val size                 = instructionVals.size
-    assert(size == expectedNumber, "There " + verb + expectedNumber + " " + instr.instrName + plural + inOrOutside + " the main method, and not " + size)
+    assert(size == expectedNumber, "There " + verb + expectedNumber + " " + instr.instrName + plural + inOrOutside + " the main method, and not " + size + " as expected")
     instructionVals
   }
 
