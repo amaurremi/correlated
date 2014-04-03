@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide.example.cp
+package ca.uwaterloo.ide.analysis.cp
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec

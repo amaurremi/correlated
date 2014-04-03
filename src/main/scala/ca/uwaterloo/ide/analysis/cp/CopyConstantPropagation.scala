@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide.example.cp
+package ca.uwaterloo.ide.analysis.cp
 
 import collection.mutable
 import com.ibm.wala.classLoader.IMethod
@@ -343,7 +343,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   /**
    * Represents lattice elements for the set L
    */
-  trait CpLatticeElem extends Lattice {
+  sealed trait CpLatticeElem extends Lattice {
     def ⊓(n: CpLatticeElem): CpLatticeElem
   }
 

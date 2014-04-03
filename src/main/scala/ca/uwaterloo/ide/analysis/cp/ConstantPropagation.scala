@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide.example.cp
+package ca.uwaterloo.ide.analysis.cp
 
 import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.classLoader.IMethod
@@ -28,7 +28,7 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   override val Λ: Fact    = Lambda
 
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
-  override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure // todo not sure
+  override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
 
   val ideNodeString: IdeNode => String =
     node => {
