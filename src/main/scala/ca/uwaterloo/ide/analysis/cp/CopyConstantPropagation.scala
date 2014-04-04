@@ -270,8 +270,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     else Id
 
   /**
-   * Given the node whose instruction is an assignment, and
-   * Returns true if the
+   * Does the value with the given value number correspond to a method call?
    */
   private[this] def isCall(value: ValueNumber, node: Node): Boolean =
     instructionsInProc(node) exists {

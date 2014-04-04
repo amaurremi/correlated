@@ -15,13 +15,16 @@ class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver with Edg
 
   private[this] val config =
     ConfigFactory.load(
-      "ide/analysis/taint/" + fileName,
+      "taint/" + fileName,
       ConfigParseOptions.defaults.setAllowMissing(false),
       ConfigResolveOptions.defaults
     )
 
   private[this] val builder              = FlexibleCallGraphBuilder()(config)
   private[this] val callGraph: CallGraph = builder.cg
+
+  override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
+  override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
 
   private[this] type ValueNumber = Long
   
@@ -31,51 +34,41 @@ class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver with Edg
   override type LatticeElem = TaintLatticeElem
   override type IdeFunction = TaintFunction
   
-  override val Λ: Fact    = Lambda
-
-  override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
-  override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
-
   override val Bottom: LatticeElem = ⊥
   override val Top: LatticeElem    = ⊤
   override val Id: IdeFunction     = TaintFunction
   override val λTop: IdeFunction   = TaintFunction
+  override val Λ: Fact             = Lambda
 
   /**
    * Functions for all other (inter-procedural) edges.
    */
   override def otherSuccEdges: EdgeFn =
-    (ideN1, n2) => {
+    (ideN1, n2) =>
       ideN1.n.getLastInstruction match {
-        case invokeInstr: SSAInvokeInstruction =>
-          if (isSecret(invokeInstr.getDeclaredTarget)) {
-            val x = allNodesInProc(ideN1.n)
-            val valNum = invokeInstr.getDef
+        case invokeInstr: SSAInvokeInstruction
+          if ideN1.d == Λ && isSecret(invokeInstr) =>
+            Set(
+              FactFunPair(ideN1.d, Id),
+              FactFunPair(VariableFact(ideN1.n.getMethod, invokeInstr.getReturnValue(0)), Id))
+        case _                                     =>
             Set(FactFunPair(ideN1.d, Id))
-          } else {
-            Set(FactFunPair(ideN1.d, Id))
-          }
-        case _                                 =>
-          Set(FactFunPair(ideN1.d, Id))
       }
-    }
-
-  private[this] val idf = (ideN1: IdeNode, n2: Node) => Set(FactFunPair(ideN1.d, Id))
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  override def endReturnEdges: EdgeFn = idf
+  override def endReturnEdges: EdgeFn = ???
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  override def callReturnEdges: EdgeFn = idf
+  override def callReturnEdges: EdgeFn = ???
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  override def callStartEdges: EdgeFn = idf
+  override def callStartEdges: EdgeFn = ???
 
   /**
    * Represents a fact for the set D

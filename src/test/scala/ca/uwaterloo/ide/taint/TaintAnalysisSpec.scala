@@ -10,7 +10,7 @@ class TaintAnalysisSpec extends FunSpec {
 
    describe("TaintAnalysis") {
      it("propagates secret values intra-procedurally") {
-       val ccs = new TaintAnalysis("LocalVars")
+       val ccs = new TaintAnalysis("LocalVars").solvedResult
      }
    }
  }

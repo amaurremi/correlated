@@ -1,13 +1,15 @@
-package ca.uwaterloo.ide.taint.inputPrograms.LocalVars;
+package LocalVars;
 
 public class LocalVars {
 
     public static void main(String[] args) {
         String x = secret();
-        args[0] = x;
+        print(x);
     }
 
     static String secret() {
         return "secret";
     }
+
+    static void print(String x) {}
 }

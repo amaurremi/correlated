@@ -8,10 +8,12 @@ import java.io.File
 
 object TestUtil {
 
+  private val resourcePath = "correlated/"
+
   def getCcsForPointerAnalysisCallGraph(testName: String = "application"): CorrelatedCalls = {
     implicit val config =
       ConfigFactory.load(
-        testName,
+        resourcePath + testName,
         ConfigParseOptions.defaults().setAllowMissing(false),
         ConfigResolveOptions.defaults()
       )
@@ -24,7 +26,7 @@ object TestUtil {
 
     def getFileName(paths: String*) = paths mkString "/" replaceAll ("//", "/")
 
-    val config = ConfigFactory.load("application_zero_cfa")
+    val config = ConfigFactory.load(resourcePath + "application_zero_cfa")
     val exclusionKey = "wala.exclussions"
     val projectPath = "wala.projectPath"
     val inputProgramPath =

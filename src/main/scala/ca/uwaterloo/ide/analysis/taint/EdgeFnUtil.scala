@@ -1,9 +1,14 @@
 package ca.uwaterloo.ide.analysis.taint
 
 import com.ibm.wala.types.MethodReference
+import com.ibm.wala.ssa.SSAInvokeInstruction
 
 trait EdgeFnUtil {
 
-  protected def isSecret(method: MethodReference): Boolean =
-    method.getName.toString == "secret"
+  protected def isSecret(invokeInstr: SSAInvokeInstruction): Boolean = {
+    val secret = invokeInstr.getDeclaredTarget.getName.toString == "secret"
+    val hasReturnVal = invokeInstr.getNumberOfReturnValues == 1
+    assert(!secret || hasReturnVal, "secret function should always return a value")
+    secret && hasReturnVal
+  }
 }
