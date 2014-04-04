@@ -5,7 +5,7 @@ package ca.uwaterloo.ide
  * for which we know n, d1, and m, return all
  * d2s plus the corresponding edge IDE functions.
  */
-trait FlowFunctions { this: ExplodedGraphTypes =>
+trait FlowFunctions { this: ExplodedGraphTypes with IdeConstants =>
 
   case class FactFunPair(
     d2: Fact,
@@ -47,4 +47,6 @@ trait FlowFunctions { this: ExplodedGraphTypes =>
   def callStartD2s: (IdeNode, Node) => Set[Fact] =
     (node1, n2) =>
       callStartEdges(node1, n2) map { _.d2 }
+
+  final val idFactFunPairSet = (d: Fact) => Set(FactFunPair(d, Id))
 }

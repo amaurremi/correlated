@@ -4,7 +4,7 @@ import ca.uwaterloo.ide.TraverseGraph
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAInstruction, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{SSAReturnInstruction, SSAInstruction, SSAInvokeInstruction}
 import scala.collection.JavaConverters._
 
 trait WalaInstructions { this: VariableFacts with TraverseGraph =>
@@ -49,5 +49,18 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
     (node: Node) =>
       enclProc(node).getIR.iterateNormalInstructions().asScala
 
+  /**
+   * Get the value number for the ith parameter.
+   * @param argNum the number of the parameter
+   * @param n a node inside of the method
+   */
+  def getValNumFromParameterNum(n: Node, argNum: Int): ValueNumber =
+    enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
+  def callValNum(callInstr: SSAInvokeInstruction): Option[ValueNumber] =
+    if (callInstr.getNumberOfReturnValues == 1)
+      Some(callInstr.getReturnValue(0))
+    else None
+
+  def hasRetValue(retInstr: SSAReturnInstruction) = retInstr.getResult >= 0
 }

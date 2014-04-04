@@ -5,7 +5,7 @@ import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ssa.{SSAInstruction, SSAArrayLoadInstruction, SSAArrayStoreInstruction}
+import com.ibm.wala.ssa.{SSAArrayLoadInstruction, SSAArrayStoreInstruction}
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._

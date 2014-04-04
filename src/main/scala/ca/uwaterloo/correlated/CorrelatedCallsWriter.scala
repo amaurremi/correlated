@@ -88,7 +88,7 @@ object CorrelatedCallsWriter {
    */
   implicit val s = new Semigroup[CorrelatedCalls]{
 
-    def append(f1: CorrelatedCalls, f2: => CorrelatedCalls): CorrelatedCalls =
+    override def append(f1: CorrelatedCalls, f2: => CorrelatedCalls): CorrelatedCalls =
       CorrelatedCalls(
         f1.cgNodes ++ f2.cgNodes,
         f1.rcs ++ f2.rcs,
@@ -100,9 +100,13 @@ object CorrelatedCallsWriter {
   }
 
   implicit val applicative = new Applicative[CorrelatedCallWriter] {
-    def point[A](a: => A): CorrelatedCallWriter[A] = Writer(CorrelatedCalls.empty, a)
+    override def point[A](a: => A): CorrelatedCallWriter[A] = Writer(CorrelatedCalls.empty, a)
 
-    def ap[A, B](fa: => CorrelatedCallWriter[A])(f: => CorrelatedCallWriter[(A) => B]): CorrelatedCallWriter[B] =
+    override def ap[A, B](
+      fa: => CorrelatedCallWriter[A]
+    )(
+      f: => CorrelatedCallWriter[(A) => B]
+    ): CorrelatedCallWriter[B] =
       for {
         a  <- fa
         f2 <- f

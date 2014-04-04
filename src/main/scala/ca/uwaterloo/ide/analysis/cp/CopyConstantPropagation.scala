@@ -2,7 +2,6 @@ package ca.uwaterloo.ide.analysis.cp
 
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa._
-import scala.collection.JavaConverters._
 
 class CopyConstantPropagation(fileName: String) extends ConstantPropagation(fileName) {
 
@@ -41,7 +40,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
         case assignment: SSAArrayStoreInstruction =>
           edgesForAssignment(n2, d1)
         case _                                    =>
-          Set(FactFunPair(d1, Id))
+          idFactFunPairSet(d1)
       }
     }
 
@@ -53,8 +52,33 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       n2.getLastInstruction match {
         case assignment: SSAArrayStoreInstruction =>
           edgesForCallAssignment(ideN1, n2)
-        case _                                    =>
-          Set(FactFunPair(ideN1.d, Id))
+        case a                                    =>
+          idFactFunPairSet(ideN1.d)
+      }
+
+  /**
+   * Functions for intra-procedural edges from a call to the corresponding return edges.
+   */
+  override def callReturnEdges: EdgeFn =
+    (ideN1, _) =>
+      idFactFunPairSet(ideN1.d) // todo not for fields/static variables
+
+  /**
+   * Functions for inter-procedural edges from a call node to the corresponding start edges.
+   */
+  // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's the args[] parameter of the main method)
+  override def callStartEdges: EdgeFn =
+    (ideN1, n2) =>
+      ideN1.n.getLastInstruction match {
+        case callInstr: SSAInvokeInstruction =>
+          getParameterNumber(ideN1, callInstr) match {
+            case Some(argNum) => // checks if we are passing d1 as an argument to the function
+              val targetFact = getArrayElemFromParameterNum(n2, argNum)
+              Set(FactFunPair(targetFact, Id))
+            case None         =>
+              idFactFunPairSet(ideN1.d)
+          }
+        case _ => throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
       }
 
   private[this] def callAssignmentCpFunction(n: Node): Option[IdeFunction] =
@@ -93,31 +117,6 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     else None
   }
 
-  /**
-   * Functions for intra-procedural edges from a call to the corresponding return edges.
-   */
-  override def callReturnEdges: EdgeFn =
-    (ideN1, _) =>
-      Set(FactFunPair(ideN1.d, Id)) // todo not for fields/static variables
-
-  /**
-   * Functions for inter-procedural edges from a call node to the corresponding start edges.
-   */
-  // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's the args[] parameter of the main method)
-  override def callStartEdges: EdgeFn =
-    (ideN1, n2) =>
-      ideN1.n.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction =>
-          getParameterNumber(ideN1, callInstr) match {
-            case Some(argNum) => // checks if we are passing d1 as an argument to the function
-              val targetFact = getArrayElemFromParameterNum(n2, argNum)
-              Set(FactFunPair(targetFact, Id))
-            case None         =>
-              Set(FactFunPair(ideN1.d, Id))
-          }
-        case _ => throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
-      }
-
   private[this] def getLVar(n: Node): ArrayElemByArrayAndIndex = {
     val assignment = getAssignmentInstr(n)
     ArrayElemByArrayAndIndex(assignment.getArrayRef, assignment.getIndex)
@@ -133,17 +132,16 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     d1: Fact
   ): Set[FactFunPair] = {
     val assignedVal      = getRVal(n2)
-    val idFactFunPairSet = Set(FactFunPair(d1, Id))
     val fact = Variable(n2.getMethod, getLVar(n2))
     if (d1 == Λ)
-      idFactFunPairSet +
+      idFactFunPairSet(d1) +
         FactFunPair(
           fact,
           assignmentCpFunction(assignedVal, n2)
         )
     else if (factIsRVal(d1, n2))
       Set(FactFunPair(fact, Id))
-    else idFactFunPairSet
+    else idFactFunPairSet(d1)
   }
 
   private[this] def edgesForCallAssignment(
@@ -152,9 +150,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   ): Set[FactFunPair] = {
     val n1               = ideN1.n
     val d1               = ideN1.d
-    val idFactFunPairSet = Set(FactFunPair(d1, Id))
     if (d1 == Λ)
-      idFactFunPairSet ++
+      idFactFunPairSet(d1) ++
         (callAssignmentCpFunction(n1) match {
           case Some(f) =>
             Set(FactFunPair(
@@ -171,7 +168,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
             Variable(n2.getMethod, getLVar(n2)),
             Id))
       case _                                =>
-        idFactFunPairSet
+        idFactFunPairSet(d1)
     }
   }
 
@@ -201,8 +198,8 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
       λTop
     else Id
 
-  private[this] def getArrayElemFromParameterNum(n: Node, argNum: ValueNumber): VariableFact = {
-    val valNumber = enclProc(n).getIR.getSymbolTable.getParameter(argNum)
+  private[this] def getArrayElemFromParameterNum(n: Node, argNum: Int): VariableFact = {
+    val valNumber = getValNumFromParameterNum(n, argNum)
     Variable(n.getMethod, ArrayElemByValNumber(valNumber))
   }
 
