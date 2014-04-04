@@ -1,4 +1,4 @@
-package Return;
+package ca.uwaterloo.ide.cp.inputPrograms.Return;
 
 public class Return {
 

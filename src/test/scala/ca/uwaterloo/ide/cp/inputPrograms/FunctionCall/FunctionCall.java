@@ -1,4 +1,4 @@
-package FunctionCall;
+package ca.uwaterloo.ide.cp.inputPrograms.FunctionCall;
 
 public class FunctionCall{
 

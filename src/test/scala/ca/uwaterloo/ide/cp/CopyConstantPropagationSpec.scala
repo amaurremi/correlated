@@ -1,5 +1,6 @@
-package ca.uwaterloo.ide.analysis.cp
+package ca.uwaterloo.ide.cp
 
+import ca.uwaterloo.ide.analysis.cp.{CopyConstantPropagationTester, CopyConstantPropagation}
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner

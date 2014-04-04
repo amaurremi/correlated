@@ -9,12 +9,13 @@ import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
+import com.ibm.wala.ssa.SSAInvokeInstruction
 
-class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver {
+class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver with EdgeFnUtil {
 
   private[this] val config =
     ConfigFactory.load(
-      fileName,
+      "ide/analysis/taint/" + fileName,
       ConfigParseOptions.defaults.setAllowMissing(false),
       ConfigResolveOptions.defaults
     )
@@ -28,7 +29,7 @@ class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver {
   override type Procedure   = CGNode
   override type Fact        = TaintFact
   override type LatticeElem = TaintLatticeElem
-  override type IdeFunction = IdTaintFunction
+  override type IdeFunction = TaintFunction
   
   override val Λ: Fact    = Lambda
 
@@ -37,28 +38,44 @@ class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver {
 
   override val Bottom: LatticeElem = ⊥
   override val Top: LatticeElem    = ⊤
-  override val Id: IdeFunction     = IdTaintFunction
-  override val λTop: IdeFunction   = IdTaintFunction
+  override val Id: IdeFunction     = TaintFunction
+  override val λTop: IdeFunction   = TaintFunction
 
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  override def otherSuccEdges: EdgeFn = ???
+  override def otherSuccEdges: EdgeFn =
+    (ideN1, n2) => {
+      ideN1.n.getLastInstruction match {
+        case invokeInstr: SSAInvokeInstruction =>
+          if (isSecret(invokeInstr.getDeclaredTarget)) {
+            val x = allNodesInProc(ideN1.n)
+            val valNum = invokeInstr.getDef
+            Set(FactFunPair(ideN1.d, Id))
+          } else {
+            Set(FactFunPair(ideN1.d, Id))
+          }
+        case _                                 =>
+          Set(FactFunPair(ideN1.d, Id))
+      }
+    }
+
+  private[this] val idf = (ideN1: IdeNode, n2: Node) => Set(FactFunPair(ideN1.d, Id))
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  override def endReturnEdges: EdgeFn = ???
+  override def endReturnEdges: EdgeFn = idf
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  override def callReturnEdges: EdgeFn = ???
+  override def callReturnEdges: EdgeFn = idf
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  override def callStartEdges: EdgeFn = ???
+  override def callStartEdges: EdgeFn = idf
 
   /**
    * Represents a fact for the set D
@@ -98,14 +115,14 @@ class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver {
     override def toString: String = "bottom (secret)"
   }
 
-  sealed trait IdTaintFunction
+  sealed trait TaintFunction extends IdeFunctionI
 
-  case object IdTaintFunction extends IdeFunctionI {
+  case object TaintFunction extends TaintFunction {
 
     override def apply(elem: LatticeElem): LatticeElem = elem
 
-    override def ◦(f: IdTaintFunction): IdTaintFunction = IdTaintFunction
+    override def ◦(f: TaintFunction): TaintFunction = TaintFunction
 
-    override def ⊓(f: IdTaintFunction): IdTaintFunction = IdTaintFunction
+    override def ⊓(f: TaintFunction): TaintFunction = TaintFunction
   }
 }
