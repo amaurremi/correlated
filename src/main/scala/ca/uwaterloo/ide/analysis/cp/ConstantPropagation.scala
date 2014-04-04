@@ -1,16 +1,17 @@
 package ca.uwaterloo.ide.analysis.cp
 
+import ca.uwaterloo.ide.analysis.{WalaInstructions, VariableFacts}
 import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
-import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
-import com.ibm.wala.ipa.cfg.BasicBlockInContext
-import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import com.ibm.wala.ipa.callgraph.CallGraph
+import com.ibm.wala.ssa.{SSAInstruction, SSAArrayLoadInstruction, SSAArrayStoreInstruction}
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
-abstract class ConstantPropagation(fileName: String) extends IdeProblem with IdeSolver {
+abstract class ConstantPropagation(fileName: String) extends IdeProblem with IdeSolver with VariableFacts with WalaInstructions {
 
   private[this] val config =
     ConfigFactory.load(
@@ -21,11 +22,8 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   private[this] val builder              = FlexibleCallGraphBuilder()(config)
   private[this] val callGraph: CallGraph = builder.cg
 
-  override type Node      = BasicBlockInContext[IExplodedBasicBlock]
-  override type Procedure = CGNode
-  override type Fact      = CpFact
-
-  override val Λ: Fact    = Lambda
+  override type Fact      = VariableFact
+  override type FactElem  = ArrayElem
 
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
@@ -39,37 +37,85 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
         ")"
     }
 
-  /**
-   * Represents a fact for the set D
-   */
-  abstract sealed class CpFact
-
-  /**
-   * @param elem The array element that corresponds to the left-hand-side variable in an assignment
-   */
-  case class SomeFact(method: IMethod, elem: FactElem) extends CpFact {
-    override def toString: String = elem.toString + " in " + method.getName.toString + "()"
+  override def getValNum(arrayElem: ArrayElem, node: IdeNode): ValueNumber =
+    arrayElem match {
+      case byRefInd: ArrayElemByArrayAndIndex =>
+        updateAllArrayElementValNums(node.n)
+        arrayElemsToValNums(byRefInd, node.n.getMethod)
+      case ArrayElemByValNumber(vn)           =>
+        vn
   }
 
-  abstract class FactElem
+  private[this] val valNumsToArrayElems = mutable.Map[(ValueNumber, IMethod), ArrayElemByArrayAndIndex]()
+  private[this] val arrayElemsToValNums = mutable.Map[(ArrayElemByArrayAndIndex, IMethod), ValueNumber]()
+
+  protected def getFactByValNum(fact: Fact, node: Node): Option[Variable] = {
+    updateAllArrayElementValNums(node)
+    val method = node.getMethod
+    fact match {
+      case Variable(method2, el@ArrayElemByArrayAndIndex(_, _)) =>
+        arrayElemsToValNums.get(el, method2) map {
+          valNum =>
+            Variable(method, ArrayElemByValNumber(valNum))
+        }
+      case sf@Variable(_, ArrayElemByValNumber(_)) =>
+        Some(sf)
+      case _ =>
+        None
+    }
+  }
+
+  private[this] def updateArrayMaps(arrayElem: ArrayElemByArrayAndIndex, valNum: ValueNumber, method: IMethod) {
+    arrayElemsToValNums += (arrayElem, method) -> valNum
+    valNumsToArrayElems += (valNum, method) -> arrayElem
+  }
+
+  private[this] def updateAllArrayElementValNums(node: Node) = // todo very inefficient
+    allNodesInProc(node) foreach {
+      n =>
+        n.getLastInstruction match {
+          case _: SSAArrayStoreInstruction    =>
+            updateArrayElementValNums(n)
+          case instr: SSAArrayLoadInstruction =>
+            val method = node.getMethod
+            val valNum = instr.getDef
+            val elem   = ArrayElemByArrayAndIndex(instr.getArrayRef, instr.getIndex)
+            updateArrayMaps(elem, valNum, method)
+          case _                              => ()
+        }
+    }
+
+  private[this] def updateArrayElementValNums(n: Node) = {
+    val assignment = getAssignmentInstr(n)
+    val arrayRef = assignment.getArrayRef
+    val arrayInd = assignment.getIndex
+    followingInstructions(n) collectFirst { // todo inefficient
+      case instruction: SSAArrayLoadInstruction
+        if instruction.getArrayRef == arrayRef && instruction.getIndex == arrayInd =>
+        updateArrayMaps(ArrayElemByArrayAndIndex(arrayRef, arrayInd), instruction.getDef, n.getMethod)
+    }
+  }
+
+  protected def getAssignmentInstr(node: Node): SSAArrayStoreInstruction =
+    node.getLastInstruction match {
+      case arrayAssignment: SSAArrayStoreInstruction =>
+        arrayAssignment
+      case _                                         =>
+        throw new IllegalArgumentException("Currently, only array store assignments are handled")
+    }
+
+  abstract class ArrayElem
 
   /**
    * If we pass an array element as a parameter, we will loose the information about the array reference and index, so we only store the value number
    */
-  case class ArrayElemByValNumber(valNum: Int) extends FactElem
+  case class ArrayElemByValNumber(valNum: ValueNumber) extends ArrayElem
 
   /**
    * @param array The value number of the array element's array
    * @param index The value number of the array element's index
    */
-  case class ArrayElemByArrayAndIndex(array: Int, index: Int) extends FactElem
-
-  /**
-   * Represents the Λ fact
-   */
-  case object Lambda extends CpFact {
-    override def toString: String = "Λ"
-  }
+  case class ArrayElemByArrayAndIndex(array: Int, index: Int) extends ArrayElem
 
   def printResult(withNullInstructions: Boolean = false) {
     solvedResult collect {

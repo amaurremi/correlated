@@ -1,0 +1,53 @@
+package ca.uwaterloo.ide.analysis
+
+import ca.uwaterloo.ide.TraverseGraph
+import com.ibm.wala.ipa.callgraph.CGNode
+import com.ibm.wala.ipa.cfg.BasicBlockInContext
+import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import com.ibm.wala.ssa.{SSAInstruction, SSAInvokeInstruction}
+import scala.collection.JavaConverters._
+
+trait WalaInstructions { this: VariableFacts with TraverseGraph =>
+
+  override type Node      = BasicBlockInContext[IExplodedBasicBlock]
+  override type Procedure = CGNode
+
+  /**
+   * If the variable corresponding to this fact is passed as a parameter to this call instruction,
+   * returns the number of the parameter.
+   */
+  def getParameterNumber(node: IdeNode, callInstr: SSAInvokeInstruction): Option[Int] =
+    node.d match {
+      case Variable(method, elem) =>
+        val valNum = getValNum(elem, node)
+        0 to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
+          callInstr.getUse(_) == valNum
+        }
+      case Lambda                 => None
+    }
+
+  /**
+   * Get all instructions following instruction in node `n` in its procedure.
+   */
+  def followingInstructions(n: Node): Iterator[SSAInstruction] =
+    followingNodes(n) map { _.getLastInstruction }
+
+  /**
+   * Does the value with the given value number correspond to a method call?
+   */
+ def isCall(value: ValueNumber, node: Node): Boolean =
+    instructionsInProc(node) exists {
+      case instr: SSAInvokeInstruction
+        if instr.getReturnValue(0) == value => true
+      case _                                => false
+    }
+
+  /**
+   * Get all instructions in the procedure enclosing this node.
+   */
+  lazy val instructionsInProc =
+    (node: Node) =>
+      enclProc(node).getIR.iterateNormalInstructions().asScala
+
+
+}

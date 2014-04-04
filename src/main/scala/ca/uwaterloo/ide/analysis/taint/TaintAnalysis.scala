@@ -1,17 +1,15 @@
 package ca.uwaterloo.ide.analysis.taint
 
+import ca.uwaterloo.ide.analysis.{WalaInstructions, VariableFacts}
 import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
-import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
-import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
-import com.ibm.wala.ipa.cfg.BasicBlockInContext
-import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import com.ibm.wala.ipa.callgraph.CallGraph
+import com.ibm.wala.ssa.SSAInvokeInstruction
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
-import com.ibm.wala.ssa.SSAInvokeInstruction
 
-class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver with EdgeFnUtil {
+class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver with EdgeFnUtil with VariableFacts with WalaInstructions {
 
   private[this] val config =
     ConfigFactory.load(
@@ -26,34 +24,29 @@ class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver with Edg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
 
-  private[this] type ValueNumber = Long
-  
-  override type Node        = BasicBlockInContext[IExplodedBasicBlock]
-  override type Procedure   = CGNode
-  override type Fact        = TaintFact
   override type LatticeElem = TaintLatticeElem
   override type IdeFunction = TaintFunction
-  
+  override type FactElem    = ValueNumber
+
   override val Bottom: LatticeElem = ⊥
   override val Top: LatticeElem    = ⊤
   override val Id: IdeFunction     = TaintFunction
   override val λTop: IdeFunction   = TaintFunction
-  override val Λ: Fact             = Lambda
 
   /**
    * Functions for all other (inter-procedural) edges.
    */
   override def otherSuccEdges: EdgeFn =
-    (ideN1, n2) =>
+    (ideN1, n2) => {
+      val idFactFunPair: Set[FactFunPair] = Set(FactFunPair(ideN1.d, Id))
       ideN1.n.getLastInstruction match {
         case invokeInstr: SSAInvokeInstruction
           if ideN1.d == Λ && isSecret(invokeInstr) =>
-            Set(
-              FactFunPair(ideN1.d, Id),
-              FactFunPair(VariableFact(ideN1.n.getMethod, invokeInstr.getReturnValue(0)), Id))
+            idFactFunPair + FactFunPair(Variable(ideN1.n.getMethod, invokeInstr.getReturnValue(0)), Id)
         case _                                     =>
-            Set(FactFunPair(ideN1.d, Id))
+            idFactFunPair
       }
+    }
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
@@ -68,28 +61,21 @@ class TaintAnalysis(fileName: String) extends IdeProblem with IdeSolver with Edg
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  override def callStartEdges: EdgeFn = ???
+  override def callStartEdges: EdgeFn =
+    (ideN1, n2) =>
+      ideN1.n.getLastInstruction match {
+        case callInstr: SSAInvokeInstruction =>
+          getParameterNumber(ideN1, callInstr) match {
+            case Some(argNum) => // checks if we are passing d1 as an argument to the function
+              val targetFact = ???
+              Set(FactFunPair(targetFact, Id))
+            case None         =>
+              Set(FactFunPair(ideN1.d, Id))
+          }
+        case _ => throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
+      }
 
-  /**
-   * Represents a fact for the set D
-   */
-  abstract sealed class TaintFact
-
-  /**
-   * A variable on the left-hand side of an assignment.
-   * @param method The surrounding method of the variable
-   * @param valNum The value number of the variable
-   */
-  case class VariableFact(method: IMethod, valNum: ValueNumber) extends TaintFact {
-    override def toString: String = "variable " + valNum + " in " + method.getName.toString + "()"
-  }
-
-  /**
-   * Represents the Λ fact
-   */
-  case object Lambda extends TaintFact {
-    override def toString: String = "Λ"
-  }
+  override def getValNum(vn: ValueNumber, n: IdeNode): ValueNumber = vn
 
   /**
    * Represents lattice elements for the set L

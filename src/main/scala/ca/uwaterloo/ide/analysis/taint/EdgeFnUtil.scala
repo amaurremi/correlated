@@ -1,6 +1,5 @@
 package ca.uwaterloo.ide.analysis.taint
 
-import com.ibm.wala.types.MethodReference
 import com.ibm.wala.ssa.SSAInvokeInstruction
 
 trait EdgeFnUtil {
