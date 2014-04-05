@@ -90,7 +90,7 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
         }
   }
 
-  private[this] case object Return extends InstructionType{
+  private[this] case object Return extends InstructionType {
 
     override def instrName = "return statement"
 
