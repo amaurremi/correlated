@@ -23,8 +23,8 @@ class CopyConstantPropagationSpec extends FunSpec {
       val ccs = new CopyConstantPropagation("FunctionCall") with PropagationTester
       import ccs._
 
-      val assignmentVals = getValsAtAssignments(inMain = true) map { _._2 }
-      val returnNodeVals = getValsAtReturn(inMain = false) map { _._2 }
+      val assignmentVals = getValsAtAssignments(inMain = true) map onlyLatticeElem
+      val returnNodeVals = getValsAtReturn(inMain = false) map onlyLatticeElem
       assertResult(assignmentVals, "The assigned value in main should be propagated to the return node in f")(returnNodeVals)
     }
 
@@ -33,24 +33,28 @@ class CopyConstantPropagationSpec extends FunSpec {
       import ccs._
 
       val returnNodeVals = getValsAtReturn(inMain = false, expectedNumber = 3)
-      assertResult(returnNodeVals.head._2)(⊥)
+      val definedInF = returnNodeVals collect {
+        case (Variable(method, _), le) if entryPoints forall { e => e.getMethod != method } =>
+          le
+      }
+      assertResult(definedInF)(Seq(⊥))
     }
 
     it("propagates constants along the end-return edge") {
       val ccs = new CopyConstantPropagation("ReturnConstant") with PropagationTester
       import ccs._
 
-      val returnNodeVals = getValsAtReturn(inMain = true)
+      val returnNodeVals = getValsAtReturn(inMain = true) map onlyLatticeElem
       val (vn, method) = getReturnVal
-      assertResult(Num(vn, method), "The value returned in f should be propagated to main")(returnNodeVals.head._2)
+      assertResult(Seq(Num(vn, method)), "The value returned in f should be propagated to main")(returnNodeVals)
     }
 
     it("propagates variable constants along the end-return edge") {
       val ccs = new CopyConstantPropagation("Return") with PropagationTester
       import ccs._
 
-      val fAssignmentVals = getValsAtAssignments(inMain = false) map { _._2 }
-      val returnNodeVals  = getValsAtReturn(inMain = true)
+      val fAssignmentVals = getValsAtAssignments(inMain = false) map onlyLatticeElem
+      val returnNodeVals  = getValsAtReturn(inMain = true) map onlyLatticeElem
       assertResult(fAssignmentVals, "The constant-variable value returned in f should be propagated to main")(returnNodeVals)
     }
 
@@ -58,18 +62,18 @@ class CopyConstantPropagationSpec extends FunSpec {
       val ccs = new CopyConstantPropagation("Phi") with PropagationTester
       import ccs._
 
-      val returnNodeVals = getValsAtReturn(inMain = true).head._2
-      assertResult(returnNodeVals, "The constant-variable value returned in f should be propagated to main")(⊥)
+      val returnNodeVals = getValsAtReturn(inMain = true) map onlyLatticeElem
+      assertResult(returnNodeVals, "The constant-variable value returned in f should be propagated to main")(Seq(⊥))
     }
 
     it("propagate constant variables that have been assigned the same value in different if branches") {
       val ccs = new CopyConstantPropagation("PhiSame") with PropagationTester
       import ccs._
 
-      val returnNodeVal = getValsAtReturn(inMain = true).head
-      val assignmentVals = getValsAtAssignments(inMain = true, expectedNumber = 2).toSet
+      val returnNodeVal = getValsAtReturn(inMain = true) map onlyLatticeElem
+      val assignmentVals = (getValsAtAssignments(inMain = true, expectedNumber = 2) map onlyLatticeElem).toSeq.distinct
       assert(assignmentVals.size == 1, "There should be only one distinct assigned value")
-      assertResult(assignmentVals.head, "The constant-variable value returned in f should be propagated to main")(returnNodeVal)
+      assertResult(assignmentVals, "The constant-variable value returned in f should be propagated to main")(returnNodeVal)
     }
   }
 }

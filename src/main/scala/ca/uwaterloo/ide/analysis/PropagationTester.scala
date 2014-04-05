@@ -1,8 +1,9 @@
 package ca.uwaterloo.ide.analysis
 
-import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.ssa.{SSAReturnInstruction, SSAArrayStoreInstruction, SSAInstruction}
+import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.classLoader.IMethod
+import scala.collection.breakOut
 
 trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver =>
 
@@ -16,8 +17,8 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
    * @param expectedNumber The expected number of assignment statements returned by this method.
    */
   def getValsAtAssignments(
-    inMain: Boolean, 
-    nonLambda: Boolean = true, 
+    inMain: Boolean,
+    nonLambda: Boolean = true,
     expectedNumber: Int = 1
   ): Iterable[(Fact, LatticeElem)] =
     getInstructionVals(ArrayAssignment, inMain, nonLambda, expectedNumber)
@@ -26,10 +27,10 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
    * Analogous to getAssignmentVals, but for return (instead of assignment) instructions.
    */
   def getValsAtReturn(
-    inMain: Boolean, 
-    nonLambda: Boolean = true, 
+    inMain: Boolean,
+    nonLambda: Boolean = true,
     expectedNumber: Int = 1
-  ): Iterable[(Fact, LatticeElem)] =
+  ): Iterable[(VariableFact, LatticeElem)] =
     getInstructionVals(Return, inMain, nonLambda, expectedNumber)
 
   /**
@@ -53,23 +54,29 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
     entryPoints exists { enclProc(_) == enclProc(node.n) }
 
   private[this] def getInstructionVals(
-    instr: InstructionType, 
-    inMain: Boolean, 
+    instr: InstructionType,
+    inMain: Boolean,
     nonLambda: Boolean,
     expectedNumber: Int
   ): Iterable[(Fact, LatticeElem)] = {
     val isCorrectInstruction = instr.doesMatch
-    val instructionVals      = solvedResult collect {
+    val instructionVals: Iterable[(Fact, LatticeElem)] = (solvedResult collect {
       case (node, value)
         if isCorrectInstruction(node) && (nonLambda == nonLambdaFact(node) && (inMain == isInMainMethod(node))) =>
           node.d -> value
-    }
-    val inOrOutside          = if (inMain) "inside" else "outside"
-    val (verb, plural)       = if (expectedNumber == 1) ("is ", " ") else ("are ", "s ")
-    val size                 = instructionVals.size
-    assert(size == expectedNumber, "There " + verb + expectedNumber + " " + instr.instrName + plural + inOrOutside + " the main method, and not " + size + " as expected")
+    })(breakOut)
+    assertExpectedInstructionNumber(inMain, expectedNumber, instructionVals, instr)
     instructionVals
   }
+
+  private[this] def assertExpectedInstructionNumber(inMain: Boolean, expectedNumber: Int, instructionVals: Iterable[(Fact, LatticeElem)], instr: InstructionType) {
+    val inOrOutside = if (inMain) "inside" else "outside"
+    val (verb, plural) = if (expectedNumber == 1) ("is ", " ") else ("are ", "s ")
+    val size = instructionVals.size
+    assert(size == expectedNumber, "There " + verb + expectedNumber + " " + instr.instrName + plural + inOrOutside + " the main method, and not " + size + " as expected")
+  }
+
+  def onlyLatticeElem: ((Fact, LatticeElem)) => LatticeElem = _._2
 
   private[this] trait InstructionType {
 
