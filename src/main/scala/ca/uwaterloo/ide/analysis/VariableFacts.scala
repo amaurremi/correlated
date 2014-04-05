@@ -1,9 +1,9 @@
 package ca.uwaterloo.ide.analysis
 
-import ca.uwaterloo.ide.{IdeConstants, ExplodedGraphTypes}
+import ca.uwaterloo.ide.{TraverseGraph, IdeConstants, ExplodedGraphTypes}
 import com.ibm.wala.classLoader.IMethod
 
-trait VariableFacts extends ExplodedGraphTypes with IdeConstants {
+trait VariableFacts extends ExplodedGraphTypes with IdeConstants with TraverseGraph with WalaInstructions {
 
   type FactElem
   type ValueNumber = Int

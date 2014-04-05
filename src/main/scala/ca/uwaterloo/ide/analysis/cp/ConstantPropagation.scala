@@ -11,7 +11,7 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-abstract class ConstantPropagation(fileName: String) extends IdeProblem with IdeSolver with VariableFacts with WalaInstructions {
+abstract class ConstantPropagation(fileName: String) extends IdeProblem with IdeSolver with VariableFacts {
 
   private[this] val config =
     ConfigFactory.load(
@@ -22,7 +22,6 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   private[this] val builder              = FlexibleCallGraphBuilder()(config)
   private[this] val callGraph: CallGraph = builder.cg
 
-  override type Fact      = VariableFact
   override type FactElem  = ArrayElem
 
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
@@ -53,7 +52,7 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
     updateAllArrayElementValNums(node)
     val method = node.getMethod
     fact match {
-      case Variable(method2, el@ArrayElemByArrayAndIndex(_, _)) =>
+      case Variable(method2, el: ArrayElemByArrayAndIndex) =>
         arrayElemsToValNums.get(el, method2) map {
           valNum =>
             Variable(method, ArrayElemByValNumber(valNum))

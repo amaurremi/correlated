@@ -1,8 +1,10 @@
-package ca.uwaterloo.ide.analysis.cp
+package ca.uwaterloo.ide.analysis
 
+import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.ssa.{SSAReturnInstruction, SSAArrayStoreInstruction, SSAInstruction}
+import com.ibm.wala.classLoader.IMethod
 
-trait CopyConstantPropagationTester { this: CopyConstantPropagation =>
+trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver =>
 
   /**
    * Let A be the set of all the assignment instruction nodes in the input program.
@@ -17,7 +19,7 @@ trait CopyConstantPropagationTester { this: CopyConstantPropagation =>
     inMain: Boolean, 
     nonLambda: Boolean = true, 
     expectedNumber: Int = 1
-  ): Iterable[LatticeElem] =
+  ): Iterable[(Fact, LatticeElem)] =
     getInstructionVals(ArrayAssignment, inMain, nonLambda, expectedNumber)
 
   /**
@@ -27,7 +29,7 @@ trait CopyConstantPropagationTester { this: CopyConstantPropagation =>
     inMain: Boolean, 
     nonLambda: Boolean = true, 
     expectedNumber: Int = 1
-  ): Iterable[LatticeElem] =
+  ): Iterable[(Fact, LatticeElem)] =
     getInstructionVals(Return, inMain, nonLambda, expectedNumber)
 
   /**
@@ -35,14 +37,14 @@ trait CopyConstantPropagationTester { this: CopyConstantPropagation =>
    * This method assumes there is only one function outside of main and that it returns exactly one value
    * in all execution paths.
    */
-  def getReturnVal: LatticeElem = {
+  def getReturnVal: (ValueNumber, IMethod) = {
     val (retVal, node) = (solvedResult.keys collectFirst {
       case n if !isInMainMethod(n) && n.n.getLastInstruction.isInstanceOf[SSAReturnInstruction] => // super ugly
         n.n.getLastInstruction.asInstanceOf[SSAReturnInstruction].getResult -> n.n
     }).get
-    Num(retVal, node.getMethod)
+    retVal -> node.getMethod
   }
-  
+
   private[this] def getInstruction(node: IdeNode): SSAInstruction = node.n.getLastInstruction
 
   private[this] def nonLambdaFact(node: IdeNode): Boolean = node.d != Lambda
@@ -55,12 +57,12 @@ trait CopyConstantPropagationTester { this: CopyConstantPropagation =>
     inMain: Boolean, 
     nonLambda: Boolean,
     expectedNumber: Int
-  ): Iterable[LatticeElem] = {
+  ): Iterable[(Fact, LatticeElem)] = {
     val isCorrectInstruction = instr.doesMatch
     val instructionVals      = solvedResult collect {
       case (node, value)
         if isCorrectInstruction(node) && (nonLambda == nonLambdaFact(node) && (inMain == isInMainMethod(node))) =>
-        value
+          node.d -> value
     }
     val inOrOutside          = if (inMain) "inside" else "outside"
     val (verb, plural)       = if (expectedNumber == 1) ("is ", " ") else ("are ", "s ")
