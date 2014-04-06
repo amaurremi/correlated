@@ -12,7 +12,6 @@ class TaintAnalysisSpec extends FunSpec {
    describe("TaintAnalysis") {
      it("propagates secret values intra-procedurally") {
        val ccs = new TaintAnalysis("LocalVars") with PropagationTester
-
        ccs.getValsAtReturn(inMain = true)
      }
    }
