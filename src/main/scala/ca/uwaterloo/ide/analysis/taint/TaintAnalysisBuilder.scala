@@ -26,13 +26,13 @@ abstract class TaintAnalysisBuilder(fileName: String) extends WalaInstructions w
   override def getValNum(vn: ValueNumber, n: IdeNode): ValueNumber = vn
 
   override type LatticeElem = TaintLatticeElem
-  override type IdeFunction = TaintFunction
+  override type IdeFunction = IdTaintFunction
   override type FactElem    = ValueNumber
 
   override val Bottom: LatticeElem = ⊥
   override val Top: LatticeElem    = ⊤
-  override val Id: IdeFunction     = TaintFunction
-  override val λTop: IdeFunction   = TaintFunction
+  override val Id: IdeFunction     = IdTaintFunction
+  override val λTop: IdeFunction   = TopTaintFunction
 
   /**
    * Represents lattice elements for the set L
@@ -51,14 +51,23 @@ abstract class TaintAnalysisBuilder(fileName: String) extends WalaInstructions w
     override def toString: String = "bottom (secret)" // todo not sure
   }
 
-  sealed trait TaintFunction extends IdeFunctionI
+  sealed trait IdTaintFunction extends IdeFunctionI
 
-  case object TaintFunction extends TaintFunction {
+  case object IdTaintFunction extends IdTaintFunction {
 
     override def apply(elem: LatticeElem): LatticeElem = elem
 
-    override def ◦(f: TaintFunction): TaintFunction = TaintFunction
+    override def ◦(f: IdTaintFunction): IdTaintFunction = IdTaintFunction
 
-    override def ⊓(f: TaintFunction): TaintFunction = TaintFunction
+    override def ⊓(f: IdTaintFunction): IdTaintFunction = IdTaintFunction
+  }
+
+  case object TopTaintFunction extends IdTaintFunction {
+
+    override def apply(elem: LatticeElem): LatticeElem = ⊤
+
+    override def ◦(f: IdTaintFunction): IdTaintFunction = TopTaintFunction
+
+    override def ⊓(f: IdTaintFunction): IdTaintFunction = f
   }
 }

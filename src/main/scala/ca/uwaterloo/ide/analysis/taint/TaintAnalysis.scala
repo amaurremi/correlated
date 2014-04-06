@@ -19,11 +19,13 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
       n1.getLastInstruction match {
         case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr) =>
           d1 match {
-            case Variable(m, vn) if returnInstr.getResult == vn =>
+            case Variable(m, retVal) if retVal == returnInstr.getResult          => // we are returning a secret value
               (methodToReturnVars.get(m).asScala map {
                 FactFunPair(_, Id)
               })(breakOut)
-            case _                 =>
+            case retVal if methodToReturnVars.get(n1.getMethod).contains(retVal) => // we are returning a non-secret value
+              Set.empty
+            case _                                                               =>
               idFactFunPairSet(d1)
           }
         case _                                                             =>
@@ -70,4 +72,6 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
     }
 
   private[this] val methodToReturnVars = new HashSetMultiMap[IMethod, Variable]
+
+  private[this] def isSecret(method: IMethod) = method.getName.toString == "secret"
 }
