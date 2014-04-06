@@ -19,13 +19,12 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
       n1.getLastInstruction match {
         case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr) =>
           d1 match {
-            case Variable(m, retVal) if retVal == returnInstr.getResult          => // we are returning a secret value
+            // we are returning a secret value, because an existing (i.e. secret) fact d1 is returned
+            case v@Variable(m, _) if isFactReturned(v, n1, returnInstr.getResult) =>
               (methodToReturnVars.get(m).asScala map {
                 FactFunPair(_, Id)
               })(breakOut)
-            case retVal if methodToReturnVars.get(n1.getMethod).contains(retVal) => // we are returning a non-secret value
-              Set.empty
-            case _                                                               =>
+            case _                                                                =>
               idFactFunPairSet(d1)
           }
         case _                                                             =>
@@ -54,24 +53,33 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
     (ideN1, n2) => {
       val n1 = ideN1.n
       val d1 = ideN1.d
+      val targetMethod = n2.getMethod
       n1.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction =>
+        case callInstr: SSAInvokeInstruction if isSecret(targetMethod) =>
+          if (d1 == Λ)
+            idFactFunPairSet(d1) + FactFunPair(Variable(targetMethod, callInstr.getReturnValue(0)), Id)
+          else idFactFunPairSet(d1)
+        case callInstr: SSAInvokeInstruction                           =>
           getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
-            case Some(argNum)                                            =>
-              val substituteFact = Variable(n2.getMethod, getValNumFromParameterNum(n2, argNum))
+            case Some(argNum)                                       =>
+              val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
               Set(FactFunPair(substituteFact, Id))
             case None if d1 == Λ && callValNum(callInstr).isDefined =>
               val callVar = Variable(n1.getMethod, callValNum(callInstr).get)
-              methodToReturnVars.put(n2.getMethod, callVar) // todo is that the right way to keep track of return variables?
-              Set(FactFunPair(d1, Id), FactFunPair(callVar, Id))
-            case None                                                    =>
+              methodToReturnVars.put(targetMethod, callVar) // todo is that the right way to keep track of return variables?
+              idFactFunPairSet(d1)
+            case None                                               =>
               idFactFunPairSet(d1)
           }
-        case _ => throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
+        case _                                                         =>
+          throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
       }
     }
 
   private[this] val methodToReturnVars = new HashSetMultiMap[IMethod, Variable]
 
   private[this] def isSecret(method: IMethod) = method.getName.toString == "secret"
+
+  private[this] def isFactReturned(d: Variable, n: Node, retVal: ValueNumber): Boolean =
+    d.elem == retVal && d.method == n.getMethod
 }

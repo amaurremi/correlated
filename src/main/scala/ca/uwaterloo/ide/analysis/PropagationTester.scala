@@ -73,7 +73,7 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
     val inOrOutside = if (inMain) "inside" else "outside"
     val (verb, plural) = if (expectedNumber == 1) ("is ", " ") else ("are ", "s ")
     val size = instructionVals.size
-    assert(size == expectedNumber, "There " + verb + expectedNumber + " " + instr.instrName + plural + inOrOutside + " the main method, and not " + size + " as expected")
+    assert(size == expectedNumber, "There " + verb + expectedNumber + " " + instr.instrName + plural + inOrOutside + " the main method, and not " + size + " as returned")
   }
 
   def onlyLatticeElem: ((Fact, LatticeElem)) => LatticeElem = _._2
