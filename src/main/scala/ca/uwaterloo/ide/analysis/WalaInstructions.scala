@@ -13,7 +13,7 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
   override type Procedure = CGNode
 
   /**
-   * If the variable corresponding to this fact is passed as a parameter to this call instruction,
+   * If the variable corresponding to this node's fact is passed as a parameter to this call instruction,
    * returns the number of the parameter.
    */
   def getParameterNumber(node: IdeNode, callInstr: SSAInvokeInstruction): Option[Int] =
