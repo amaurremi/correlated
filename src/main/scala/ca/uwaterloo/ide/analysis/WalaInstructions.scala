@@ -57,6 +57,9 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
   def getValNumFromParameterNum(n: Node, argNum: Int): ValueNumber =
     enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
+  /**
+   * The value number of a call's return value.
+   */
   def callValNum(callInstr: SSAInvokeInstruction): Option[ValueNumber] =
     if (callInstr.getNumberOfReturnValues == 1)
       Some(callInstr.getReturnValue(0))

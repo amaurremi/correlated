@@ -58,7 +58,7 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction if isSecret(targetMethod.getReference) =>
           if (d1 == Λ)
-            idFactFunPairSet(d1) + FactFunPair(Variable(targetMethod, callInstr.getReturnValue(0)), Id)
+            idFactFunPairSet(d1) + FactFunPair(Variable(targetMethod, callValNum(callInstr).get), Id)
           else
             idFactFunPairSet(d1)
         case callInstr: SSAInvokeInstruction                           =>
