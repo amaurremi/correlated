@@ -3,7 +3,7 @@
 # Usage:
 # configureTests <JRE rt.jar path>
 
-testroot=scala/ca/uwaterloo/ide
+testroot=ca/uwaterloo/ide
 testdirs="$testroot/cp $testroot/taint"
 
 root=`pwd`
@@ -14,11 +14,13 @@ fi
 function createJar() {
     testpath=$1
     testname=$2
+    cd scala
     rm -rf $testpath/*.class
     rm -rf $testpath/*.jar
     javac $testpath/*.java
     jar cvf "$testpath$testname.jar" $testpath/*.class
     rm -rf $testpath/*.class
+    cd "$root"
 }
 
 function createConfigFile() {
@@ -45,15 +47,13 @@ function createConfigFile() {
 for testdir in $testdirs ; do
     echo "Configuring tests for [$testdir]"
     jrepath=$1
+    cd scala
     for test in `ls -d $testdir/inputPrograms/*/` ; do
         testname=`basename $test`
         echo -n `basename $test`...
-        cd scala
         createJar $test $testname > /dev/null 2>&1
-        cd "$root"
         createConfigFile `basename $testdir` $testname "$jrepath"
         echo "[DONE]"
     done
+    cd "$root"
 done
-
-
