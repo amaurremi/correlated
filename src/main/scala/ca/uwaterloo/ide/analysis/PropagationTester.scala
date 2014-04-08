@@ -16,22 +16,34 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
    * @param nonLambda If true, does not include Λ facts. Otherwise, considers only Λ facts.
    * @param expectedNumber The expected number of assignment statements returned by this method.
    */
-  def getValsAtAssignments(
+  def getVarsAtAssignments(
     inMain: Boolean,
     nonLambda: Boolean = true,
     expectedNumber: Int = 1
   ): Iterable[(Fact, LatticeElem)] =
-    getInstructionVals(ArrayAssignment, inMain, nonLambda, expectedNumber)
+    getInstructionVars(ArrayAssignment, inMain, nonLambda, expectedNumber)
 
   /**
    * Analogous to getAssignmentVals, but for return (instead of assignment) instructions.
    */
-  def getValsAtReturn(
+  def getVarsAtReturn(
     inMain: Boolean,
     nonLambda: Boolean = true,
     expectedNumber: Int = 1
   ): Iterable[(VariableFact, LatticeElem)] =
-    getInstructionVals(Return, inMain, nonLambda, expectedNumber)
+    getInstructionVars(Return, inMain, nonLambda, expectedNumber)
+
+  def filterByOrigin(variables: Iterable[(VariableFact, LatticeElem)], inMain: Boolean): Iterable[(VariableFact, LatticeElem)] =
+    variables filter {
+      case (Variable(method, el), _) =>
+        val filterFunction = if (inMain) entryPoints.exists _ else entryPoints.forall _
+        filterFunction {
+          ep =>
+            (ep.getMethod == method) == inMain
+        }
+      case _                         =>
+        false
+    }
 
   /**
    * Returns lattice element corresponding to a value returned by the function outside of main.
@@ -53,7 +65,7 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
   private[this] def isInMainMethod(node: IdeNode): Boolean =
     entryPoints exists { enclProc(_) == enclProc(node.n) }
 
-  private[this] def getInstructionVals(
+  private[this] def getInstructionVars(
     instr: InstructionType,
     inMain: Boolean,
     nonLambda: Boolean,
