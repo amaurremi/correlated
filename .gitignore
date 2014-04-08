@@ -4,5 +4,7 @@ bin/
 target/
 /.classpath
 /.project
-*.jar
+src/test/scala/ca/uwaterloo/correlated/inputPrograms/*/*.jar
+src/test/scala/ca/uwaterloo/ide/cp/inputPrograms/*/*.jar
+src/test/scala/ca/uwaterloo/ide/taint/inputPrograms/*/*.jar
 *.conf

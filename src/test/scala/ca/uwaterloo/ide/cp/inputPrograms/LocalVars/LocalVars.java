@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide.cp.inputPrograms.LocalVars;
+package LocalVars;
 
 public class LocalVars {
 

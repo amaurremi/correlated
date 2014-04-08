@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide.cp.inputPrograms.PhiSame;
+package PhiSame;
 
 public class PhiSame {
 

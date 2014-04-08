@@ -5,7 +5,11 @@
 
 testroot=scala/ca/uwaterloo/ide
 testdirs="$testroot/cp $testroot/taint"
+
 root=`pwd`
+if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
+    root="c:/Users/mrapopor/Thesis/project/Correlated Calls/src/test"
+fi
 
 function createJar() {
     echo $1

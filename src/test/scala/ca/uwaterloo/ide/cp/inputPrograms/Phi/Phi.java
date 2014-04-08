@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide.cp.inputPrograms.Phi;
+package Phi;
 
 public class Phi {
 
