@@ -14,6 +14,7 @@ function createJar() {
     javac $1/*.java
     jar cvf $1.jar $1/*.class
     mv $1.jar $1
+    rm $1/*.class
 }
 
 function createConfigFile() {
@@ -44,7 +45,7 @@ for testdir in $testdirs ; do
         testname=`basename $test`
         echo -n `basename $test`...
         cd "$test/.."
-        createJar $testname >/dev/null 2>&1
+        createJar $testname > /dev/null 2>&1
         cd "$root"
         createConfigFile `basename $testdir` $testname "$jrepath"
         echo "[DONE]"
