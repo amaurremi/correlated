@@ -20,6 +20,7 @@ function createConfigFile() {
     testdir=$1
     testname=$2
     jrepath=$3
+    mkdir -p "resources/ide/analysis/$testdir"
     cd "resources/ide/analysis/$testdir"
     testpath="$root/scala/ca/uwaterloo/ide/$testdir/inputPrograms/$testname/$testname.jar"
     contents="
