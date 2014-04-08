@@ -3,6 +3,7 @@ package ca.uwaterloo.ide.analysis.taint
 import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{SSAReturnInstruction, SSAInvokeInstruction}
+import com.ibm.wala.types.MethodReference
 import com.ibm.wala.util.collections.HashSetMultiMap
 import scala.collection.JavaConverters._
 import scala.collection.breakOut
@@ -55,7 +56,7 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
       val d1 = ideN1.d
       val targetMethod = n2.getMethod
       n1.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction if isSecret(targetMethod) =>
+        case callInstr: SSAInvokeInstruction if isSecret(targetMethod.getReference) =>
           if (d1 == Λ)
             idFactFunPairSet(d1) + FactFunPair(Variable(targetMethod, callInstr.getReturnValue(0)), Id)
           else
@@ -78,7 +79,7 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
 
   private[this] val methodToReturnVars = new HashSetMultiMap[IMethod, Variable]
 
-  private[this] def isSecret(method: IMethod) = method.getName.toString == "secret"
+  def isSecret(method: MethodReference) = method.getName.toString == "secret"
 
   private[this] def isFactReturned(d: Variable, n: Node, retVal: ValueNumber): Boolean =
     d.elem == retVal && d.method == n.getMethod

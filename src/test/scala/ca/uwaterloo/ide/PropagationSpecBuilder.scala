@@ -1,11 +1,12 @@
-package ca.uwaterloo.ide.analysis
+package ca.uwaterloo.ide
 
-import com.ibm.wala.ssa.{SSAReturnInstruction, SSAArrayStoreInstruction, SSAInstruction}
-import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
+import ca.uwaterloo.ide.analysis.VariableFacts
 import com.ibm.wala.classLoader.IMethod
-import scala.collection.breakOut
+import com.ibm.wala.ssa.{SSAInstruction, SSAReturnInstruction}
+import scala.Iterable
+import scala.collection._
 
-trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver =>
+trait PropagationSpecBuilder extends VariableFacts { this: IdeProblem with IdeSolver =>
 
   /**
    * Let A be the set of all the assignment instruction nodes in the input program.
@@ -21,12 +22,22 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
     nonLambda: Boolean = true,
     expectedNumber: Int = 1
   ): Iterable[(Fact, LatticeElem)] =
-    getInstructionVars(ArrayAssignment, inMain, nonLambda, expectedNumber)
+    getInstructionVars(Assignment, inMain, nonLambda, expectedNumber)
 
   /**
    * Analogous to getAssignmentVals, but for return (instead of assignment) instructions.
    */
   def getVarsAtReturn(
+    inMain: Boolean,
+    nonLambda: Boolean = true,
+    expectedNumber: Int = 1
+  ): Iterable[(VariableFact, LatticeElem)] =
+    getInstructionVars(Return, inMain, nonLambda, expectedNumber)
+
+  /**
+   * Analogous to getAssignmentVals, but for return (instead of assignment) instructions.
+   */
+  def getVarsAtSecretAssignment(
     inMain: Boolean,
     nonLambda: Boolean = true,
     expectedNumber: Int = 1
@@ -58,7 +69,7 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
     retVal -> node.getMethod
   }
 
-  private[this] def getInstruction(node: IdeNode): SSAInstruction = node.n.getLastInstruction
+  protected def getInstruction(node: IdeNode): SSAInstruction = node.n.getLastInstruction
 
   private[this] def nonLambdaFact(node: IdeNode): Boolean = node.d != Lambda
 
@@ -90,24 +101,19 @@ trait PropagationTester extends VariableFacts { this: IdeProblem with IdeSolver 
 
   def onlyLatticeElem: ((Fact, LatticeElem)) => LatticeElem = _._2
 
-  private[this] trait InstructionType {
+  protected trait InstructionType {
 
     def instrName: String
 
     def doesMatch: IdeNode => Boolean
   }
 
-  private[this] case object ArrayAssignment extends InstructionType {
-
-    override def instrName = "assignment"
-
-    override def doesMatch =
-      node =>
-        getInstruction(node) match {
-          case n: SSAArrayStoreInstruction => true
-          case _                           => false
-        }
-  }
+  /**
+   * The type of "significant" assignment for the analysis. E.g. in our implementation of constant propagation,
+   * it's array assignment, because we only deal with arrays. In taint analysis, it's the assignment of the
+   * value returned by the secret() method.
+   */
+  val Assignment: InstructionType
 
   private[this] case object Return extends InstructionType {
 

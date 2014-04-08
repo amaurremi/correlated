@@ -1,7 +1,5 @@
 package ca.uwaterloo.ide.taint
 
-import ca.uwaterloo.ide.analysis.PropagationTester
-import ca.uwaterloo.ide.analysis.taint.TaintAnalysis
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
@@ -11,12 +9,12 @@ class TaintAnalysisSpec extends FunSpec {
 
    describe("TaintAnalysis") {
      it("propagates secret values intra-procedurally") {
-       val ccs = new TaintAnalysis("LocalVars") with PropagationTester
+       val ccs = new TaintAnalysisSpecBuilder("LocalVars")
        ccs.getVarsAtReturn(inMain = true)
      }
 
      it("propagates secret values along the call-start edge") {
-       val ccs = new TaintAnalysis("FunctionCall") with PropagationTester
+       val ccs = new TaintAnalysisSpecBuilder("FunctionCall")
        import ccs._
 
        val assignmentVals = getVarsAtAssignments(inMain = true)
@@ -25,7 +23,7 @@ class TaintAnalysisSpec extends FunSpec {
      }
 
      it("sets a function parameter to top, if that function is invoked with secret and non-secret arguments") {
-       val ccs = new TaintAnalysis("MultipleFunctionCalls") with PropagationTester
+       val ccs = new TaintAnalysisSpecBuilder("MultipleFunctionCalls")
        import ccs._
 
        val returnNodeVals = getVarsAtReturn(inMain = false, expectedNumber = 3)
@@ -34,7 +32,7 @@ class TaintAnalysisSpec extends FunSpec {
      }
 
      it("propagates secret values along the end-return edge") {
-       val ccs = new TaintAnalysis("ReturnSecret") with PropagationTester
+       val ccs = new TaintAnalysisSpecBuilder("ReturnSecret")
        import ccs._
 
        val returnNodeVals = getVarsAtReturn(inMain = true)
@@ -43,7 +41,7 @@ class TaintAnalysisSpec extends FunSpec {
      }
 
      it("propagates secret-value-storing variables along the end-return edge") {
-       val ccs = new TaintAnalysis("Return") with PropagationTester
+       val ccs = new TaintAnalysisSpecBuilder("Return")
        import ccs._
 
        val fAssignmentVals = getVarsAtAssignments(inMain = false)
@@ -52,7 +50,7 @@ class TaintAnalysisSpec extends FunSpec {
      }
 
      it("assigns top to variables that have been assigned secret and non-secret values in if branches") {
-       val ccs = new TaintAnalysis("Phi") with PropagationTester
+       val ccs = new TaintAnalysisSpecBuilder("Phi")
        import ccs._
 
        val returnNodeVals = getVarsAtReturn(inMain = true) map onlyLatticeElem
@@ -60,7 +58,7 @@ class TaintAnalysisSpec extends FunSpec {
      }
 
      it("propagate constant variables that have been assigned the same value in different if branches") {
-       val ccs = new TaintAnalysis("PhiSame") with PropagationTester
+       val ccs = new TaintAnalysisSpecBuilder("PhiSame")
        import ccs._
 
        val returnNodeVal = getVarsAtReturn(inMain = true)
