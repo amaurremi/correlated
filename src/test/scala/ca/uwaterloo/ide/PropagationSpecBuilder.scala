@@ -34,16 +34,6 @@ trait PropagationSpecBuilder extends VariableFacts { this: IdeProblem with IdeSo
   ): Iterable[(VariableFact, LatticeElem)] =
     getInstructionVars(Return, inMain, nonLambda, expectedNumber)
 
-  /**
-   * Analogous to getAssignmentVals, but for return (instead of assignment) instructions.
-   */
-  def getVarsAtSecretAssignment(
-    inMain: Boolean,
-    nonLambda: Boolean = true,
-    expectedNumber: Int = 1
-  ): Iterable[(VariableFact, LatticeElem)] =
-    getInstructionVars(Return, inMain, nonLambda, expectedNumber)
-
   def filterByOrigin(variables: Iterable[(VariableFact, LatticeElem)], inMain: Boolean): Iterable[(VariableFact, LatticeElem)] =
     variables filter {
       case (Variable(method, el), _) =>
