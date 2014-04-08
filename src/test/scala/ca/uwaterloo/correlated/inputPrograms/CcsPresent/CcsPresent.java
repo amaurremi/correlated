@@ -1,4 +1,4 @@
-package CcsPresent;
+package ca.uwaterloo.correlated.inputPrograms.CcsPresent;
 
 public class CcsPresent {
 

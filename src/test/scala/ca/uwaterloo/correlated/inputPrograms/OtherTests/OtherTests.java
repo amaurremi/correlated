@@ -1,4 +1,4 @@
-package OtherTests;
+package ca.uwaterloo.correlated.inputPrograms.OtherTests;
 
 public class OtherTests {
 

@@ -1,4 +1,4 @@
-package NoCcs;
+package ca.uwaterloo.correlated.inputPrograms.NoCcs;
 
 public class NoCcs {
 

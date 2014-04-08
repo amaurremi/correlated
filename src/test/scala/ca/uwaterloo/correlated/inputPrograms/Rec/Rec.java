@@ -1,4 +1,4 @@
-package Rec;
+package ca.uwaterloo.correlated.inputPrograms.Rec;
 
 public class Rec {
     public static void main(String[] args) {
