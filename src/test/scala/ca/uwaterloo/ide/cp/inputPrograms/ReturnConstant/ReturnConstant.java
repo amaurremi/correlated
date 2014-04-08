@@ -1,4 +1,4 @@
-package ReturnConstant;
+package ca.uwaterloo.ide.cp.inputPrograms.ReturnConstant;
 
 public class ReturnConstant {
 

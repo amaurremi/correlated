@@ -1,4 +1,4 @@
-package PhiSame;
+package ca.uwaterloo.ide.taint.inputPrograms.PhiSame;
 
 public class PhiSame {
 

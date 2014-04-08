@@ -1,4 +1,4 @@
-package Phi;
+package ca.uwaterloo.ide.taint.inputPrograms.Phi;
 
 public class Phi {
 

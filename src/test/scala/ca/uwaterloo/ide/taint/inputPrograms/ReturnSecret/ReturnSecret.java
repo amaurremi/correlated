@@ -1,4 +1,4 @@
-package ReturnSecret;
+package ca.uwaterloo.ide.taint.inputPrograms.ReturnSecret;
 
 public class ReturnSecret {
 

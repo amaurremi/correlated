@@ -12,13 +12,13 @@ if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
 fi
 
 function createJar() {
-    echo $1
-    rm $1/*.class
-    rm $1/*.jar
-    javac $1/*.java
-    jar cvf $1.jar $1/*.class
-    mv $1.jar $1
-    rm $1/*.class
+    testpath=$1
+    testname=$2
+    rm -rf $testpath/*.class
+    rm -rf $testpath/*.jar
+    javac $testpath/*.java
+    jar cvf "$testpath$testname.jar" $testpath/*.class
+    rm -rf $testpath/*.class
 }
 
 function createConfigFile() {
@@ -33,7 +33,7 @@ function createConfigFile() {
       jre-lib-path = \"$jrepath\"\n
       dependencies.jar += \"$testpath\"\n
       entry {\n
-       class = \"L$testname/$testname\"\n
+       class = \"Lca/uwaterloo/ide/$testdir/inputPrograms/$testname/$testname\"\n
        method = \"main([Ljava/lang/String;)V\"\n
       }\n
     }\n
@@ -48,8 +48,8 @@ for testdir in $testdirs ; do
     for test in `ls -d $testdir/inputPrograms/*/` ; do
         testname=`basename $test`
         echo -n `basename $test`...
-        cd "$test/.."
-        createJar $testname > /dev/null 2>&1
+        cd scala
+        createJar $test $testname > /dev/null 2>&1
         cd "$root"
         createConfigFile `basename $testdir` $testname "$jrepath"
         echo "[DONE]"

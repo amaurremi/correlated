@@ -1,4 +1,4 @@
-package LocalVars;
+package ca.uwaterloo.ide.taint.inputPrograms.LocalVars;
 
 public class LocalVars {
 

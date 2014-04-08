@@ -1,4 +1,4 @@
-package MultipleFunctionCalls;
+package ca.uwaterloo.ide.taint.inputPrograms.MultipleFunctionCalls;
 
 public class MultipleFunctionCalls{
 
