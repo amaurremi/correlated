@@ -14,7 +14,7 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
   def variable(name: String, method: String): SpecVariable = {
     val iMethod = getMethod(method)
     val variablesInMethod = solvedResult.keySet collect {
-      case node@IdeNode(n, v@Variable(m, _)) if m == iMethod && n.getLastInstruction != null =>
+      case node@IdeNode(n, v: Variable) if n.getMethod == iMethod && n.getLastInstruction != null =>
         (v, node)
     }
     val variable = (variablesInMethod collectFirst {
