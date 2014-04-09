@@ -12,11 +12,11 @@ class CopyConstantPropagationSpecBuilder(fileName: String) extends CopyConstantP
       case _      => false
     }
 
-  def shouldBeAConstant(variable: SpecVariable) {
+  def shouldBeAConstant(variable: SpecVariableFact) {
     variable shouldSatisfy isConstant
   }
 
-  def shouldNotBeAConstant(variable: SpecVariable) {
+  def shouldNotBeAConstant(variable: SpecVariableFact) {
     variable shouldSatisfy { !isConstant(_) }
   }
 }

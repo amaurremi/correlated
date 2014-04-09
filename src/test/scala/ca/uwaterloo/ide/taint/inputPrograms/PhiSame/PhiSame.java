@@ -9,6 +9,7 @@ public class PhiSame {
         } else {
             s = secret();
         }
+        String t = s;
     }
 
     static String secret() {

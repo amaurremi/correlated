@@ -9,6 +9,7 @@ public class Phi {
         } else {
             s = "not secret";
         }
+        String t = s;
     }
 
     static String secret() {

@@ -11,7 +11,7 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
    * A variable with the given name that occurs in the given method.
    * Note that each variable within a method, and each method within the test program, should have a unique name.
    */
-  def variable(name: String, method: String): SpecVariable = {
+  def variable(name: String, method: String): SpecVariableFact = {
     val iMethod = getMethod(method)
     val variablesInMethod = solvedResult.keySet collect {
       case node@IdeNode(n, v: Variable) if v.method == iMethod && n.getMethod == iMethod && n.getLastInstruction != null =>
@@ -23,11 +23,10 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
         node   <- allNodesInProc(n)
         if node.getLastInstruction != null
       } yield (v, node)
-    val variable = (variableNodeProduct collectFirst {
+    variableNodeProduct collectFirst {
       case (v@Variable(_, elem), n) if containedInLocalNames(name, n, getValNum(elem, IdeNode(n, Λ))) =>
-        v
-    }).get
-    SpecVariable(variable)
+        SpecVariable(v)
+    } getOrElse NoVariable
   }
 
   private[this] def getMethod(name: String): IMethod =
@@ -43,8 +42,24 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
     val locNames = enclProc(n).getIR.getLocalNames(n.getLastInstructionIndex, valNum)
     if (locNames == null) Seq.empty else locNames
   }
+
+  trait SpecVariableFact {
+    def shouldBe(elem: LatticeElem): Unit
+    def shouldSatisfy(condition: LatticeElem => Boolean): Unit
+  }
   
-  case class SpecVariable(variable: Variable) {
+  case object NoVariable extends SpecVariableFact {
+
+    override def shouldSatisfy(condition: (LatticeElem) => Boolean) {
+      assert(condition(Top))
+    }
+
+    override def shouldBe(expectedElem: LatticeElem) {
+      assertResult(expectedElem)(Top)
+    }
+  }
+
+  case class SpecVariable(variable: VariableFact) extends SpecVariableFact {
     
     private[this] def mainReturnsAtFact: IdeNode = {
       (entryPoints flatMap allNodesInProc collectFirst {
@@ -53,12 +68,12 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
       }).get
     }
 
-    def shouldBe(expectedElem: LatticeElem) {
+    override def shouldBe(expectedElem: LatticeElem) {
       val resultElem = solvedResult(mainReturnsAtFact)
       assertResult(expectedElem)(resultElem)
     }
 
-    def shouldSatisfy(condition: LatticeElem => Boolean) {
+    override def shouldSatisfy(condition: LatticeElem => Boolean) {
       val resultElem = solvedResult(mainReturnsAtFact)
       assert(condition(resultElem))
     }

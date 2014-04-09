@@ -15,6 +15,15 @@ class TaintAnalysisSpec extends FunSpec {
        variable("x", "main") shouldBe secret
      }
 
+     it("propagates non-secret values intra-procedurally") {
+       val ccs = new TaintAnalysisSpecBuilder("NotSecretLocalVars")
+       import ccs._
+
+       variable("x", "main") shouldBe notSecret
+       variable("y", "main") shouldBe notSecret
+       variable("z", "main") shouldBe secret
+     }
+
      it("propagates secret values along the call-start edge") {
        val ccs = new TaintAnalysisSpecBuilder("FunctionCall")
        import ccs._
@@ -26,7 +35,7 @@ class TaintAnalysisSpec extends FunSpec {
        val ccs = new TaintAnalysisSpecBuilder("MultipleFunctionCalls")
        import ccs._
 
-       variable("s", "f") shouldBe notSecret
+       variable("s", "f") shouldBe secret
      }
 
      it("propagates secret values along the end-return edge") {
@@ -47,14 +56,14 @@ class TaintAnalysisSpec extends FunSpec {
        val ccs = new TaintAnalysisSpecBuilder("Phi")
        import ccs._
 
-       variable("s", "main") shouldBe notSecret
+       variable("t", "main") shouldBe secret
      }
 
      it("propagate constant variables that have been assigned the same value in different if branches") {
        val ccs = new TaintAnalysisSpecBuilder("PhiSame")
        import ccs._
 
-       variable("s", "main") shouldBe secret
+       variable("t", "main") shouldBe secret
      }
    }
  }
