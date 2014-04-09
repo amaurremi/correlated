@@ -34,11 +34,12 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
   
   case class SpecVariable(variable: Variable) {
     
-    private[this] def mainReturnsAtFact: IdeNode =
-      (entryPoints flatMap followingNodes collectFirst {
+    private[this] def mainReturnsAtFact: IdeNode = {
+      (entryPoints flatMap allNodesInProc collectFirst {
         case node if node.getLastInstruction.isInstanceOf[SSAReturnInstruction] =>
           IdeNode(node, variable)
       }).get
+    }
 
     def shouldMapTo(expectedElem: LatticeElem) {
       val resultElem = solvedResult(mainReturnsAtFact)
