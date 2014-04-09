@@ -17,7 +17,7 @@ function createJar() {
     cd scala
     rm -rf $testpath/*.class
     rm -rf $testpath/*.jar
-    javac $testpath/*.java
+    javac -g $testpath/*.java
     jar cvf "$testpath$testname.jar" $testpath/*.class
     rm -rf $testpath/*.class
     cd "$root"
