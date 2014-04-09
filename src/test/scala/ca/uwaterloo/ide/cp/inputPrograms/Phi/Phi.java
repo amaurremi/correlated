@@ -8,6 +8,6 @@ public class Phi {
         } else {
             args[0] = "false";
         }
-        return;
+        String x = args[0];
     }
 }

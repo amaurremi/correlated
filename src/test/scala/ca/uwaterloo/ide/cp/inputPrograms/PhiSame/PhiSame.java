@@ -8,6 +8,6 @@ public class PhiSame {
         } else {
             args[0] = "true";
         }
-        return;
+        String s = args[0];
     }
 }
