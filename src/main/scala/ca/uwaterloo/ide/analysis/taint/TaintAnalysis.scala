@@ -54,10 +54,11 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
       val n1 = ideN1.n
       val d1 = ideN1.d
       val targetMethod = n2.getMethod
+      val callerMethod = n1.getMethod
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction if isSecret(targetMethod.getReference) =>
           if (d1 == Λ)
-            idFactFunPairSet(d1) + FactFunPair(Variable(targetMethod, callValNum(callInstr).get), Id)
+            idFactFunPairSet(d1) + FactFunPair(Variable(callerMethod, callValNum(callInstr).get), Id)
           else
             idFactFunPairSet(d1)
         case callInstr: SSAInvokeInstruction                           =>
@@ -66,7 +67,7 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
               val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
               Set(FactFunPair(substituteFact, Id))
             case None if d1 == Λ && callValNum(callInstr).isDefined =>
-              methodToReturnVars.put(targetMethod, Variable(n1.getMethod, callValNum(callInstr).get)) // todo is this the right way to keep track of return variables?
+              methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get)) // todo is this the right way to keep track of return variables?
               idFactFunPairSet(d1)
             case None                                               =>
               idFactFunPairSet(d1)

@@ -14,11 +14,18 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
   def variable(name: String, method: String): SpecVariable = {
     val iMethod = getMethod(method)
     val variablesInMethod = solvedResult.keySet collect {
-      case node@IdeNode(n, v: Variable) if n.getMethod == iMethod && n.getLastInstruction != null =>
-        (v, node)
+      case node@IdeNode(n, v: Variable) if v.method == iMethod && n.getMethod == iMethod && n.getLastInstruction != null =>
+        (v, n)
     }
-    val variable = (variablesInMethod collectFirst {
-      case (v, node) if containedInLocalNames(name, node.n, getValNum(v.elem, node)) => v
+    val variableNodeProduct: Set[(Variable, Node)] =
+      for {
+        (v, n) <- variablesInMethod
+        node   <- allNodesInProc(n)
+        if node.getLastInstruction != null
+      } yield (v, node)
+    val variable = (variableNodeProduct collectFirst {
+      case (v@Variable(_, elem), n) if containedInLocalNames(name, n, getValNum(elem, IdeNode(n, Λ))) =>
+        v
     }).get
     SpecVariable(variable)
   }
@@ -29,9 +36,8 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
         n.getMethod
     }).get
 
-  private[this] def containedInLocalNames(name: String, n: Node, valNum: ValueNumber): Boolean = {
+  private[this] def containedInLocalNames(name: String, n: Node, valNum: ValueNumber): Boolean =
     getLocalNames(n, valNum) contains name
-  }
 
   private[this] def getLocalNames(n: Node, valNum: ValueNumber): Seq[String] = {
     val locNames = enclProc(n).getIR.getLocalNames(n.getLastInstructionIndex, valNum)

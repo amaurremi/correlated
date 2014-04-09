@@ -19,7 +19,6 @@ function createJar() {
     rm -rf $testpath/*.jar
     javac -g $testpath/*.java
     jar cvf "$testpath$testname.jar" $testpath/*.class
-    rm -rf $testpath/*.class
     cd "$root"
 }
 
