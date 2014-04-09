@@ -6,7 +6,6 @@ import com.ibm.wala.ssa.{SSAReturnInstruction, SSAInvokeInstruction}
 import com.ibm.wala.types.MethodReference
 import com.ibm.wala.util.collections.HashSetMultiMap
 import scala.collection.JavaConverters._
-import scala.collection.breakOut
 
 class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) with IdeProblem with IdeSolver {
 
@@ -24,7 +23,7 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
             case v@Variable(m, _) if isFactReturned(v, n1, returnInstr.getResult) =>
               (methodToReturnVars.get(m).asScala map {
                 FactFunPair(_, Id)
-              })(breakOut)
+              }).toSet ++ idFactFunPairSet(d1)
             case _                                                                =>
               idFactFunPairSet(d1)
           }
