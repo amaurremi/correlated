@@ -29,8 +29,14 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
         n.getMethod
     }).get
 
-  private[this] def containedInLocalNames(name: String, n: Node, valNum: ValueNumber): Boolean =
-    enclProc(n).getIR.getLocalNames(n.getLastInstructionIndex, valNum) contains name
+  private[this] def containedInLocalNames(name: String, n: Node, valNum: ValueNumber): Boolean = {
+    getLocalNames(n, valNum) contains name
+  }
+
+  private[this] def getLocalNames(n: Node, valNum: ValueNumber): Seq[String] = {
+    val locNames = enclProc(n).getIR.getLocalNames(n.getLastInstructionIndex, valNum)
+    if (locNames == null) Seq.empty else locNames
+  }
   
   case class SpecVariable(variable: Variable) {
     
