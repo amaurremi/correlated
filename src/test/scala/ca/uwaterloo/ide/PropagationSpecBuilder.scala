@@ -41,7 +41,7 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
       }).get
     }
 
-    def shouldMapTo(expectedElem: LatticeElem) {
+    def shouldBe(expectedElem: LatticeElem) {
       val resultElem = solvedResult(mainReturnsAtFact)
       assertResult(expectedElem)(resultElem)
     }
