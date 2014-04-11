@@ -33,7 +33,7 @@ The source code of the input programs is located in the
 Additionally, each test program needs a configuration file in the `src/test/resources` directory.
 
 To create or update a configuration and Jar file for a test, you will need to execute either the `configureTests` or `configureSingleTest` script.
-This will configure all or one test.
+The first script will configure all tests, and the latter script will configure one specified test.
 
 #### Configuring all tests
 To configure all tests, navigate to the `src/test` subdirectory of the project and run `./configureTests "path-to-rt.jar"`.
