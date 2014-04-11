@@ -7,4 +7,9 @@ target/
 src/test/scala/ca/uwaterloo/correlated/inputPrograms/*/*.jar
 src/test/scala/ca/uwaterloo/ide/cp/inputPrograms/*/*.jar
 src/test/scala/ca/uwaterloo/ide/taint/inputPrograms/*/*.jar
+src/test/scala/ca/uwaterloo/correlated/inputPrograms/*/*.class
+src/test/scala/ca/uwaterloo/ide/cp/inputPrograms/*/*.class
+src/test/scala/ca/uwaterloo/ide/taint/inputPrograms/*/*.class
 *.conf
+.idea/
+.idea_modules
