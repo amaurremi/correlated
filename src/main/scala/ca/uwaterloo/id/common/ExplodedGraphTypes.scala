@@ -3,6 +3,11 @@ package ca.uwaterloo.id.common
 trait ExplodedGraphTypes extends SuperGraphTypes with Facts {
 
   /**
+   * Represents the Λ fact
+   */
+  val Λ: Fact
+
+  /**
    * A node in the exploded supergraph
    */
   trait XNode {

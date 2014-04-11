@@ -3,6 +3,7 @@ package ca.uwaterloo.id.ide
 import com.ibm.wala.util.collections.HashSetMultiMap
 import scala.collection.JavaConverters._
 import scala.collection.{breakOut, mutable}
+import ca.uwaterloo.id.common.TraverseGraph
 
 // p. 147 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow analysis
 // with applications to constant propagation"

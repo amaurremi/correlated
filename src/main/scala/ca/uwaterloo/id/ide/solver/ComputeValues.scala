@@ -1,6 +1,7 @@
 package ca.uwaterloo.id.ide
 
 import scala.collection.{breakOut, mutable}
+import ca.uwaterloo.id.common.TraverseGraph
 
 // p. 149 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow analysis
 // with applications to constant propagation"

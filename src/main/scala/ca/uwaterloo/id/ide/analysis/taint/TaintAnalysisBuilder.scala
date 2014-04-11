@@ -1,15 +1,15 @@
 package ca.uwaterloo.id.ide.analysis.taint
 
-import ca.uwaterloo.id.ide.TraverseGraph
-import ca.uwaterloo.id.ide.analysis.{WalaInstructions, VariableFacts}
+import ca.uwaterloo.id.common.{WalaInstructions, VariableFacts, TraverseGraph}
+import ca.uwaterloo.id.ide.{IdeConstants, IdeExplodedGraphTypes}
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
-import ca.uwaterloo.id.ide.analysis.WalaInstructions
 
-abstract class TaintAnalysisBuilder(fileName: String) extends WalaInstructions with VariableFacts { this: TraverseGraph =>
+abstract class TaintAnalysisBuilder(fileName: String) extends WalaInstructions with VariableFacts with IdeExplodedGraphTypes {
+  this: TraverseGraph with IdeConstants =>
 
   private[this] val config =
     ConfigFactory.load(

@@ -1,5 +1,7 @@
 package ca.uwaterloo.id.ide
 
+import ca.uwaterloo.id.common.TraverseGraph
+
 trait IdeSolver extends JumpFuncs with ComputeValues with TraverseGraph { this: IdeProblem =>
 
   /**
