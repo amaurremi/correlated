@@ -3,6 +3,8 @@ package ca.uwaterloo.ide.taint
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
+import scala.collection.JavaConverters._
+import com.ibm.wala.ssa.SSAPhiInstruction
 
 @RunWith(classOf[JUnitRunner])
 class TaintAnalysisSpec extends FunSpec {
@@ -12,7 +14,7 @@ class TaintAnalysisSpec extends FunSpec {
        val ccs = new TaintAnalysisSpecBuilder("LocalVars")
        import ccs._
 
-       variable("x", "main") shouldBe secret
+       variable("t", "main") shouldBe secret
      }
 
      it("propagates non-secret values intra-procedurally") {
@@ -56,7 +58,7 @@ class TaintAnalysisSpec extends FunSpec {
        val ccs = new TaintAnalysisSpecBuilder("Phi")
        import ccs._
 
-       variable("t", "main") shouldBe secret
+       variable("s", "main") shouldBe secret
      }
 
      it("propagate constant variables that have been assigned the same value in different if branches") {

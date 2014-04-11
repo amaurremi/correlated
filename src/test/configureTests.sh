@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage:
-# configureTest <JRE rt.jar path> <analysis> <test name>
+# configureTests <JRE rt.jar path>
 
 testroot=ca/uwaterloo/ide
 testdirs="$testroot/cp $testroot/taint"
@@ -14,10 +14,11 @@ fi
 function createJar() {
     testpath=$1
     testname=$2
+    cd scala
     rm -rf $testpath/*.class
     rm -rf $testpath/*.jar
     javac -g $testpath/*.java
-    jar cvf "$testpath/$testname.jar" $testpath/*.class
+    jar cvf "$testpath$testname.jar" $testpath/*.class
     cd "$root"
 }
 
@@ -42,14 +43,16 @@ function createConfigFile() {
     cd "$root"
 }
 
-jrepath=$1
-analysis=$2
-testname=$3
-test=$testroot/$analysis/inputPrograms/$testname
-cd scala
-testname=`basename $test`
-echo -n `basename $test`...
-createJar $test $testname #> /dev/null 2>&1
-createConfigFile $analysis $testname "$jrepath"
-echo "[DONE]"
-cd "$root"
+for testdir in $testdirs ; do
+    echo "Configuring tests for [$testdir]"
+    jrepath=$1
+    cd scala
+    for test in `ls -d $testdir/inputPrograms/*/` ; do
+        testname=`basename $test`
+        echo -n `basename $test`...
+        createJar $test $testname > /dev/null 2>&1
+        createConfigFile `basename $testdir` $testname "$jrepath"
+        echo "[DONE]"
+    done
+    cd "$root"
+done
