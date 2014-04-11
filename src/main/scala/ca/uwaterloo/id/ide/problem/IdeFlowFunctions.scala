@@ -5,7 +5,7 @@ package ca.uwaterloo.id.ide
  * for which we know n, d1, and m, return all
  * d2s plus the corresponding edge IDE functions.
  */
-trait FlowFunctions { this: ExplodedGraphTypes with IdeConstants =>
+trait IdeFlowFunctions { this: IdeExplodedGraphTypes with IdeConstants =>
 
   case class FactFunPair(
     d2: Fact,
@@ -19,32 +19,32 @@ trait FlowFunctions { this: ExplodedGraphTypes with IdeConstants =>
    *   (n, d1) -> (m, d2)
    * along with the corresponding edge functions.
    */
-  type EdgeFn = (IdeNode, Node) => Set[FactFunPair]
+  type IdeEdgeFn = (XNode, Node) => Set[FactFunPair]
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  def callStartEdges: EdgeFn
+  def callStartEdges: IdeEdgeFn
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  def callReturnEdges: EdgeFn
+  def callReturnEdges: IdeEdgeFn
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  def endReturnEdges: EdgeFn
+  def endReturnEdges: IdeEdgeFn
 
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  def otherSuccEdges: EdgeFn
+  def otherSuccEdges: IdeEdgeFn
 
   /**
    * Helper function analogous to callStartFns, but returns only the factoids, without the edge functions.
    */
-  def callStartD2s: (IdeNode, Node) => Set[Fact] =
+  def callStartD2s: (XNode, Node) => Set[Fact] =
     (node1, n2) =>
       callStartEdges(node1, n2) map { _.d2 }
 

@@ -27,7 +27,7 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
 
-  val ideNodeString: IdeNode => String =
+  val ideNodeString: XNode => String =
     node => {
       val instr = node.n.getLastInstruction
       "IdeNode(\n  n: " + (if (instr == null) "null" else instr.toString) +
@@ -36,7 +36,7 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
         ")"
     }
 
-  override def getValNum(arrayElem: ArrayElem, node: IdeNode): ValueNumber =
+  override def getValNum(arrayElem: ArrayElem, node: XNode): ValueNumber =
     arrayElem match {
       case byRefInd: ArrayElemByArrayAndIndex =>
         updateAllArrayElementValNums(node.n)

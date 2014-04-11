@@ -33,7 +33,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  override def otherSuccEdges: EdgeFn =
+  override def otherSuccEdges: IdeEdgeFn =
     (ideN1, n2) => {
       val d1 = ideN1.d
       n2.getLastInstruction match {
@@ -47,7 +47,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  override def endReturnEdges: EdgeFn =
+  override def endReturnEdges: IdeEdgeFn =
     (ideN1, n2) =>
       n2.getLastInstruction match {
         case assignment: SSAArrayStoreInstruction =>
@@ -59,7 +59,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  override def callReturnEdges: EdgeFn =
+  override def callReturnEdges: IdeEdgeFn =
     (ideN1, _) =>
       idFactFunPairSet(ideN1.d) // todo not for fields/static variables
 
@@ -67,7 +67,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
   // todo parameters need to be associated with arguments including the case where the argument was not assigned a value before (e.g. if it's the args[] parameter of the main method)
-  override def callStartEdges: EdgeFn =
+  override def callStartEdges: IdeEdgeFn =
     (ideN1, n2) =>
       ideN1.n.getLastInstruction match {
         case callInstr: SSAInvokeInstruction =>
@@ -145,7 +145,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   }
 
   private[this] def edgesForCallAssignment(
-    ideN1: IdeNode,
+    ideN1: XNode,
     n2: Node
   ): Set[FactFunPair] = {
     val n1               = ideN1.n

@@ -12,7 +12,7 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  override def otherSuccEdges: EdgeFn =
+  override def otherSuccEdges: IdeEdgeFn =
     (ideN1, n2) => {
       val n1 = ideN1.n
       val d1 = ideN1.d
@@ -35,21 +35,21 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  override def endReturnEdges: EdgeFn =
+  override def endReturnEdges: IdeEdgeFn =
     (ideN1, _) =>
       idFactFunPairSet(ideN1.d)
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  override def callReturnEdges: EdgeFn =
+  override def callReturnEdges: IdeEdgeFn =
     (ideN1, _) =>
       idFactFunPairSet(ideN1.d) // todo not for fields/static variables
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  override def callStartEdges: EdgeFn =
+  override def callStartEdges: IdeEdgeFn =
     (ideN1, n2) => {
       val n1 = ideN1.n
       val d1 = ideN1.d

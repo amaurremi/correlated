@@ -24,7 +24,7 @@ abstract class TaintAnalysisBuilder(fileName: String) extends WalaInstructions w
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
 
-  override def getValNum(vn: ValueNumber, n: IdeNode): ValueNumber = vn
+  override def getValNum(vn: ValueNumber, n: XNode): ValueNumber = vn
 
   override type LatticeElem = TaintLatticeElem
   override type IdeFunction = IdTaintFunction

@@ -2,7 +2,7 @@ package ca.uwaterloo.id.ide
 
 import scala.collection.JavaConverters._
 
-trait TraverseGraph { this: ExplodedGraphTypes =>
+trait TraverseGraph { this: IdeExplodedGraphTypes =>
 
   def followingNodes(n: Node): Iterator[Node] =
     (supergraph getSuccNodes n).asScala

@@ -6,25 +6,25 @@ import scala.collection.{breakOut, mutable}
 // with applications to constant propagation"
 trait ComputeValues { this: IdeProblem with TraverseGraph =>
 
-  private[this] type JumpFn = Map[IdeEdge, IdeFunction]
+  private[this] type JumpFn = Map[XEdge, IdeFunction]
 
   /**
    * [1]
    */
-  private[this] val vals = mutable.Map[IdeNode, LatticeElem]() withDefault { _ => Top }
+  private[this] val vals = mutable.Map[XNode, LatticeElem]() withDefault { _ => Top }
 
-  private[this] lazy val nodeWorklist = mutable.Queue[IdeNode]()
+  private[this] lazy val nodeWorklist = mutable.Queue[XNode]()
 
   private[this] def initialize() {
     // [2]
     vals ++= (entryPoints map {
-      IdeNode(_, Λ) -> Bottom
+      XNode(_, Λ) -> Bottom
     })(breakOut)
     // [3]
-    nodeWorklist ++= entryPoints map { IdeNode(_, Λ) }
+    nodeWorklist ++= entryPoints map { XNode(_, Λ) }
   }
 
-  def computeValues(jumpFunc: JumpFn): Map[IdeNode, LatticeElem]  = {
+  def computeValues(jumpFunc: JumpFn): Map[XNode, LatticeElem]  = {
     // Phase II(i)
     initialize()
     // [4-17]
@@ -37,7 +37,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     }
     // Phase II(ii)
     for { // todo correct (differs from paper)?
-      (IdeEdge(sp, n), fPrime) <- jumpFunc
+      (XEdge(sp, n), fPrime) <- jumpFunc
       if fPrime != λTop
       if !(n.isCallNode || n.isStartNode)
     } {
@@ -46,19 +46,19 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     vals.toMap
   }
 
-  private[this] def computeCallNode(c: IdeNode) {
+  private[this] def computeCallNode(c: XNode) {
     val cn = c.n
     for {
       sq                          <- targetStartNodes(cn)
       FactFunPair(dPrime, edgeFn) <- callStartEdges(c, sq)
     } {
-      propagateValue(IdeNode(sq, dPrime), edgeFn(vals(c)))
+      propagateValue(XNode(sq, dPrime), edgeFn(vals(c)))
     }
   }
 
-  private[this] def getJumpFnTargetFacts(ideNode1: IdeNode, node2: Node, jumpFn: JumpFn): Set[FactFunPair] =
+  private[this] def getJumpFnTargetFacts(ideNode1: XNode, node2: Node, jumpFn: JumpFn): Set[FactFunPair] =
     (jumpFn collect {
-      case (IdeEdge(source, IdeNode(n, d)), f)
+      case (XEdge(source, XNode(n, d)), f)
         if source == ideNode1 && n == node2 =>
           FactFunPair(d, f)
     })(breakOut)
@@ -66,17 +66,17 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
   /**
    * [8-10]
    */
-  private[this] def computeStartNode(sp: IdeNode, jumpFunc: JumpFn) {
+  private[this] def computeStartNode(sp: XNode, jumpFunc: JumpFn) {
     for {
       c                           <- callNodesInProc(enclProc(sp.n))
       FactFunPair(dPrime, fPrime) <- getJumpFnTargetFacts(sp, c, jumpFunc)
       if fPrime != λTop
     } {
-      propagateValue(IdeNode(c, dPrime), fPrime(vals(sp)))
+      propagateValue(XNode(c, dPrime), fPrime(vals(sp)))
     }
   }
 
-  private[this] def propagateValue(n: IdeNode, v: LatticeElem) {
+  private[this] def propagateValue(n: XNode, v: LatticeElem) {
     val ln = vals(n)
     val v2 = v ⊓ ln
     if (v2 != ln) {

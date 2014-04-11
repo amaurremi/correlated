@@ -1,9 +1,9 @@
 package ca.uwaterloo.id.ide.analysis
 
-import ca.uwaterloo.id.ide.{TraverseGraph, IdeConstants, ExplodedGraphTypes}
+import ca.uwaterloo.id.ide.{TraverseGraph, IdeConstants, IdeExplodedGraphTypes}
 import com.ibm.wala.classLoader.IMethod
 
-trait VariableFacts extends ExplodedGraphTypes with IdeConstants with TraverseGraph with WalaInstructions {
+trait VariableFacts extends IdeExplodedGraphTypes with IdeConstants with TraverseGraph with WalaInstructions {
 
   type FactElem
   type ValueNumber = Int
@@ -33,5 +33,5 @@ trait VariableFacts extends ExplodedGraphTypes with IdeConstants with TraverseGr
   /**
    * Get value number from fact element
    */
-  def getValNum(factElem: FactElem, node: IdeNode): ValueNumber
+  def getValNum(factElem: FactElem, node: XNode): ValueNumber
 }

@@ -14,7 +14,7 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
   def variable(name: String, method: String): SpecVariableFact = {
     val iMethod = getMethod(method)
     val variablesInMethod = solvedResult.keySet collect {
-      case node@IdeNode(n, v: Variable) if v.method == iMethod && n.getMethod == iMethod && n.getLastInstruction != null =>
+      case node@XNode(n, v: Variable) if v.method == iMethod && n.getMethod == iMethod && n.getLastInstruction != null =>
         (v, n)
     }
     val variableNodeProduct: Set[(Variable, Node)] =
@@ -24,14 +24,14 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
         if node.getLastInstruction != null
       } yield (v, node)
     variableNodeProduct collectFirst {
-      case (v@Variable(_, elem), n) if containedInLocalNames(name, n, getValNum(elem, IdeNode(n, Λ))) =>
+      case (v@Variable(_, elem), n) if containedInLocalNames(name, n, getValNum(elem, XNode(n, Λ))) =>
         SpecVariable(v)
     } getOrElse NoVariable
   }
 
   private[this] def getMethod(name: String): IMethod =
     (solvedResult.keySet collectFirst {
-      case IdeNode(n, _) if n.getMethod.getName.toString == name =>
+      case XNode(n, _) if n.getMethod.getName.toString == name =>
         n.getMethod
     }).get
 
@@ -61,10 +61,10 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts { this: IdePr
 
   case class SpecVariable(variable: VariableFact) extends SpecVariableFact {
     
-    private[this] def mainReturnsAtFact: IdeNode = {
+    private[this] def mainReturnsAtFact: XNode = {
       (entryPoints flatMap allNodesInProc collectFirst {
         case node if node.getLastInstruction.isInstanceOf[SSAReturnInstruction] =>
-          IdeNode(node, variable)
+          XNode(node, variable)
       }).get
     }
 

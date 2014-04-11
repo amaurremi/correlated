@@ -13,22 +13,22 @@ class LinearConstantPropagation(fileName: String) extends ConstantPropagation(fi
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  override def otherSuccEdges: EdgeFn = ???
+  override def otherSuccEdges: IdeEdgeFn = ???
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  override def endReturnEdges: EdgeFn = ???
+  override def endReturnEdges: IdeEdgeFn = ???
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  override def callReturnEdges: EdgeFn = ???
+  override def callReturnEdges: IdeEdgeFn = ???
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  override def callStartEdges: EdgeFn = ???
+  override def callStartEdges: IdeEdgeFn = ???
 
   /**
    * Represents a function

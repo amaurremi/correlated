@@ -1,3 +1,3 @@
 package ca.uwaterloo.id.ide
 
-trait IdeProblem extends ExplodedGraphTypes with FlowFunctions with IdeConstants
+trait IdeProblem extends IdeExplodedGraphTypes with IdeFlowFunctions with IdeConstants

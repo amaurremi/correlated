@@ -16,7 +16,7 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
    * If the variable corresponding to this node's fact is passed as a parameter to this call instruction,
    * returns the number of the parameter.
    */
-  def getParameterNumber(node: IdeNode, callInstr: SSAInvokeInstruction): Option[Int] =
+  def getParameterNumber(node: XNode, callInstr: SSAInvokeInstruction): Option[Int] =
     node.d match {
       case Variable(method, elem) =>
         val valNum = getValNum(elem, node)
