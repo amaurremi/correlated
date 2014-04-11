@@ -27,12 +27,13 @@ Thus, our analysis code is in the `ca.uwaterloo.correlated` package, whereas the
     - `sbt`, if you prefer using another IDE. From the SBT shell, you'll need to type `compile` to compile the project, and `test` to run the tests.
 
 ### Testing
-The analysis consumes JAR files of Java input programs. Each test program also has a corresponding configuration file in the `src/test/resources` directory.
+The analysis consumes input Java programs in the form of JAR files.
 The source code of the input programs is located in the
 `<analysis>/inputPrograms` subfolder of the `src/test/scala/ca/uwaterloo` directory.
+Additionally, each test program needs a configuration file in the `src/test/resources` directory.
 
-To create a configuration and Jar file for a test, you will need to execute either the `configureTests` or `configureSingleTest` script
-for configuring all or one test.
+To create or update a configuration and Jar file for a test, you will need to execute either the `configureTests` or `configureSingleTest` script.
+This will configure all or one test.
 
 #### Configuring all tests
 To configure all tests, navigate to the `src/test` subdirectory of the project and run `./configureTests "path-to-rt.jar"`.
@@ -50,8 +51,8 @@ and on a Windows machine,
 ```
 
 #### Configuring a single test
-To configure a single test, navigate to the `src/test` subdirectory of the project and run `./configureSingleTest <analysis> <test name>`
-(currently, the `analysis` parameter can be either `cp` for constant propagation, or `taint` for taint analysis).
+To configure a single test, navigate to the `src/test` subdirectory of the project and run `./configureSingleTest <analysis> <test name>`.
+Currently, the `analysis` parameter can be either `cp` for constant propagation, or `taint` for taint analysis.
 
 For example, to configure the test
 `ca.uwaterloo.ide.taint.inputPrograms.FunctionCall.FunctionCall.java`, you might run
