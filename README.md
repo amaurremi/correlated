@@ -21,9 +21,41 @@ Thus, our analysis code is in the `ca.uwaterloo.correlated` package, whereas the
 
 2. Build the project with [SBT](http://www.scala-sbt.org/): 
   - [Install](http://www.scala-sbt.org/release/docs/Getting-Started/Setup) SBT on your machine.
-  - Navigate into the checked out Correlated Calls project directory from the command line and run
+  - Navigate into the checked out Correlated Calls project directory from the command line.
     - `sbt gen-idea`, if you'd like to use [IntelliJ IDEA](http://www.jetbrains.com/idea/),
     - `sbt eclipse`, if you'd like to use [Eclipse](http://www.eclipse.org/),
-    - `sbt`, if you prefer using another IDE. From the SBT shell, type `compile` to compile the project, and `test` to run the tests.
+    - `sbt`, if you prefer using another IDE. From the SBT shell, you'll need to type `compile` to compile the project, and `test` to run the tests.
 
-**Note**: for now, to run tests, it's necessary to adjust the absolute paths in the `.conf` files of the `src.main.resources` directory.
+### Testing
+The analysis consumes JAR files of Java input programs. Each test program also has a corresponding configuration file in the `src/test/resources` directory.
+The source code of the input programs is located in the
+`<analysis>/inputPrograms` subfolder of the `src/test/scala/ca/uwaterloo` directory.
+
+To create a configuration and Jar file for a test, you will need to execute either the `configureTests` or `configureSingleTest` script
+for configuring all or one test.
+
+#### Configuring all tests
+To configure all tests, navigate to the `src/test` subdirectory of the project and run `./configureTests "path-to-rt.jar"`.
+The `rt.jar` file contains Java's bootstrap classes and is usually located in Java's `jre/lib` directory.
+For example, on a Mac you might run
+
+```
+./configureTests "/usr/lib/jvm/java-6-openjdk/jre/lib/rt.jar"
+```
+
+and on a Windows machine,
+
+```
+./configureTests "C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar"
+```
+
+#### Configuring a single test
+To configure a single test, navigate to the `src/test` subdirectory of the project and run `./configureSingleTest <analysis> <test name>`
+(currently, the `analysis` parameter can be either `cp` for constant propagation, or `taint` for taint analysis).
+
+For example, to configure the test
+`ca.uwaterloo.ide.taint.inputPrograms.FunctionCall.FunctionCall.java`, you might run
+
+```
+./configureSingleTest "C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar" taint FunctionCall
+```
