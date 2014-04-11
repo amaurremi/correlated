@@ -1,6 +1,6 @@
-package ca.uwaterloo.ide.analysis.taint
+package ca.uwaterloo.id.ide.analysis.taint
 
-import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
+import ca.uwaterloo.id.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{SSAReturnInstruction, SSAInvokeInstruction}
 import com.ibm.wala.types.MethodReference

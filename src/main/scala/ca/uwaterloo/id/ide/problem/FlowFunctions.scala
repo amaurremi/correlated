@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide
+package ca.uwaterloo.id.ide
 
 /**
  * Defines functions that, for an edge (n, d1) -> (m, d2),

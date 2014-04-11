@@ -1,6 +1,6 @@
-package ca.uwaterloo.ide
+package ca.uwaterloo.id.ide
 
-import ca.uwaterloo.ide.analysis.VariableFacts
+import ca.uwaterloo.id.ide.analysis.VariableFacts
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.SSAReturnInstruction
 import org.scalatest.Assertions

@@ -1,7 +1,7 @@
-package ca.uwaterloo.ide.analysis.cp
+package ca.uwaterloo.id.ide.analysis.cp
 
-import ca.uwaterloo.ide.analysis.{WalaInstructions, VariableFacts}
-import ca.uwaterloo.ide.{IdeSolver, IdeProblem}
+import ca.uwaterloo.id.ide.analysis.{WalaInstructions, VariableFacts}
+import ca.uwaterloo.id.ide.{IdeSolver, IdeProblem}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph

@@ -1,6 +1,6 @@
-package ca.uwaterloo.ide.analysis
+package ca.uwaterloo.id.ide.analysis
 
-import ca.uwaterloo.ide.TraverseGraph
+import ca.uwaterloo.id.ide.TraverseGraph
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock

@@ -1,10 +1,8 @@
-package ca.uwaterloo.ide.taint
+package ca.uwaterloo.id.ide.taint
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
-import scala.collection.JavaConverters._
-import com.ibm.wala.ssa.SSAPhiInstruction
 
 @RunWith(classOf[JUnitRunner])
 class TaintAnalysisSpec extends FunSpec {

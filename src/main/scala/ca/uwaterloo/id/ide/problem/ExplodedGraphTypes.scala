@@ -1,11 +1,8 @@
-package ca.uwaterloo.ide
+package ca.uwaterloo.id.ide
 
-trait ExplodedGraphTypes extends SuperGraphTypes {
+import ca.uwaterloo.id.common.{Facts, SuperGraphTypes}
 
-  /**
-   * The type for propagated factoids (corresponds to elements of the set D)
-   */
-  type Fact
+trait ExplodedGraphTypes extends SuperGraphTypes with Facts {
 
   /**
    * The type for IDE functions that correspond to the edges in the exploded supergraph

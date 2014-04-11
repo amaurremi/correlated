@@ -1,7 +1,7 @@
-package ca.uwaterloo.ide.taint
+package ca.uwaterloo.id.ide.taint
 
-import ca.uwaterloo.ide.PropagationSpecBuilder
-import ca.uwaterloo.ide.analysis.taint.TaintAnalysis
+import ca.uwaterloo.id.ide.PropagationSpecBuilder
+import ca.uwaterloo.id.ide.analysis.taint.TaintAnalysis
 
 class TaintAnalysisSpecBuilder(fileName: String) extends TaintAnalysis(fileName) with PropagationSpecBuilder {
 

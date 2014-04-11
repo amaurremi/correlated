@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide.analysis.cp
+package ca.uwaterloo.id.ide.analysis.cp
 
 class LinearConstantPropagation(fileName: String) extends ConstantPropagation(fileName) {
 

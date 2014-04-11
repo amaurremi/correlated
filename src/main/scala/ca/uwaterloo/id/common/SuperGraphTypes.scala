@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide
+package ca.uwaterloo.id.common
 
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 

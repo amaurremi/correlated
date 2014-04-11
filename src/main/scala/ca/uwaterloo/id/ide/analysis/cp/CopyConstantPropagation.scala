@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide.analysis.cp
+package ca.uwaterloo.id.ide.analysis.cp
 
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa._

@@ -1,8 +1,7 @@
-package ca.uwaterloo.ide.cp
+package ca.uwaterloo.id.ide.cp
 
-import ca.uwaterloo.ide.PropagationSpecBuilder
-import ca.uwaterloo.ide.analysis.cp.CopyConstantPropagation
-import com.ibm.wala.ssa.SSAArrayStoreInstruction
+import ca.uwaterloo.id.ide.PropagationSpecBuilder
+import ca.uwaterloo.id.ide.analysis.cp.CopyConstantPropagation
 
 class CopyConstantPropagationSpecBuilder(fileName: String) extends CopyConstantPropagation(fileName) with PropagationSpecBuilder {
 

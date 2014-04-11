@@ -1,4 +1,4 @@
-package ca.uwaterloo.ide
+package ca.uwaterloo.id.ide
 
 import com.ibm.wala.util.collections.HashSetMultiMap
 import scala.collection.JavaConverters._
