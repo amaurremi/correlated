@@ -5,7 +5,7 @@ import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.SSAReturnInstruction
 import org.scalatest.Assertions
 
-trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProblem with IdeSolver {
+trait PropagationSpecBuilder extends Assertions { this: VariableFacts with IdeProblem with IdeSolver =>
 
   /**
    * A variable with the given name that occurs in the given method.

@@ -1,10 +1,9 @@
-package ca.uwaterloo.id.ifds.solver
+package ca.uwaterloo.id.ifds.conversion
 
-import ca.uwaterloo.id.common.VariableFacts
-import ca.uwaterloo.id.ide.{IdeSolver, IdeProblem}
+import ca.uwaterloo.id.ide.IdeProblem
 import ca.uwaterloo.id.ifds.IfdsProblem
 
-trait VariableFactAnalysisBuilder extends IdeProblem with IdeSolver with IfdsProblem with VariableFacts {
+trait IdeFromIfdsBuilder extends IdeProblem { this: IfdsProblem =>
 
   override type LatticeElem = IfdsLatticeElem
   override type IdeFunction = IfdsFunction
