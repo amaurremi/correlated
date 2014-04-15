@@ -1,7 +1,7 @@
 package ca.uwaterloo.dataflow.ide.taint
 
 import ca.uwaterloo.dataflow.ide.{IdeSolver, PropagationSpecBuilder}
-import ca.uwaterloo.dataflow.ifds.analysis.taint.IfdsTaintAnalysis
+import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
 import ca.uwaterloo.dataflow.ifds.conversion.IdeFromIfdsBuilder
 import ca.uwaterloo.dataflow.common.VariableFacts
 

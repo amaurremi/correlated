@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.ifds.analysis.taint
+package ca.uwaterloo.dataflow.ifds.instance.taint
 
 import ca.uwaterloo.dataflow.common.VariableFacts
 import ca.uwaterloo.dataflow.ifds.IfdsProblem
