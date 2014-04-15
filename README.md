@@ -13,7 +13,7 @@ The analysis relies on the Inter-procedural Distributive Environment (IDE) data-
 
 The code of the analysis is written in [Scala](http://www.scala-lang.org/). Our analysis relies on [WALA](http://wala.sourceforge.net/wiki/index.php/Main_Page), a library for static analysis on Java bytecode written in Java. To facilitate the usage of WALA in Scala, we use the [WALAFacade](https://github.com/cos/WALAFacade) library. To be able to add our own modifications to WALAFacade, we included its source code in this project.
 
-Thus, our analysis code is in the `ca.uwaterloo.correlated` package, whereas the WALAFacade code, with some minor modifications, is in the `edu.illinois.wala` package. The implementation of the IDE algorithm is in the `ca.uwaterloo.ide` package.
+Thus, our analysis code is in the `ca.uwaterloo.dataflow` package, whereas the WALAFacade code, with some minor modifications, is in the `edu.illinois.wala` package.
 
 ### Set Up
 
@@ -38,7 +38,7 @@ The `rt.jar` file contains Java's bootstrap classes and is usually located in Ja
 2. To configure all tests, navigate to the `src/test` subdirectory of the project and run `./configureTests`.
 3. To configure a single test, navigate to the `src/test` subdirectory of the project and run `./configureSingleTest <analysis> <test name>`.
    - Currently, the `analysis` parameter can be either `cp` for constant propagation, or `taint` for taint analysis.
-   - For example, to configure the test `ca.uwaterloo.ide.taint.inputPrograms.FunctionCall.FunctionCall.java`, run
+   - For example, to configure the test `ca.uwaterloo.dataflow.ide.taint.inputPrograms.FunctionCall.FunctionCall.java`, run
 ```
 ./configureSingleTest taint FunctionCall
 ```
