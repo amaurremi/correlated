@@ -1,5 +1,6 @@
-package ca.uwaterloo.id.ide.taint
+package ca.uwaterloo.ide.taint
 
+import ca.uwaterloo.id.ide.taint.TaintAnalysisSpecBuilder
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
@@ -9,10 +10,10 @@ class TaintAnalysisSpec extends FunSpec {
 
    describe("TaintAnalysis") {
      it("propagates secret values intra-procedurally") {
-       val ccs = new TaintAnalysisSpecBuilder("LocalVars")
-       import ccs._
+       val ifds = new TaintAnalysisSpecBuilder("LocalVars")
+       import ifds._
 
-       variable("t", "main") shouldBe secret
+       variable("x", "main") shouldBe secret
      }
 
      it("propagates non-secret values intra-procedurally") {
@@ -63,7 +64,7 @@ class TaintAnalysisSpec extends FunSpec {
        val ccs = new TaintAnalysisSpecBuilder("PhiSame")
        import ccs._
 
-       variable("t", "main") shouldBe secret
+       variable("s", "main") shouldBe secret
      }
    }
  }

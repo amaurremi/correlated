@@ -4,12 +4,12 @@ public class PhiSame {
 
     public static void main(String[] args) {
         String s;
-        if (args.length > 0) {
+        if (args != null) {
             s = secret();
         } else {
             s = secret();
         }
-        String t = s;
+        args[0] = s; // we need to "use" s, otherwise the phi instructions won't be created
     }
 
     static String secret() {
