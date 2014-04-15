@@ -30,12 +30,12 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
   override def getValNum(factElem: ValueNumber, node: XNode): ValueNumber = factElem
 
   override type FactElem = ValueNumber
-  override val O: Fact = Λ
+  override val O: Fact   = Λ
 
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  override def otherSuccEdges: IfdsEdgeFn =
+  override def ifdsOtherSuccEdges: IfdsEdgeFn =
     (ideN1, n2) => {
       val n1 = ideN1.n
       val d1 = ideN1.d
@@ -56,21 +56,21 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  override def endReturnEdges: IfdsEdgeFn =
+  override def ifdsEndReturnEdges: IfdsEdgeFn =
     (ideN1, _) =>
       Set(ideN1.d)
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  override def callReturnEdges: IfdsEdgeFn =
+  override def ifdsCallReturnEdges: IfdsEdgeFn =
     (ideN1, _) =>
       Set(ideN1.d) // todo not for fields/static variables
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  override def callStartEdges: IfdsEdgeFn =
+  override def ifdsCallStartEdges: IfdsEdgeFn =
     (ideN1, n2) => {
       val n1 = ideN1.n
       val d1 = ideN1.d

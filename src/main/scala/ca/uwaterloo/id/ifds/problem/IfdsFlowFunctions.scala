@@ -9,20 +9,20 @@ trait IfdsFlowFunctions extends ExplodedGraphTypes {
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  def callStartEdges: IfdsEdgeFn
+  def ifdsCallStartEdges: IfdsEdgeFn
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  def callReturnEdges: IfdsEdgeFn
+  def ifdsCallReturnEdges: IfdsEdgeFn
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  def endReturnEdges: IfdsEdgeFn
+  def ifdsEndReturnEdges: IfdsEdgeFn
 
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  def otherSuccEdges: IfdsEdgeFn
+  def ifdsOtherSuccEdges: IfdsEdgeFn
 }

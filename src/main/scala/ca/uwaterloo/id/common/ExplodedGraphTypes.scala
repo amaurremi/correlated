@@ -21,7 +21,7 @@ trait ExplodedGraphTypes extends SuperGraphTypes with Facts {
     override def equals(obj: scala.Any): Boolean =
       obj match {
         case node: XNode => node.n == n && node.d == d
-        case _             => false
+        case _           => false
       }
 
     override def hashCode: Int =
