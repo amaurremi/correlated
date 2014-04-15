@@ -3,6 +3,9 @@
 # Usage:
 # configureTest <JRE rt.jar path> <analysis> <test name>
 
+### Replace the `jrepath' value with your path to the rt.jar file
+jrepath="C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar"
+
 testroot=ca/uwaterloo/ide
 testdirs="$testroot/cp $testroot/taint"
 
@@ -24,7 +27,6 @@ function createJar() {
 function createConfigFile() {
     testdir=$1
     testname=$2
-    jrepath=$3
     mkdir -p "resources/ide/analysis/$testdir"
     cd "resources/ide/analysis/$testdir"
     testpath="$root/scala/ca/uwaterloo/ide/$testdir/inputPrograms/$testname/$testname.jar"
@@ -42,14 +44,13 @@ function createConfigFile() {
     cd "$root"
 }
 
-jrepath=$1
-analysis=$2
-testname=$3
+analysis=$1
+testname=$2
 test=$testroot/$analysis/inputPrograms/$testname
 cd scala
 testname=`basename $test`
 echo -n `basename $test`...
 createJar $test $testname #> /dev/null 2>&1
-createConfigFile $analysis $testname "$jrepath"
+createConfigFile $analysis $testname
 echo "[DONE]"
 cd "$root"

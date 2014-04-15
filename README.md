@@ -35,20 +35,11 @@ Additionally, each test program needs a configuration file in the `src/test/reso
 To create or update a configuration and Jar file for a test, you will need to execute either the `configureTests` or `configureSingleTest` script.
 The first script will configure all tests, and the latter script will configure one specified test.
 
+In both files `configureTests` and `configureSingleTest`, replace the value of the `jrepath` variable with the path to the `rt.jar` file.
+The `rt.jar` file contains Java's bootstrap classes and is usually located in Java's `jre/lib` directory. On a Mac, the path might look like `/usr/lib/jvm/java-6-openjdk/jre/lib/rt.jar`.
+
 #### Configuring all tests
-To configure all tests, navigate to the `src/test` subdirectory of the project and run `./configureTests "path-to-rt.jar"`.
-The `rt.jar` file contains Java's bootstrap classes and is usually located in Java's `jre/lib` directory.
-For example, on a Mac you might run
-
-```
-./configureTests "/usr/lib/jvm/java-6-openjdk/jre/lib/rt.jar"
-```
-
-and on a Windows machine,
-
-```
-./configureTests "C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar"
-```
+To configure all tests, navigate to the `src/test` subdirectory of the project and run `./configureTests.
 
 #### Configuring a single test
 To configure a single test, navigate to the `src/test` subdirectory of the project and run `./configureSingleTest <analysis> <test name>`.
@@ -58,5 +49,5 @@ For example, to configure the test
 `ca.uwaterloo.ide.taint.inputPrograms.FunctionCall.FunctionCall.java`, you might run
 
 ```
-./configureSingleTest "C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar" taint FunctionCall
+./configureSingleTest taint FunctionCall
 ```
