@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.ide
+package ca.uwaterloo.dataflow.ide.analysis.problem
 
 import ca.uwaterloo.dataflow.common.ExplodedGraphTypes
 

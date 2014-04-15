@@ -1,6 +1,5 @@
-package ca.uwaterloo.ide.taint
+package ca.uwaterloo.dataflow.ide.taint
 
-import ca.uwaterloo.dataflow.ide.taint.TaintAnalysisSpecBuilder
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner

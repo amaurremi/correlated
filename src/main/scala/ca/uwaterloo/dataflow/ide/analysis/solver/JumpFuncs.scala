@@ -1,9 +1,10 @@
-package ca.uwaterloo.dataflow.ide
+package ca.uwaterloo.dataflow.ide.analysis.solver
 
+import ca.uwaterloo.dataflow.common.TraverseGraph
+import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 import com.ibm.wala.util.collections.HashSetMultiMap
 import scala.collection.JavaConverters._
 import scala.collection.{breakOut, mutable}
-import ca.uwaterloo.dataflow.common.TraverseGraph
 
 // p. 147 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow instance
 // with applications to constant propagation"

@@ -1,7 +1,7 @@
 package ca.uwaterloo.dataflow.ide.instance.taint
 
 import ca.uwaterloo.dataflow.common.{WalaInstructions, VariableFacts, TraverseGraph}
-import ca.uwaterloo.dataflow.ide.{IdeConstants, IdeExplodedGraphTypes}
+import ca.uwaterloo.dataflow.ide.analysis.problem.{IdeConstants, IdeExplodedGraphTypes}
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}

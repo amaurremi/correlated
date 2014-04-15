@@ -1,4 +1,4 @@
-package ca.uwaterloo.correlated
+package ca.uwaterloo.dataflow.correlated
 
 import com.ibm.wala.classLoader.CallSiteReference
 import scalaz.Writer

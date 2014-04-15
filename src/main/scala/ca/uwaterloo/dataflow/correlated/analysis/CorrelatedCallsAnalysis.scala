@@ -1,9 +1,9 @@
-package ca.uwaterloo.dataflow.ifds.conversion
+package ca.uwaterloo.dataflow.correlated.analysis
 
 import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 
-trait IdeFromIfdsBuilder extends IdeProblem { this: IfdsProblem =>
+trait CorrelatedCallsAnalysis extends IdeProblem { this: IfdsProblem =>
 
   override type LatticeElem = IfdsLatticeElem
   override type IdeFunction = IfdsFunction

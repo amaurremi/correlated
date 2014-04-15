@@ -1,7 +1,8 @@
-package ca.uwaterloo.dataflow.ide
+package ca.uwaterloo.dataflow.ide.analysis.solver
 
-import scala.collection.{breakOut, mutable}
 import ca.uwaterloo.dataflow.common.TraverseGraph
+import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
+import scala.collection.{breakOut, mutable}
 
 // p. 149 of Sagiv, Reps, Horwitz, "Precise inter-procedural dataflow instance
 // with applications to constant propagation"

@@ -1,6 +1,7 @@
 package ca.uwaterloo.dataflow.ide.instance.taint
 
-import ca.uwaterloo.dataflow.ide.{IdeSolver, IdeProblem}
+import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
+import ca.uwaterloo.dataflow.ide.analysis.solver.IdeSolver
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{SSAReturnInstruction, SSAInvokeInstruction}
 import com.ibm.wala.types.MethodReference

@@ -1,6 +1,6 @@
-package ca.uwaterloo.correlated.stats.util
+package ca.uwaterloo.dataflow.correlated.stats.util
 
-import ca.uwaterloo.correlated.stats.util.Converter._
+import Converter._
 import com.ibm.wala.ipa.callgraph._
 import com.ibm.wala.ipa.callgraph.impl.Util.{makeMainEntrypoints, makeZeroCFABuilder}
 import com.ibm.wala.ipa.cha.ClassHierarchy

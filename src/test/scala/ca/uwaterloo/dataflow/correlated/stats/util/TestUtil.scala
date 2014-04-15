@@ -1,10 +1,11 @@
 package ca.uwaterloo.correlated.stats.util
 
+import ca.uwaterloo.dataflow.correlated.stats.CorrelatedCalls
+import ca.uwaterloo.dataflow.correlated.stats.util.CallGraphUtil
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import java.io.File
-import ca.uwaterloo.correlated.stats.CorrelatedCalls
 
 object TestUtil {
 

@@ -1,6 +1,8 @@
 package ca.uwaterloo.dataflow.ide
 
 import ca.uwaterloo.dataflow.common.VariableFacts
+import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
+import ca.uwaterloo.dataflow.ide.analysis.solver.IdeSolver
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.SSAReturnInstruction
 import org.scalatest.Assertions

@@ -1,7 +1,8 @@
 package ca.uwaterloo.dataflow.ide.instance.cp
 
 import ca.uwaterloo.dataflow.common.VariableFacts
-import ca.uwaterloo.dataflow.ide.{IdeSolver, IdeProblem}
+import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
+import ca.uwaterloo.dataflow.ide.analysis.solver.IdeSolver
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph

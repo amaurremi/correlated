@@ -1,6 +1,7 @@
-package ca.uwaterloo.dataflow.ide
+package ca.uwaterloo.dataflow.ide.analysis.solver
 
 import ca.uwaterloo.dataflow.common.TraverseGraph
+import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 
 trait IdeSolver extends JumpFuncs with ComputeValues with TraverseGraph { this: IdeProblem =>
 

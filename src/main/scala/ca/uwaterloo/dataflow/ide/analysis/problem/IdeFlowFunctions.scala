@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.ide
+package ca.uwaterloo.dataflow.ide.analysis.problem
 
 /**
  * Defines functions that, for an edge (n, d1) -> (m, d2),
