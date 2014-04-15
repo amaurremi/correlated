@@ -1,28 +1,29 @@
 package ca.uwaterloo.id.conversion
 
+import ca.uwaterloo.id.common.VariableFacts
 import ca.uwaterloo.id.ide.IdeProblem
 import ca.uwaterloo.id.ifds.IfdsProblem
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 
 object Ifds2Ide {
 
-  def convert(ifdsProblem: IfdsProblem): IdeProblem = new IdeProblem {
+  def convert(ifdsProblem: IfdsProblem with VariableFacts): IdeProblem with VariableFacts = new IdeProblem with VariableFacts {
 
-    override type Fact = ifdsProblem.Fact
+    override type Fact      = ifdsProblem.Fact
     override type Procedure = ifdsProblem.Procedure
-    override type Node = ifdsProblem.Node
+    override type Node      = ifdsProblem.Node
 
     override type LatticeElem = IfdsLatticeElem
     override type IdeFunction = IfdsFunction
 
-    override val Λ: Fact = ifdsProblem.O
-    override val entryPoints: Seq[Node] = ifdsProblem.entryPoints
+    override val Λ: Fact                                  = ifdsProblem.Λ
+    override val entryPoints: Seq[Node]                   = ifdsProblem.entryPoints
     override val supergraph: ISupergraph[Node, Procedure] = ifdsProblem.supergraph
 
     override val Bottom: LatticeElem = IfdsBottom
-    override val Top: LatticeElem = IfdsTop
-    override val Id: IdeFunction = IfdsIdFunction
-    override val λTop: IdeFunction = IfdsTopFunction
+    override val Top: LatticeElem    = IfdsTop
+    override val Id: IdeFunction     = IfdsIdFunction
+    override val λTop: IdeFunction   = IfdsTopFunction
 
     /**
      * Functions for all other (inter-procedural) edges.
