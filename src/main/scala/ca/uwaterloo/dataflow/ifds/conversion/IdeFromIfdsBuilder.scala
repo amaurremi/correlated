@@ -1,7 +1,7 @@
 package ca.uwaterloo.dataflow.ifds.conversion
 
 import ca.uwaterloo.dataflow.ide.IdeProblem
-import ca.uwaterloo.dataflow.ifds.IfdsProblem
+import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 
 trait IdeFromIfdsBuilder extends IdeProblem { this: IfdsProblem =>
 

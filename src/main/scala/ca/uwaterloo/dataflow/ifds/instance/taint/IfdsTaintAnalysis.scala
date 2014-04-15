@@ -1,7 +1,6 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint
 
 import ca.uwaterloo.dataflow.common.VariableFacts
-import ca.uwaterloo.dataflow.ifds.IfdsProblem
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
@@ -11,6 +10,7 @@ import com.ibm.wala.util.collections.HashSetMultiMap
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
+import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 
 class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts {
 
