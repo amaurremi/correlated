@@ -39,7 +39,7 @@ abstract class TaintAnalysisBuilder(fileName: String) extends WalaInstructions w
    * Represents lattice elements for the set L
    */
   sealed trait TaintLatticeElem extends Lattice {
-    def ⊓(n: TaintLatticeElem): TaintLatticeElem
+    override def ⊓(n: TaintLatticeElem): TaintLatticeElem
   }
 
   case object ⊤ extends TaintLatticeElem {

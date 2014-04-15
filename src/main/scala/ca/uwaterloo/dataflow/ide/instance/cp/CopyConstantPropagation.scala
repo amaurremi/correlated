@@ -238,23 +238,23 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
    * Represents lattice elements for the set L
    */
   sealed trait CpLatticeElem extends Lattice {
-    def ⊓(n: CpLatticeElem): CpLatticeElem
+    override def ⊓(n: CpLatticeElem): CpLatticeElem
   }
 
   case object ⊤ extends CpLatticeElem {
-    override def ⊓(n: CpLatticeElem) = n
+    override def ⊓(n: CpLatticeElem): CpLatticeElem = n
     override def toString: String = "top"
   }
 
   case object ⊥ extends CpLatticeElem {
-    override def ⊓(n: CpLatticeElem) = ⊥
+    override def ⊓(n: CpLatticeElem): CpLatticeElem = ⊥
     override def toString: String = "bottom"
   }
 
   case class Num(n: ValueNumber, method: IMethod) extends CpLatticeElem {
-    override def ⊓(ln: CpLatticeElem) = ln match {
+    override def ⊓(ln: CpLatticeElem): CpLatticeElem = ln match {
       case Num(n2, method2) => if (n == n2 && method == method2) ln else ⊥
-      case _       => ln ⊓ this
+      case _                => ln ⊓ this
     }
     override def toString: String = "variable value " + n.toString + " in " + method.getName.toString + "()"
   }
