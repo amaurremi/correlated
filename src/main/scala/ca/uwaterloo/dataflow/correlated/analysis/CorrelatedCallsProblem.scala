@@ -31,5 +31,5 @@ trait CorrelatedCallsProblem extends IdeProblem { this: IfdsProblem =>
   trait CorrelatedFunction extends IdeFunctionI
 
   case class Receiver(valueNumber: Int, method: IMethod)
-  case class Type(_)
+  case class Type()
 }

@@ -16,7 +16,7 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
 
   private[this] val config =
     ConfigFactory.load(
-      "ide/instance/cp/" + fileName,
+      "ca/uwaterloo/dataflow/ide/cp/" + fileName,
       ConfigParseOptions.defaults().setAllowMissing(false),
       ConfigResolveOptions.defaults()
     )

@@ -16,7 +16,7 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
 
   private[this] val config =
     ConfigFactory.load(
-      "ide/instance/taint/" + fileName,
+      "ca/uwaterloo/dataflow/ide/taint/" + fileName,
       ConfigParseOptions.defaults.setAllowMissing(false),
       ConfigResolveOptions.defaults
     )
