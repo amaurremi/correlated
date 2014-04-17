@@ -4,7 +4,7 @@ import ca.uwaterloo.dataflow.common.VariableFacts
 import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 import ca.uwaterloo.dataflow.ide.analysis.solver.IdeSolver
 import com.ibm.wala.classLoader.IMethod
-import com.ibm.wala.ssa.SSAReturnInstruction
+import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAReturnInstruction}
 import org.scalatest.Assertions
 
 trait PropagationSpecBuilder extends Assertions { this: VariableFacts with IdeProblem with IdeSolver =>
@@ -45,7 +45,7 @@ trait PropagationSpecBuilder extends Assertions { this: VariableFacts with IdePr
     if (locNames == null) Seq.empty else locNames
   }
 
-  trait SpecVariableFact {
+  sealed trait SpecVariableFact {
     def shouldBe(elem: LatticeElem): Unit
     def shouldSatisfy(condition: LatticeElem => Boolean): Unit
   }
@@ -79,5 +79,33 @@ trait PropagationSpecBuilder extends Assertions { this: VariableFacts with IdePr
       val resultElem = solvedResult(mainReturnsAtFact)
       assert(condition(resultElem))
     }
+  }
+
+  def assertSecretValues(assertCCs: Boolean = false) {
+    traverseSupergraph collect {
+      case node if (supergraph isCall node) && node.getLastInstruction.isInstanceOf[SSAInvokeInstruction] =>
+        (node, node.getLastInstruction.asInstanceOf[SSAInvokeInstruction])
+    } foreach {
+      case (node, invokeInstr) =>
+        targetStartNodes(node) map getMethodName foreach {
+          case "shouldBeSecret"                   =>
+            assertResult(Bottom)(getResultAtNextNode(node, invokeInstr))
+          case "shouldNotBeSecret"                =>
+            assertResult(Top)(getResultAtNextNode(node, invokeInstr))
+          case "shouldNotBeSecretCC" if assertCCs =>
+            ???
+          case _                                  =>
+        }
+    }
+  }
+
+  private[this] def getResultAtNextNode(node: Node, instr: SSAInvokeInstruction): LatticeElem = {
+    val values = for {
+      succ <- followingNodes(node).toSeq
+      (s@XNode(`succ`, Variable(method, elem)), value) <- solvedResult
+      if method == node.getMethod && getValNum(elem, s) == instr.getUse(1)
+    } yield value
+    assert(values.size <= 1)
+    values.headOption getOrElse Top
   }
 }

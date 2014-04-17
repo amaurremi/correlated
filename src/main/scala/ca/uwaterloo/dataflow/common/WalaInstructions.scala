@@ -71,4 +71,6 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
     (supergraph getCalledNodes node).asScala map {
       enclProc(_).getMethod.getDeclaringClass
     }
+  
+  def getMethodName(node: Node): String = node.getMethod.getName.toString
 }

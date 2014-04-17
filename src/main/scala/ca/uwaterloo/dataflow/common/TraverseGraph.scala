@@ -78,4 +78,6 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
         n <- nodesInProc(s, p)
         if supergraph isCall n
       } yield n
+
+  def traverseSupergraph = supergraph.iterator.asScala
 }
