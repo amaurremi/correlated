@@ -15,12 +15,13 @@ if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
 fi
 
 function createJar() {
-    testpath=$1
     testname=$2
+    testpath=$1/$testname
+    testparent=$1
     rm -rf $testpath/*.class
     rm -rf $testpath/*.jar
     javac -g $testpath/*.java
-    jar cvf "$testpath/$testname.jar" $testpath/*.class
+    jar cvf "$testpath/$testname.jar" $testpath/*.class $testparent/*.class
     cd "$root"
 }
 
@@ -47,11 +48,12 @@ function createConfigFile() {
 
 analysis=$1
 testname=$2
-test=$testroot/$analysis/inputPrograms/$testname
+testParent=$testroot/$analysis/inputPrograms
+test=$testParent/$testname
 cd scala
 testname=`basename $test`
 echo -n `basename $test`...
-createJar $test $testname #> /dev/null 2>&1
+createJar $testParent $testname #> /dev/null 2>&1
 createConfigFile $analysis $testname
 echo "[DONE]"
 cd "$root"

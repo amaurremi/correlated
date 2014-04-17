@@ -17,11 +17,12 @@ fi
 function createJar() {
     testpath=$1
     testname=$2
+    testParent=$1/$testname
     cd scala
     rm -rf $testpath/*.class
     rm -rf $testpath/*.jar
     javac -g $testpath/*.java
-    jar cvf "$testpath$testname.jar" $testpath/*.class
+    jar cvf "$testpath$testname.jar" $testpath/*.class $testParent/*.class
     cd "$root"
 }
 

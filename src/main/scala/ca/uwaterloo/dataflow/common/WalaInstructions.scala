@@ -58,6 +58,15 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
     enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
   /**
+   * Get the value number for the ith parameter.
+   * @param argNum the number of the parameter, excluding this // todo account for non-static methods
+   * @param instr the call instruction
+   */
+  def getValNumFromParameterNum(instr: SSAInvokeInstruction, argNum: Int): ValueNumber =
+    instr.getUse(argNum)
+
+
+  /**
    * The value number of a call's return value.
    */
   def callValNum(callInstr: SSAInvokeInstruction): Option[ValueNumber] =
