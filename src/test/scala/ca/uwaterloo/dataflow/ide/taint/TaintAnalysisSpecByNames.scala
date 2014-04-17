@@ -5,7 +5,7 @@ import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class TaintAnalysisSpec extends FunSpec {
+class TaintAnalysisSpecByNames extends FunSpec {
 
    describe("TaintAnalysis") {
      it("propagates secret values intra-procedurally") {
