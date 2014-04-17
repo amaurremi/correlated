@@ -6,18 +6,17 @@ import scala.collection._
 
 trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
-  type TypeMultiMap = Map[Receiver, TypesLattice]
+  type TypeMultiMap         = Map[Receiver, TypesLattice]
   type ComposedTypeMultiMap = Map[Receiver, ComposedTypesLattice]
-  type Type = IClass
+  type Type                 = IClass
 
   override type LatticeElem = MapLatticeElem
   override type IdeFunction = CorrelatedFunction
 
   override val Bottom = ReceiverToTypes(Map.empty)
-  // todo other direction?
-  override val Top = ⊤
-  override val Id = CorrelatedFunction(Map.empty)
-  override val λTop = ???
+  override val Top    = ⊤
+  override val Id     = SomeCorrelatedFunction(Map.empty)
+  override val λTop   = TopCorrelatedFunction
 
   case class Receiver(valueNumber: Int, method: IMethod)
 
@@ -43,18 +42,18 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
           key -> getTypes(m1) ⊓ getTypes(m2)
       })(breakOut)
   }
-
+  
   case object ⊤ extends MapLatticeElem {
     override def ⊓(el: MapLatticeElem): MapLatticeElem = ⊤
   }
 
-  case class ComposedTypesLattice(intersectWith: TypesLattice, unionWith: TypesLattice) extends Lattice[ComposedTypesLattice] {
+  case class ComposedTypesLattice(intersectSet: TypesLattice, unionSet: TypesLattice) extends Lattice[ComposedTypesLattice] {
 
     override def ⊔(el: ComposedTypesLattice): ComposedTypesLattice =
-      ComposedTypesLattice(intersectWith ⊔ el.intersectWith, unionWith ⊔ el.unionWith)
+      ComposedTypesLattice(intersectSet ⊔ el.intersectSet, unionSet ⊔ el.unionSet)
 
     override def ⊓(el: ComposedTypesLattice): ComposedTypesLattice =
-      ComposedTypesLattice(intersectWith ⊓ el.intersectWith, unionWith ⊓ el.unionWith)
+      ComposedTypesLattice(intersectSet ⊓ el.intersectSet, unionSet ⊓ el.unionSet)
   }
 
   sealed trait TypesLattice extends Lattice[TypesLattice]
@@ -87,12 +86,13 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   }
 
   private[this] val TypesBottom: TypesLattice = SetType(Set.empty)
-  private[this] val ComposedTypesBottom = ComposedTypesLattice(TypesBottom, TypesBottom)
 
   private[this] def withDefault(m: ComposedTypeMultiMap, r: Receiver): ComposedTypesLattice =
     m getOrElse (r, ComposedTypesLattice(TypeTop, TypesBottom))
  
-  case class CorrelatedFunction(updates: ComposedTypeMultiMap) extends IdeFunctionI {
+  sealed trait CorrelatedFunction extends IdeFunctionI
+  
+  case class SomeCorrelatedFunction(updates: ComposedTypeMultiMap) extends CorrelatedFunction {
 
     override def apply(el: MapLatticeElem): MapLatticeElem =
       ReceiverToTypes(
@@ -111,7 +111,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
       )
 
     private[this] def operation(
-      f: CorrelatedFunction,
+      f: SomeCorrelatedFunction,
       onIntersect: (ComposedTypesLattice, ComposedTypesLattice) => TypesLattice,
       onUnion: (ComposedTypesLattice, ComposedTypesLattice) => TypesLattice
     ): CorrelatedFunction = {
@@ -121,24 +121,41 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
           val t2 = withDefault(f.updates, receiver)
           m + (receiver -> ComposedTypesLattice(onIntersect(t1, t2), onUnion(t1, t2)))
       }
-      CorrelatedFunction(newUpdates)
+      SomeCorrelatedFunction(newUpdates)
     }
 
     override def ◦(f: CorrelatedFunction): CorrelatedFunction =
-      operation(f, {
-        _.intersectWith ⊔ _.intersectWith
-      }, {
-        (t1, t2) => (t1.intersectWith ⊔ t2.unionWith) ⊓ t1.unionWith
-      })
+      f match {
+        case fun: SomeCorrelatedFunction =>
+          operation(fun, {
+            _.intersectSet ⊔ _.intersectSet
+          }, {
+            (t1, t2) => (t1.intersectSet ⊔ t2.unionSet) ⊓ t1.unionSet
+          })
+        case TopCorrelatedFunction       =>
+          f
+      }
 
     /**
      * Defined as union.
      */
     override def ⊓(f: CorrelatedFunction): CorrelatedFunction =
-      operation(f, {
-        _.intersectWith ⊓ _.intersectWith
-      }, {
-        _.unionWith ⊓ _.unionWith
-      })
+      f match {
+        case fun: SomeCorrelatedFunction =>
+          operation(fun, {
+            _.intersectSet ⊓ _.intersectSet
+          }, {
+            _.unionSet ⊓ _.unionSet
+          })
+        case TopCorrelatedFunction       =>
+          f ⊓ this
+      }
+  }
+  
+  case object TopCorrelatedFunction extends CorrelatedFunction {
+
+    override def ◦(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction
+
+    override def ⊓(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction
   }
 }
