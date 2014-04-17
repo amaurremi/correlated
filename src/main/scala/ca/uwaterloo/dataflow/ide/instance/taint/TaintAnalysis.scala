@@ -62,7 +62,7 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
             idFactFunPairSet(d1) + FactFunPair(Variable(callerMethod, callValNum(callInstr).get), Id)
           else
             idFactFunPairSet(d1)
-        case callInstr: SSAInvokeInstruction                           =>
+        case callInstr: SSAInvokeInstruction                                        =>
           getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
             case Some(argNum)                                       =>
               val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
@@ -73,7 +73,7 @@ class TaintAnalysis(fileName: String) extends TaintAnalysisBuilder(fileName) wit
             case None                                               =>
               idFactFunPairSet(d1)
           }
-        case _                                                         =>
+        case _                                                                      =>
           throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
       }
     }

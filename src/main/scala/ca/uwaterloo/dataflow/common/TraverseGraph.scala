@@ -1,6 +1,5 @@
 package ca.uwaterloo.dataflow.common
 
-import ca.uwaterloo.dataflow.ide.IdeExplodedGraphTypes
 import scala.collection.JavaConverters._
 
 trait TraverseGraph { this: ExplodedGraphTypes =>

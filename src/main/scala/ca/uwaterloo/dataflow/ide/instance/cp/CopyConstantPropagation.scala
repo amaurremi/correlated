@@ -237,7 +237,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
   /**
    * Represents lattice elements for the set L
    */
-  sealed trait CpLatticeElem extends Lattice {
+  sealed trait CpLatticeElem extends Lattice[CpLatticeElem] {
     override def ⊓(n: CpLatticeElem): CpLatticeElem
   }
 

@@ -22,7 +22,7 @@ trait IdeFromIfdsBuilder extends IdeProblem { this: IfdsProblem =>
     (ideN1, d1) =>
       f(XNode(ideN1.n, ideN1.d), d1) map { FactFunPair(_, IfdsIdFunction) }
 
-  trait IfdsLatticeElem extends Lattice
+  trait IfdsLatticeElem extends Lattice[IfdsLatticeElem]
 
   case object IfdsTop extends IfdsLatticeElem {
     override def ⊓(el: IfdsLatticeElem): IfdsLatticeElem = el

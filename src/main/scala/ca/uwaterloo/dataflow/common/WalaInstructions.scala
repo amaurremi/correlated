@@ -1,5 +1,6 @@
 package ca.uwaterloo.dataflow.common
 
+import com.ibm.wala.classLoader.IClass
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
@@ -46,7 +47,7 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
    */
   lazy val instructionsInProc =
     (node: Node) =>
-      enclProc(node).getIR.iterateNormalInstructions().asScala
+      enclProc(node).getIR.iterateNormalInstructions.asScala
 
   /**
    * Get the value number for the ith parameter.
@@ -65,4 +66,9 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
     else None
 
   def hasRetValue(retInstr: SSAReturnInstruction) = retInstr.getResult >= 0
+
+  def staticTypes(node: Node): Iterator[IClass] =
+    (supergraph getCalledNodes node).asScala map {
+      enclProc(_).getMethod.getDeclaringClass
+    }
 }

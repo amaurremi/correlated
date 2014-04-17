@@ -72,7 +72,7 @@ class LinearConstantPropagation(fileName: String) extends ConstantPropagation(fi
       }
   }
 
-  trait CpLatticeElem extends Lattice {
+  trait CpLatticeElem extends Lattice[CpLatticeElem] {
     def +(n:CpLatticeElem): CpLatticeElem
     def -(n: CpLatticeElem): CpLatticeElem
     def *(n: CpLatticeElem): CpLatticeElem

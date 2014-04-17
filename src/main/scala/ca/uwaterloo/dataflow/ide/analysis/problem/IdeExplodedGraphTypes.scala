@@ -12,14 +12,16 @@ trait IdeExplodedGraphTypes extends ExplodedGraphTypes {
   /**
    * The type for a lattice element for the set L
    */
-  type LatticeElem <: Lattice
+  type LatticeElem <: Lattice[LatticeElem]
 
   /**
    * A lattice for elements of the set L
    */
-  trait Lattice {
+  trait Lattice[L <: Lattice[L]] {
 
-    def ⊓(el: LatticeElem): LatticeElem
+    def ⊓(el: L): L
+
+    def ⊔(el: L): L = throw new UnsupportedOperationException("Join operation not defined.")
 
     override def equals(o: Any): Boolean
   }
