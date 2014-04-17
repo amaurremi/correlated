@@ -14,7 +14,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   override type IdeFunction = CorrelatedFunction
 
   override val Bottom = ReceiverToTypes(Map.empty)
-  override val Top    = ⊤
+  override val Top    = ⊤ // todo reverse tops with bottoms
   override val Id     = SomeCorrelatedFunction(Map.empty)
   override val λTop   = TopCorrelatedFunction
 
