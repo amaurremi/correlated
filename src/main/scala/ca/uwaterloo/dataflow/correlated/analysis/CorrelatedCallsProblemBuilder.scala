@@ -66,7 +66,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     override def ⊔(typeLattice: TypesLattice) =
       typeLattice match {
         case SetType(types2) => SetType(types intersect types2)
-        case TypeTop => TypeTop ⊔ this
+        case TypeTop         => TypeTop ⊔ this
       }
 
     /**
@@ -75,7 +75,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     override def ⊓(typeLattice: TypesLattice) =
       typeLattice match {
         case SetType(types2) => SetType(types ++ types2)
-        case TypeTop => TypeTop ⊓ this
+        case TypeTop         => TypeTop ⊓ this
       }
   }
 
