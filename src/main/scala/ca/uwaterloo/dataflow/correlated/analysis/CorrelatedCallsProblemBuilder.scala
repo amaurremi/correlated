@@ -81,7 +81,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   }
 
   private[this] case object TypesBottom extends TypesLattice {
-    
+
     override def ⊓(el: TypesLattice) = TypesBottom
 
     override def ⊔(el: TypesLattice) = el
