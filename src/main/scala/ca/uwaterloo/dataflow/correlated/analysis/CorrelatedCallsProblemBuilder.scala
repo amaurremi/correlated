@@ -154,6 +154,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   
   case object TopCorrelatedFunction extends CorrelatedFunction {
 
+    override def apply(el: MapLatticeElem): MapLatticeElem = ⊤
+
     override def ◦(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction
 
     override def ⊓(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction
