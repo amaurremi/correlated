@@ -14,7 +14,7 @@ import scala.collection._
 trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
   type TypeMultiMap         = Map[Receiver, TypesLattice]
-  type ComposedTypeMultiMap = Map[Receiver, ComposedTypesLattice]
+  type ComposedTypeMultiMap = Map[Receiver, ComposedTypes]
   type Type                 = IClass
 
   override type LatticeElem = MapLatticeElem
@@ -54,14 +54,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     override def ⊓(el: MapLatticeElem): MapLatticeElem = ⊥
   }
 
-  case class ComposedTypesLattice(intersectSet: TypesLattice, unionSet: TypesLattice) extends Lattice[ComposedTypesLattice] {
-
-    override def ⊔(el: ComposedTypesLattice): ComposedTypesLattice =
-      ComposedTypesLattice(intersectSet ⊔ el.intersectSet, unionSet ⊔ el.unionSet)
-
-    override def ⊓(el: ComposedTypesLattice): ComposedTypesLattice =
-      ComposedTypesLattice(intersectSet ⊓ el.intersectSet, unionSet ⊓ el.unionSet)
-  }
+  case class ComposedTypes(intersectSet: TypesLattice, unionSet: TypesLattice)
 
   sealed trait TypesLattice extends Lattice[TypesLattice]
 
@@ -89,8 +82,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
   private[this] val TypesTop: TypesLattice = SetType(Set.empty)
 
-  private[this] def withDefault(m: ComposedTypeMultiMap, r: Receiver): ComposedTypesLattice =
-    m getOrElse (r, ComposedTypesLattice(TypesBottom, TypesTop))
+  private[this] def withDefault(m: ComposedTypeMultiMap, r: Receiver): ComposedTypes =
+    m getOrElse (r, ComposedTypes(TypesBottom, TypesTop))
 
   sealed trait CorrelatedFunction extends IdeFunctionI
 
@@ -101,12 +94,12 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
         el match {
           case ReceiverToTypes(mapping) =>
             updates.foldLeft(mapping) {
-              case (m, (receiver, ComposedTypesLattice(i, u))) =>
+              case (m, (receiver, ComposedTypes(i, u))) =>
                 m updated (receiver, ((m getOrElse (receiver, TypesBottom)) ⊔ i) ⊓ u)
             }
           case ⊥ =>
             updates map {
-              case (r, ComposedTypesLattice(i, u)) =>
+              case (r, ComposedTypes(i, u)) =>
                 r -> (i ⊓ u)
             }
         }
@@ -114,14 +107,14 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
     private[this] def operation( // todo move into CTL
       f: SomeCorrelatedFunction,
-      onIntersect: (ComposedTypesLattice, ComposedTypesLattice) => TypesLattice,
-      onUnion: (ComposedTypesLattice, ComposedTypesLattice) => TypesLattice
+      onIntersect: (ComposedTypes, ComposedTypes) => TypesLattice,
+      onUnion: (ComposedTypes, ComposedTypes) => TypesLattice
     ): CorrelatedFunction = {
       val newUpdates = (updates.keySet ++ f.updates.keySet).foldLeft(updates) {
         case (m, receiver) =>
           val t1 = withDefault(updates, receiver)
           val t2 = withDefault(f.updates, receiver)
-          m + (receiver -> ComposedTypesLattice(onIntersect(t1, t2), onUnion(t1, t2)))
+          m + (receiver -> ComposedTypes(onIntersect(t1, t2), onUnion(t1, t2)))
       }
       SomeCorrelatedFunction(newUpdates)
     }
