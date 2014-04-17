@@ -1,5 +1,7 @@
 package ca.uwaterloo.dataflow.ide.taint.inputPrograms.PhiSame;
 
+import ca.uwaterloo.dataflow.ide.taint.inputPrograms.SecretAssertions;
+
 public class PhiSame {
 
     public static void main(String[] args) {
@@ -9,7 +11,7 @@ public class PhiSame {
         } else {
             s = secret();
         }
-        args[0] = s; // we need to "use" s, otherwise the phi instructions won't be created
+        SecretAssertions.shouldBeSecret(s);
     }
 
     static String secret() {

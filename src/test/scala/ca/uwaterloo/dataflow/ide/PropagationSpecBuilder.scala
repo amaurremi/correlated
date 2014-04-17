@@ -103,14 +103,13 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
   }
 
   private[this] def getResultAtNextNode(node: Node, instr: SSAInvokeInstruction): LatticeElem = {
-    val values: Set[LatticeElem] = (for {
-      succ <- followingNodes(node).toSeq
-      (s@XNode(`succ`, Variable(method, elem)), value) <- solvedResult
-      if method == node.getMethod
-      if instr.getNumberOfParameters > 0
-      if getValNum(elem, s) == getValNumFromParameterNum(instr, 0)
-    } yield value)(breakOut)
-    assert(values.size <= 1)
-    values.headOption getOrElse Top
+    val optValue: Option[LatticeElem] = solvedResult collectFirst {
+      case (s@XNode(`node`, Variable(method, elem)), value)
+        if (method == node.getMethod) &&
+           (instr.getNumberOfParameters > 0) &&
+           (getValNum(elem, s) == getValNumFromParameterNum(instr, 0)) =>
+        value
+    }
+    optValue getOrElse Top
   }
 }
