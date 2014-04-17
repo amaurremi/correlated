@@ -124,7 +124,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
       SomeCorrelatedFunction(newUpdates)
     }
 
-    override def ◦(f: CorrelatedFunction): CorrelatedFunction =
+    override def ◦(f: CorrelatedFunction): CorrelatedFunction = // todo not sure
       f match {
         case fun: SomeCorrelatedFunction =>
           operation(fun, {
@@ -139,7 +139,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     /**
      * Defined as union.
      */
-    override def ⊓(f: CorrelatedFunction): CorrelatedFunction =
+    override def ⊓(f: CorrelatedFunction): CorrelatedFunction = // todo not sure
       f match {
         case fun: SomeCorrelatedFunction =>
           operation(fun, {
@@ -152,7 +152,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
       }
   }
   
-  case object TopCorrelatedFunction extends CorrelatedFunction {
+  case object TopCorrelatedFunction extends CorrelatedFunction { // todo not sure about this trait
 
     override def apply(el: MapLatticeElem): MapLatticeElem = ⊤
 
