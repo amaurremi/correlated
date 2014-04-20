@@ -54,7 +54,18 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     override def ⊓(el: MapLatticeElem): MapLatticeElem = ⊥
   }
 
-  case class ComposedTypes(intersectSet: TypesLattice, unionSet: TypesLattice)
+  case class ComposedTypes(intersectSet: TypesLattice, unionSet: TypesLattice) {
+
+    override def equals(obj: Any): Boolean =
+      obj match {
+        case ComposedTypes(_, `TypesTop`) =>
+          unionSet == TypesTop
+        case ComposedTypes(i, u)          =>
+          i == intersectSet && u == unionSet
+        case _                            =>
+          false
+      }
+  }
 
   sealed trait TypesLattice extends Lattice[TypesLattice]
 
