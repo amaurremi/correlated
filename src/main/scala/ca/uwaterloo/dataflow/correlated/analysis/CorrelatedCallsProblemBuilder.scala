@@ -8,8 +8,8 @@ import scala.collection._
  * In this trait,
  *   ⊓ is defined as union
  *   ⊔ is defined as intersect
- *   ⊥ (bottom) refers to the least precise element of a lattice
- *   ⊤ (top) refers to the most precise element of a lattice
+ *   ⊥ (bottom) refers to the least precise element of a lattice (e.g. "all types")
+ *   ⊤ (top) refers to the most precise element of a lattice (e.g. "empty set")
  */
 trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
