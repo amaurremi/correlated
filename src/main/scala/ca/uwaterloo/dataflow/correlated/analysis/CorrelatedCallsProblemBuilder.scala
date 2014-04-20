@@ -58,8 +58,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
     override def equals(obj: Any): Boolean =
       obj match {
-        case ComposedTypes(_, `TypesTop`) =>
-          unionSet == TypesTop
+        case ComposedTypes(_, TypesBottom) =>
+          unionSet == TypesBottom
         case ComposedTypes(i, u)          =>
           i == intersectSet && u == unionSet
         case _                            =>
@@ -154,7 +154,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
           f ⊓ this
       }
   }
-  
+
   case object TopCorrelatedFunction extends CorrelatedFunction {
 
     override def apply(el: MapLatticeElem): MapLatticeElem = Top
