@@ -49,6 +49,50 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
        new TaintAnalysisSpecBuilder("Phi").assertSecretValues()
      }
 
+     it("switch statement") {
+       new TaintAnalysisSpecBuilder("Switch").assertSecretValues()
+     }
+
+     it("switch statement 2") {
+       new TaintAnalysisSpecBuilder("Switch2").assertSecretValues()
+     }
+
+     it("switch statement 3") {
+       new TaintAnalysisSpecBuilder("Switch3").assertSecretValues()
+     }
+
+     it("if statement") {
+       new TaintAnalysisSpecBuilder("If").assertSecretValues()
+     }
+
+     it("if statement 2") {
+       new TaintAnalysisSpecBuilder("If2").assertSecretValues()
+     }
+
+     it("if statement 3") {
+       new TaintAnalysisSpecBuilder("If3").assertSecretValues()
+     }
+
+     it("if statement 4") {
+       new TaintAnalysisSpecBuilder("If4").assertSecretValues()
+     }
+
+     it("nested if statement") {
+       new TaintAnalysisSpecBuilder("NestedIf").assertSecretValues()
+     }
+
+     it("nested if statement 2") {
+       new TaintAnalysisSpecBuilder("NestedIf2").assertSecretValues()
+     }
+
+     it("ternary operator") {
+       new TaintAnalysisSpecBuilder("Ternary").assertSecretValues()
+     }
+
+     it("string operations") {
+       new TaintAnalysisSpecBuilder("StringOps").assertSecretValues()
+     }
+
      it("propagate constant variables that have been assigned the same value in different if branches") {
        new TaintAnalysisSpecBuilder("PhiSame").assertSecretValues()
      }
