@@ -9,16 +9,22 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
 
    describe("TaintAnalysis") {
      it("propagates secret values intra-procedurally") {
-       new TaintAnalysisSpecBuilder("LocalVars").assertSecretValues()
+       val taint = new TaintAnalysisSpecBuilder("LocalVars")
+       taint.assertSecretValues()
      }
 
      it("propagates non-secret values intra-procedurally") {
        new TaintAnalysisSpecBuilder("NotSecretLocalVars").assertSecretValues()
      }
 
-     it("propagates secret values along the call-start edge") {
+     it("propagates secret values along the call-start edge (static method)") {
        new TaintAnalysisSpecBuilder("FunctionCall").assertSecretValues()
      }
+
+     it("propagates secret values along the call-start edge (instance method)") {
+       new TaintAnalysisSpecBuilder("FunctionCall2").assertSecretValues()
+     }
+
 
      it("sets a function parameter to top, if that function is invoked with secret and non-secret arguments") {
        new TaintAnalysisSpecBuilder("MultipleFunctionCalls").assertSecretValues()

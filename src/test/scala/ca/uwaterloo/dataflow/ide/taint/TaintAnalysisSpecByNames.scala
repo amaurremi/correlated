@@ -25,7 +25,7 @@ class TaintAnalysisSpecByNames extends FunSpec {
      }
 
      it("propagates secret values along the call-start edge") {
-       val taint = new TaintAnalysisSpecBuilder("FunctionCall")
+       val taint = new TaintAnalysisSpecBuilder("FunctionCall2")
        import taint._
 
        variable("s", "f") shouldBe secret
