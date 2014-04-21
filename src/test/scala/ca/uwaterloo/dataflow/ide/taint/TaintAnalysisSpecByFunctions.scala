@@ -25,6 +25,13 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
        new TaintAnalysisSpecBuilder("FunctionCall2").assertSecretValues()
      }
 
+     it("propagates secret values along the call-start edge (instance method, multiple parameters)") {
+       new TaintAnalysisSpecBuilder("FunctionCall3").assertSecretValues()
+     }
+
+     it("propagates secret values along the call-start edge (instance method, multiple parameters, multiple files)") {
+       new TaintAnalysisSpecBuilder("MultipleFiles").assertSecretValues()
+     }
 
      it("sets a function parameter to top, if that function is invoked with secret and non-secret arguments") {
        new TaintAnalysisSpecBuilder("MultipleFunctionCalls").assertSecretValues()
