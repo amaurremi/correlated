@@ -74,7 +74,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
   sealed trait TypesLattice extends Lattice[TypesLattice]
 
-  private[this] case class SetType(types: Set[Type]) extends TypesLattice {
+  case class SetType(types: Set[Type]) extends TypesLattice {
 
     override def ⊔(typeLattice: TypesLattice) =
       typeLattice match {
@@ -89,14 +89,14 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
       }
   }
 
-  private[this] case object TypesBottom extends TypesLattice {
+  case object TypesBottom extends TypesLattice {
 
     override def ⊓(el: TypesLattice) = TypesBottom
 
     override def ⊔(el: TypesLattice) = el
   }
 
-  private[this] val TypesTop: TypesLattice = SetType(Set.empty)
+  val TypesTop: TypesLattice = SetType(Set.empty)
 
   private[this] def withDefault(m: ComposedTypeMultiMap, r: Receiver): ComposedTypes =
     m getOrElse (r, ComposedTypes(TypesBottom, TypesTop))
@@ -121,7 +121,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
         }
       )
 
-    private[this] def operation( // todo move into CTL
+    private[this] def operation(
       f: SomeCorrelatedFunction,
       onIntersect: (ComposedTypes, ComposedTypes) => TypesLattice,
       onUnion: (ComposedTypes, ComposedTypes) => TypesLattice
@@ -164,7 +164,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
     override def apply(el: MapLatticeElem): MapLatticeElem = Top
 
-    override def ◦(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction // todo commutative?
+    override def ◦(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction
 
     override def ⊓(f: CorrelatedFunction): CorrelatedFunction = f
   }
