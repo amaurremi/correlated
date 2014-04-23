@@ -65,7 +65,6 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
   def getValNumFromParameterNum(instr: SSAInvokeInstruction, argNum: Int): ValueNumber =
     instr.getUse(argNum)
 
-
   /**
    * The value number of a call's return value.
    */
