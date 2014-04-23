@@ -20,11 +20,14 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
     node.d match {
       case Variable(method, elem) =>
         val valNum = getValNum(elem, node)
-        0 to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
+        firstParameter(callInstr) to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
           callInstr.getUse(_) == valNum
         }
       case Lambda                 => None
     }
+
+  private[this] def firstParameter(instr: SSAInvokeInstruction): Int =
+    if (instr.isStatic) 0 else 1
 
   /**
    * Get all instructions following instruction in node `n` in its procedure.
