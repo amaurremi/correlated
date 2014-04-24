@@ -29,6 +29,38 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
        new TaintAnalysisSpecBuilder("FunctionCall3").assertSecretValues()
      }
 
+     it("propagates secret values along the return edge (static method)") {
+       new TaintAnalysisSpecBuilder("FunctionReturn").assertSecretValues()
+     }
+
+     it("propagates secret values along the return edge (static method) 2") {
+       new TaintAnalysisSpecBuilder("FunctionReturn2").assertSecretValues()
+     }
+
+     it("propagates secret values along the return edge (static method) 3") {
+       new TaintAnalysisSpecBuilder("FunctionReturn3").assertSecretValues()
+     }
+
+     it("propagates secret values along the return edge (static method) 4") {
+       new TaintAnalysisSpecBuilder("FunctionReturn4").assertSecretValues()
+     }
+
+     it("propagates secret values along the return edge (instance method) 5") {
+       new TaintAnalysisSpecBuilder("FunctionReturn5").assertSecretValues()
+     }
+
+     it("propagates secret values along the return edge (instance method) 6") {
+       new TaintAnalysisSpecBuilder("FunctionReturn6").assertSecretValues()
+     }
+
+     it("propagates secret values along the return edge (instance method) 7") {
+       new TaintAnalysisSpecBuilder("FunctionReturn7").assertSecretValues()
+     }
+
+     it("propagates secret values along the return edge (instance method) 8") {
+       new TaintAnalysisSpecBuilder("FunctionReturn8").assertSecretValues()
+     }
+
      it("propagates secret values along the call-start edge (instance method, multiple parameters, multiple files)") {
        new TaintAnalysisSpecBuilder("MultipleFiles").assertSecretValues()
      }
@@ -89,12 +121,57 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
        new TaintAnalysisSpecBuilder("Ternary").assertSecretValues()
      }
 
+     it("propagate constant variables that have been assigned the same value in different if branches") {
+       new TaintAnalysisSpecBuilder("PhiSame").assertSecretValues()
+     }
+
+// FT: all of the tests below have stack overflow or nontermination problems for me
+
+// stack overflow
+     it("for statement") {
+       new TaintAnalysisSpecBuilder("For").assertSecretValues()
+     }
+
+// nontermination
+     it("for statement 2") {
+       new TaintAnalysisSpecBuilder("For2").assertSecretValues()
+     }
+
+// stack overflow
+     it("while statement") {
+       new TaintAnalysisSpecBuilder("While").assertSecretValues()
+     }
+
+// non-termination
+     it("while statement 2") {
+       new TaintAnalysisSpecBuilder("While2").assertSecretValues()
+     }
+
+// stack overflow
+      it("do statement") {
+        new TaintAnalysisSpecBuilder("Do").assertSecretValues()
+      }
+
+// non-termination
+     it("do statement 2") {
+       new TaintAnalysisSpecBuilder("Do2").assertSecretValues()
+     }
+
+// nontermination
+     it("StringBuffer") {
+       new TaintAnalysisSpecBuilder("StringBuffer").assertSecretValues()
+     }
+
+// nontermination
+     it("string concatenation") {
+       new TaintAnalysisSpecBuilder("StringConcat").assertSecretValues()
+     }
+
+// nontermination
      it("string operations") {
        new TaintAnalysisSpecBuilder("StringOps").assertSecretValues()
      }
 
-     it("propagate constant variables that have been assigned the same value in different if branches") {
-       new TaintAnalysisSpecBuilder("PhiSame").assertSecretValues()
-     }
+
    }
  }
