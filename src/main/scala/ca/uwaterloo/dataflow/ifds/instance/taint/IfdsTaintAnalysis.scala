@@ -1,16 +1,16 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint
 
 import ca.uwaterloo.dataflow.common.VariableFacts
+import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa.{SSAPhiInstruction, SSAInvokeInstruction, SSAReturnInstruction}
 import com.ibm.wala.types.MethodReference
 import com.ibm.wala.util.collections.HashSetMultiMap
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
-import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 
 class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts {
 
@@ -48,7 +48,7 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
             case _                                                                =>
               Set(d1)
           }
-        case _                                                             =>
+        case _                                                            =>
           Set(d1)
       }
     }
@@ -78,10 +78,11 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
       val callerMethod = n1.getMethod
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction if isSecret(targetMethod.getReference) =>
-          if (d1 == Λ)
-            Set(d1) + Variable(callerMethod, callValNum(callInstr).get)
-          else
-            Set(d1)
+          if (d1 == Λ) {
+            val valNum: ValueNumber = callValNum(callInstr).get
+            val phis = getPhis(n1, valNum, callerMethod)
+            Set(d1) + Variable(callerMethod, valNum) ++ phis
+          } else Set(d1)
         case callInstr: SSAInvokeInstruction                           =>
           getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
             case Some(argNum)                                       =>
@@ -97,6 +98,12 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
           throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
       }
     }
+
+  private[this] def getPhis(node: Node, valNum: ValueNumber, method: IMethod): Set[Fact] =
+    (enclProc(node).getIR.iteratePhis().asScala collect {
+      case phiInstr: SSAPhiInstruction if phiInstr.getUse(0) == valNum || phiInstr.getUse(1) == valNum =>
+        Variable(method, phiInstr.getDef)
+    }).toSet
 
   private[this] val methodToReturnVars = new HashSetMultiMap[IMethod, Variable]
 

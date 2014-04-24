@@ -12,6 +12,9 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
   override type Node      = BasicBlockInContext[IExplodedBasicBlock]
   override type Procedure = CGNode
 
+  def firstParameter(instr: SSAInvokeInstruction): Int =
+    if (instr.isStatic) 0 else 1
+
   /**
    * If the variable corresponding to this node's fact is passed as a parameter to this call instruction,
    * returns the number of the parameter.
@@ -20,7 +23,7 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
     node.d match {
       case Variable(method, elem) =>
         val valNum = getValNum(elem, node)
-        0 to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
+        firstParameter(callInstr) to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
           callInstr.getUse(_) == valNum
         }
       case Lambda                 => None
@@ -65,7 +68,6 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
   def getValNumFromParameterNum(instr: SSAInvokeInstruction, argNum: Int): ValueNumber =
     instr.getUse(argNum)
 
-
   /**
    * The value number of a call's return value.
    */
@@ -76,10 +78,7 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
 
   def hasRetValue(retInstr: SSAReturnInstruction) = retInstr.getResult >= 0
 
-  def staticTypes(node: Node): Iterator[IClass] =
-    (supergraph getCalledNodes node).asScala map {
-      enclProc(_).getMethod.getDeclaringClass
-    }
-  
   def getMethodName(node: Node): String = node.getMethod.getName.toString
+
+  def getCalledNodes(node: Node) = (supergraph getCalledNodes node).asScala
 }

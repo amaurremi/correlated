@@ -8,8 +8,8 @@ import scala.collection._
  * In this trait,
  *   ⊓ is defined as union
  *   ⊔ is defined as intersect
- *   ⊥ (bottom) refers to the least precise element of a lattice
- *   ⊤ (top) refers to the most precise element of a lattice
+ *   ⊥ (bottom) refers to the least precise element of a lattice (e.g. "all types")
+ *   ⊤ (top) refers to the most precise element of a lattice (e.g. "empty set")
  */
 trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
@@ -54,11 +54,27 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     override def ⊓(el: MapLatticeElem): MapLatticeElem = ⊥
   }
 
-  case class ComposedTypes(intersectSet: TypesLattice, unionSet: TypesLattice)
+  sealed trait ComposedTypes {
+    def intersectSet: TypesLattice
+    def unionSet: TypesLattice
+  }
+
+  object ComposedTypes { // todo will equals work?
+
+    def apply(intersectSet: TypesLattice, unionSet: TypesLattice): ComposedTypes =
+      ComposedTypesImpl(intersectSet ⊓ unionSet, unionSet)
+
+    def unapply(ct: ComposedTypes): Option[(TypesLattice, TypesLattice)] = Some(ct.intersectSet, ct.unionSet)
+
+    case class ComposedTypesImpl private[ComposedTypes](
+      intersectSet: TypesLattice,
+      unionSet: TypesLattice
+    ) extends ComposedTypes
+  }
 
   sealed trait TypesLattice extends Lattice[TypesLattice]
 
-  private[this] case class SetType(types: Set[Type]) extends TypesLattice {
+  case class SetType(types: Set[Type]) extends TypesLattice {
 
     override def ⊔(typeLattice: TypesLattice) =
       typeLattice match {
@@ -73,14 +89,14 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
       }
   }
 
-  private[this] case object TypesBottom extends TypesLattice {
+  case object TypesBottom extends TypesLattice {
 
     override def ⊓(el: TypesLattice) = TypesBottom
 
     override def ⊔(el: TypesLattice) = el
   }
 
-  private[this] val TypesTop: TypesLattice = SetType(Set.empty)
+  val TypesTop: TypesLattice = SetType(Set.empty)
 
   private[this] def withDefault(m: ComposedTypeMultiMap, r: Receiver): ComposedTypes =
     m getOrElse (r, ComposedTypes(TypesBottom, TypesTop))
@@ -105,7 +121,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
         }
       )
 
-    private[this] def operation( // todo move into CTL
+    private[this] def operation(
       f: SomeCorrelatedFunction,
       onIntersect: (ComposedTypes, ComposedTypes) => TypesLattice,
       onUnion: (ComposedTypes, ComposedTypes) => TypesLattice
@@ -143,12 +159,12 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
           f ⊓ this
       }
   }
-  
+
   case object TopCorrelatedFunction extends CorrelatedFunction {
 
     override def apply(el: MapLatticeElem): MapLatticeElem = Top
 
-    override def ◦(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction // todo commutative?
+    override def ◦(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction
 
     override def ⊓(f: CorrelatedFunction): CorrelatedFunction = f
   }

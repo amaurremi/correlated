@@ -91,9 +91,9 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
         targetStartNodes(node) foreach {
           getMethodName(_) match {
             case "shouldBeSecret"                   =>
-              assertResult(Bottom)(getResultAtNextNode(node, invokeInstr))
+              assertResult(Bottom)(getResultAtCallNode(node, invokeInstr))
             case "shouldNotBeSecret"                =>
-              assertResult(Top)(getResultAtNextNode(node, invokeInstr))
+              assertResult(Top)(getResultAtCallNode(node, invokeInstr))
             case "shouldNotBeSecretCC" if assertCCs =>
               ???
             case _                                  =>
@@ -102,7 +102,7 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
     }
   }
 
-  private[this] def getResultAtNextNode(node: Node, instr: SSAInvokeInstruction): LatticeElem = {
+  private[this] def getResultAtCallNode(node: Node, instr: SSAInvokeInstruction): LatticeElem = {
     val optValue: Option[LatticeElem] = solvedResult collectFirst {
       case (s@XNode(`node`, Variable(method, elem)), value)
         if (method == node.getMethod) &&

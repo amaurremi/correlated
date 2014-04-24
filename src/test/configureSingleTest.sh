@@ -53,7 +53,7 @@ test=$testParent/$testname
 cd scala
 testname=`basename $test`
 echo -n `basename $test`...
-createJar $testParent $testname #> /dev/null 2>&1
+createJar $testParent $testname > /dev/null 2>&1
 createConfigFile $analysis $testname
 echo "[DONE]"
 cd "$root"
