@@ -9,7 +9,7 @@ public class Cast {
         String s = secret();
         SecretAssertions.shouldBeSecret(s);
         Object o = s;
-        String s2 = (String)o;
+        String s2 = (String) o;
         SecretAssertions.shouldBeSecret(s2);
     }
 

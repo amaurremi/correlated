@@ -50,16 +50,12 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
             case _                                                                =>
               defaultResult
           }
-        case storeInstr: SSAArrayStoreInstruction                          =>
-          if (factIsRval(d1, method, storeInstr.getValue))
-            defaultResult + ArrayElement
-          else defaultResult
+        case storeInstr: SSAArrayStoreInstruction if factIsRval(d1, method, storeInstr.getValue) =>
+          defaultResult + ArrayElement
         case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement      =>
           defaultResult + Variable(method, loadInstr.getDef)
-        case putInstr: SSAPutInstruction                                   =>
-          if (factIsRval(d1, method, putInstr.getVal))
-            defaultResult + Field(putInstr.getDeclaredField)
-          else defaultResult
+        case putInstr: SSAPutInstruction if factIsRval(d1, method, putInstr.getVal) =>
+          defaultResult + Field(putInstr.getDeclaredField)
         case getInstr: SSAGetInstruction                                   =>
           d1 match {
             case Field(field) if field == getInstr.getDeclaredField =>
@@ -67,6 +63,8 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
             case _                                                  =>
               defaultResult
           }
+        case castInstr: SSACheckCastInstruction if factIsRval(d1, method, castInstr.getVal) =>
+          defaultResult + Variable(method, castInstr.getDef)
         case _                                                             =>
           defaultResult
       }
