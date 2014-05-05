@@ -9,7 +9,7 @@ public class For {
         for (int i=0; i < 10; i++){
             s = "not secret";
         }
-        SecretAssertions.shouldNotBeSecret(s);
+        SecretAssertions.shouldBeSecret(s); // because we aren't doing constant folding
     }
 
     static String secret() {

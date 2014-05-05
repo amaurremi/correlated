@@ -13,6 +13,8 @@ public class Field {
         SecretAssertions.shouldBeSecret(s);
         X.f = s;
         SecretAssertions.shouldBeSecret(X.f);
+        X.f = "not secret";
+        SecretAssertions.shouldBeSecret(X.f);
     }
 
     static String secret() {

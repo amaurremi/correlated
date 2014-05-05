@@ -8,7 +8,7 @@ public class FunctionReturn4 {
        String s1 = f(secret());
        SecretAssertions.shouldBeSecret(s1);
        String s2 = f("not secret");
-       SecretAssertions.shouldNotBeSecret(s2);
+       SecretAssertions.shouldBeSecret(s2); // it will be secret because f can be invoked with a secret value
     }
 
     static String f(String s3) {

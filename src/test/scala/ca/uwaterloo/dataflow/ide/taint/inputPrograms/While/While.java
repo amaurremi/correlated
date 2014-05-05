@@ -11,7 +11,7 @@ public class While {
             s = "not secret";
             i++;
         }
-        SecretAssertions.shouldNotBeSecret(s);
+        SecretAssertions.shouldBeSecret(s); // the analysis doesn't know that we will always enter the loop
     }
 
     static String secret() {

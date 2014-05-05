@@ -6,13 +6,13 @@ public class For4 {
 
     public static void main(String[] args) {
         String s = secret();
-        for (int i=0; i < 10; i++){
+        for (int i = 0; i < 10; i++) {
             s = "not secret";
-            if (i > 5){
-		continue;
-	    }
+            if (i > 5) {
+                continue;
+            }
         }
-        SecretAssertions.shouldNotBeSecret(s);
+        SecretAssertions.shouldBeSecret(s); // the analysis doesn't even know that we always enter the loop
     }
 
     static String secret() {
