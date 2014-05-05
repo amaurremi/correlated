@@ -8,7 +8,7 @@ public class Cast6 {
     public static void main(String[] args) {
         Object o = new Integer(7);
         String s = (String)o; // cast fails at run-time
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.shouldNotBeSecret(s);
     }
 
     static String secret() {
