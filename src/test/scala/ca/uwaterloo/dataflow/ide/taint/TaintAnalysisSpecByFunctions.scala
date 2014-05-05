@@ -245,9 +245,6 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
       new TaintAnalysisSpecBuilder("Overloading").assertSecretValues()
     }
 
-    // FT non-termination because of loop
-
-
     it("propagate constant variables that have been assigned the same value in different if branches") {
       new TaintAnalysisSpecBuilder("PhiSame").assertSecretValues()
     }

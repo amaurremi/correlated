@@ -131,7 +131,7 @@ class CopyConstantPropagation(fileName: String) extends ConstantPropagation(file
     n2: Node,
     d1: Fact
   ): Set[FactFunPair] = {
-    val assignedVal      = getRVal(n2)
+    val assignedVal = getRVal(n2)
     val fact = Variable(n2.getMethod, getLVar(n2))
     if (d1 == Λ)
       idFactFunPairSet(d1) +

@@ -5,7 +5,7 @@ import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ssa.{SSAPhiInstruction, SSAInvokeInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa._
 import com.ibm.wala.types.MethodReference
 import com.ibm.wala.util.collections.HashSetMultiMap
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
@@ -37,8 +37,10 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
    */
   override def ifdsOtherSuccEdges: IfdsEdgeFn =
     (ideN1, n2) => {
-      val n1 = ideN1.n
-      val d1 = ideN1.d
+      val n1            = ideN1.n
+      val d1            = ideN1.d
+      val defaultResult = Set(d1)
+      val method        = n1.getMethod
       n1.getLastInstruction match {
         case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr) =>
           d1 match {
@@ -46,12 +48,38 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
             case v@Variable(m, _) if isFactReturned(v, n1, returnInstr.getResult) =>
               methodToReturnVars.get(m).asScala.toSet + d1
             case _                                                                =>
-              Set(d1)
+              defaultResult
           }
-        case _                                                            =>
-          Set(d1)
+        case storeInstr: SSAArrayStoreInstruction                          =>
+          if (factIsRval(d1, method, storeInstr.getValue))
+            defaultResult + ArrayElement
+          else defaultResult
+        case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement      =>
+          defaultResult + Variable(method, loadInstr.getDef)
+        case putInstr: SSAPutInstruction                                   =>
+          if (factIsRval(d1, method, putInstr.getVal))
+            defaultResult + Field(putInstr.getDeclaredField)
+          else defaultResult
+        case getInstr: SSAGetInstruction                                   =>
+          d1 match {
+            case Field(field) if field == getInstr.getDeclaredField =>
+              defaultResult + Variable(method, getInstr.getDef)
+            case _                                                  =>
+              defaultResult
+          }
+        case _                                                             =>
+          defaultResult
       }
     }
+
+  /**
+   * For a fact, checks whether the right-hand side of the assignment instruction in node 'n' is the value of the fact.
+   * For example, for an assignment
+   *   int x = a
+   * this checks whether 'a' has the same value number as 'fact' (and corresponds to the same method).
+   */
+  private[this] def factIsRval(fact: Fact, method: IMethod, vn: ValueNumber) =
+    fact == Variable(method, vn)
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
@@ -72,17 +100,18 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
    */
   override def ifdsCallStartEdges: IfdsEdgeFn =
     (ideN1, n2) => {
-      val n1 = ideN1.n
-      val d1 = ideN1.d
-      val targetMethod = n2.getMethod
-      val callerMethod = n1.getMethod
+      val n1            = ideN1.n
+      val d1            = ideN1.d
+      val targetMethod  = n2.getMethod
+      val callerMethod  = n1.getMethod
+      val defaultResult = Set(d1)
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction if isSecret(targetMethod.getReference) =>
           if (d1 == Λ) {
             val valNum: ValueNumber = callValNum(callInstr).get
             val phis = getPhis(n1, valNum, callerMethod)
-            Set(d1) + Variable(callerMethod, valNum) ++ phis
-          } else Set(d1)
+            defaultResult + Variable(callerMethod, valNum) ++ phis
+          } else defaultResult
         case callInstr: SSAInvokeInstruction                           =>
           getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
             case Some(argNum)                                       =>
@@ -90,9 +119,9 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
               Set(substituteFact)
             case None if d1 == Λ && callValNum(callInstr).isDefined =>
               methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get)) // todo is this the right way to keep track of return variables?
-              Set(d1)
+              defaultResult
             case None                                               =>
-              Set(d1)
+              defaultResult
           }
         case _                                                         =>
           throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")

@@ -1,6 +1,7 @@
 package ca.uwaterloo.dataflow.common
 
 import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.types.FieldReference
 
 trait VariableFacts extends ExplodedGraphTypes with TraverseGraph with WalaInstructions {
 
@@ -21,6 +22,10 @@ trait VariableFacts extends ExplodedGraphTypes with TraverseGraph with WalaInstr
   case class Variable(method: IMethod, elem: FactElem) extends VariableFact {
     override def toString: String = elem.toString + " in " + method.getName.toString + "()"
   }
+
+  case object ArrayElement extends VariableFact
+
+  case class Field(field: FieldReference) extends VariableFact
 
   /**
    * Represents the Λ fact

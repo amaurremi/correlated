@@ -21,12 +21,12 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
    */
   def getParameterNumber(node: XNode, callInstr: SSAInvokeInstruction): Option[Int] =
     node.d match {
-      case Variable(method, elem) =>
+      case Variable(method, elem)           =>
         val valNum = getValNum(elem, node)
-        firstParameter(callInstr) to callInstr.getNumberOfParameters - 1 find { // todo starting with 0 because we're assuming it's a static method
+        firstParameter(callInstr) to callInstr.getNumberOfParameters - 1 find {
           callInstr.getUse(_) == valNum
         }
-      case Lambda                 => None
+      case ArrayElement | Field(_) | Lambda => None // todo fields???
     }
 
   /**
