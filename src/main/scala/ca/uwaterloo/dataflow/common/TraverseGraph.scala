@@ -60,12 +60,16 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   private[this] def nodesInProc(
     startNode: Node,
     proc: Procedure,
-    acc: Seq[Node] = Seq.empty
-  ): Seq[Node] = // todo not sure this is correct either
+    acc: Set[Node] = Set.empty
+  ): Set[Node] =
     if (enclProc(startNode) != proc)
       acc
-    else supergraph.getSuccNodes(startNode).asScala.toSeq flatMap {
-      nodesInProc(_, proc, acc :+ startNode)
+    else supergraph.getSuccNodes(startNode).asScala.toSet flatMap {
+      (next: Node) =>
+        if (acc contains next)
+          acc + startNode
+        else
+          nodesInProc(next, proc, acc + startNode)
     }
 
   /**
