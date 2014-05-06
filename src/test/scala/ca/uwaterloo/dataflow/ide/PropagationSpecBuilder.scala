@@ -4,7 +4,7 @@ import ca.uwaterloo.dataflow.common.VariableFacts
 import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 import ca.uwaterloo.dataflow.ide.analysis.solver.IdeSolver
 import com.ibm.wala.classLoader.IMethod
-import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAReturnInstruction}
+import com.ibm.wala.ssa.SSAInvokeInstruction
 import org.scalatest.Assertions
 
 trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProblem { this: IdeSolver =>
@@ -13,7 +13,7 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
    * A variable with the given name that occurs in the given method.
    * Note that each variable within a method, and each method within the test program, should have a unique name.
    */
-  def variable(name: String, method: String): SpecVariableFact = {
+  private[this] def variable(name: String, method: String): SpecVariableFact = {
     val iMethod = getMethod(method)
     val variablesInMethod = solvedResult.keySet collect {
       case node@XNode(n, v: Variable) if v.method == iMethod && n.getMethod == iMethod && n.getLastInstruction != null =>
@@ -45,41 +45,11 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
     if (locNames == null) Seq.empty else locNames
   }
 
-  sealed trait SpecVariableFact {
-    def shouldBe(elem: LatticeElem): Unit
-    def shouldSatisfy(condition: LatticeElem => Boolean): Unit
-  }
+  sealed trait SpecVariableFact
 
-  case object NoVariable extends SpecVariableFact {
+  case object NoVariable extends SpecVariableFact
 
-    override def shouldSatisfy(condition: (LatticeElem) => Boolean) {
-      assert(condition(Top))
-    }
-
-    override def shouldBe(expectedElem: LatticeElem) {
-      assertResult(expectedElem)(Top)
-    }
-  }
-
-  case class SpecVariable(variable: VariableFact) extends SpecVariableFact {
-    
-    private[this] def mainReturnsAtFact: XNode = {
-      (entryPoints flatMap allNodesInProc collectFirst {
-        case node if node.getLastInstruction.isInstanceOf[SSAReturnInstruction] =>
-          XNode(node, variable)
-      }).get
-    }
-
-    override def shouldBe(expectedElem: LatticeElem) {
-      val resultElem = solvedResult(mainReturnsAtFact)
-      assertResult(expectedElem)(resultElem)
-    }
-
-    override def shouldSatisfy(condition: LatticeElem => Boolean) {
-      val resultElem = solvedResult(mainReturnsAtFact)
-      assert(condition(resultElem))
-    }
-  }
+  case class SpecVariable(variable: VariableFact) extends SpecVariableFact
 
   def assertSecretValues(assertCCs: Boolean = false) {
     traverseSupergraph collect {

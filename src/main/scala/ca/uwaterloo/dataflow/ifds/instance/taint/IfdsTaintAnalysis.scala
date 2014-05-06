@@ -6,13 +6,12 @@ import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ssa._
-import com.ibm.wala.types.MethodReference
 import com.ibm.wala.util.collections.HashSetMultiMap
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
 
-class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts {
+class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts with SecretDefinition {
 
   private[this] val config =
     ConfigFactory.load(
@@ -50,10 +49,13 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
             case _                                                                =>
               defaultResult
           }
+        // Arrays
         case storeInstr: SSAArrayStoreInstruction if factIsRval(d1, method, storeInstr.getValue) =>
           defaultResult + ArrayElement
-        case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement      =>
-          defaultResult + Variable(method, loadInstr.getDef)
+        case loadInstr: SSAArrayLoadInstruction
+          if d1 == ArrayElement && isSecretSupertype(loadInstr.getElementType)      =>
+            defaultResult + Variable(method, loadInstr.getDef)
+        //  Fields
         case putInstr: SSAPutInstruction if factIsRval(d1, method, putInstr.getVal) =>
           defaultResult + Field(putInstr.getDeclaredField)
         case getInstr: SSAGetInstruction                                   =>
@@ -63,6 +65,7 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
             case _                                                  =>
               defaultResult
           }
+        // Casts
         case castInstr: SSACheckCastInstruction if factIsRval(d1, method, castInstr.getVal) =>
           defaultResult + Variable(method, castInstr.getDef)
         case _                                                             =>
@@ -84,7 +87,10 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
    */
   override def ifdsEndReturnEdges: IfdsEdgeFn =
     (ideN1, _) =>
-      Set(ideN1.d)
+      ideN1.d match {
+        case Variable(method, _) if method == ideN1.n.getMethod => Set.empty
+        case _                                                  => Set(ideN1.d)
+      }
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
@@ -133,8 +139,6 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
     }).toSet
 
   private[this] val methodToReturnVars = new HashSetMultiMap[IMethod, Variable]
-
-  def isSecret(method: MethodReference) = method.getName.toString == "secret"
 
   private[this] def isFactReturned(d: Variable, n: Node, retVal: ValueNumber): Boolean =
     d.elem == retVal && d.method == n.getMethod

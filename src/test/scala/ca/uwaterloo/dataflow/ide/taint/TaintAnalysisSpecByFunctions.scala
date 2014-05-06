@@ -177,6 +177,10 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
       new TaintAnalysisSpecBuilder("Array6").assertSecretValues()
     }
 
+    it("array7") {
+      new TaintAnalysisSpecBuilder("Array7").assertSecretValues()
+    }
+
     it("array element passed as parameter") {
       new TaintAnalysisSpecBuilder("ArrayElementAsParameter").assertSecretValues()
     }
