@@ -209,6 +209,14 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
       new TaintAnalysisSpecBuilder("Field7").assertSecretValues()
     }
 
+    it("static initialized field") {
+      new TaintAnalysisSpecBuilder("Field8").assertSecretValues()
+    }
+
+    it("instance field initialized") {
+      new TaintAnalysisSpecBuilder("Field9").assertSecretValues()
+    }
+
     it("field passed as parameter") {
       new TaintAnalysisSpecBuilder("FieldAsParameter").assertSecretValues()
     }
