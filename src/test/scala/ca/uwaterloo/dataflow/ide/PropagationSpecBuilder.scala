@@ -7,7 +7,13 @@ import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAReturnInstruction}
 import org.scalatest.Assertions
 
-trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProblem with SecretAssertionMap { this: IdeSolver =>
+trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProblem { this: IdeSolver =>
+
+  /**
+   * A map from method names to lattice elements. For a given assertion method, indicates what
+   * lattice element should be expected.
+   */
+  val assertionMap: Map[String, LatticeElem]
 
   /**
    * A variable with the given name that occurs in the given method.

@@ -7,9 +7,10 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class TaintAnalysisSpec extends FunSpec {
 
-  private[this] def assertSecretsFor(test: String) {
+  private[this] def assertSecretsFor(test: String, assertCcs: Boolean = false) {
     new TaintAnalysisSpecBuilder(test).assertSecretValues()
-    new CcTaintAnalysisSpecBuilder(test).assertSecretValues()
+    if (assertCcs)
+      new CcTaintAnalysisSpecBuilder(test).assertSecretValues()
   }
   
   describe("TaintAnalysis") {

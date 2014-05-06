@@ -23,5 +23,5 @@ class CopyConstantPropagationSpecBuilder(fileName: String) extends CopyConstantP
    * A map from method names to lattice elements. For a given assertion method, indicates what
    * lattice element should be expected.
    */
-  override def assertionMap: Map[String, LatticeElem] = throw new UnsupportedOperationException
+  override val assertionMap: Map[String, LatticeElem] = throw new UnsupportedOperationException
 }
