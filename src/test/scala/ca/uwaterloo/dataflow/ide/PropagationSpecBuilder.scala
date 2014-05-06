@@ -6,7 +6,6 @@ import ca.uwaterloo.dataflow.ide.analysis.solver.IdeSolver
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAReturnInstruction}
 import org.scalatest.Assertions
-import scala.collection.breakOut
 
 trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProblem { this: IdeSolver =>
 

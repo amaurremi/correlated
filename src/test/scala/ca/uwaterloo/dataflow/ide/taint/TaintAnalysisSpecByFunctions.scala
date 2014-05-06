@@ -169,6 +169,18 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
       new TaintAnalysisSpecBuilder("Array4").assertSecretValues()
     }
 
+    it("array5") {
+      new TaintAnalysisSpecBuilder("Array5").assertSecretValues()
+    }
+
+    it("array6") {
+      new TaintAnalysisSpecBuilder("Array6").assertSecretValues()
+    }
+
+    it("array element passed as parameter") {
+      new TaintAnalysisSpecBuilder("ArrayElementAsParameter").assertSecretValues()
+    }
+
     it("field") {
       new TaintAnalysisSpecBuilder("Field").assertSecretValues()
     }
@@ -291,10 +303,6 @@ class TaintAnalysisSpecByFunctions extends FunSpec {
 
     it("string operations") {
       new TaintAnalysisSpecBuilder("StringOps").assertSecretValues()
-    }
-
-    it("array5") {
-      new TaintAnalysisSpecBuilder("Array5").assertSecretValues()
     }
 
     it("generics") {
