@@ -7,7 +7,7 @@ import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ssa.{SSAInvokeInstruction, SSAReturnInstruction}
 import org.scalatest.Assertions
 
-trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProblem { this: IdeSolver =>
+trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProblem with SecretAssertionMap { this: IdeSolver =>
 
   /**
    * A variable with the given name that occurs in the given method.
@@ -81,21 +81,16 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
     }
   }
 
-  def assertSecretValues(assertCCs: Boolean = false) {
+  def assertSecretValues() {
     traverseSupergraph collect {
       case node if (supergraph isCall node) && node.getLastInstruction.isInstanceOf[SSAInvokeInstruction] =>
         (node, node.getLastInstruction.asInstanceOf[SSAInvokeInstruction])
     } foreach {
       case (node, invokeInstr) =>
         targetStartNodes(node) foreach {
-          getMethodName(_) match {
-            case "shouldBeSecret"                   =>
-              assertResult(Bottom)(getResultAtCallNode(node, invokeInstr))
-            case "shouldNotBeSecret"                =>
-              assertResult(Top)(getResultAtCallNode(node, invokeInstr))
-            case "shouldNotBeSecretCC" if assertCCs =>
-              ???
-            case _                                  =>
+          startNode =>
+            assertionMap.get(getMethodName(startNode)) foreach {
+              assertResult(_)(getResultAtCallNode(node, invokeInstr))
           }
         }
     }
