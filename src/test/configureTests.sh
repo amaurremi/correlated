@@ -39,6 +39,7 @@ function createConfigFile() {
       entry {\n
        class = \"Lca/uwaterloo/dataflow/ide/$testdir/inputPrograms/$testname/$testname\"\n
        method = \"main([Ljava/lang/String;)V\"\n
+       signature-pattern = \"ca\\\\\\.uwaterloo\\\\\\.dataflow\\\\\\.ide\\\\\\.$testdir\\\\\\.inputPrograms\\\\\\.$testname\\\\\\.$testname\\\\\\.\\\\\\<clinit\\\\\\>\\\\\\(\\\\\\)V\"\n
       }\n
     }\n
     "
