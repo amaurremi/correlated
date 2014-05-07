@@ -63,19 +63,24 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
     }
 
   override def callStartEdges: IdeEdgeFn  =
-    (ideN1, n2) => {
-      val n1 = ideN1.n
-      val edgeFn = n1.getLastInstruction match {
-        case invokeInstr: SSAInvokeInstruction =>
-          val receiver = Receiver(invokeInstr.getReceiver, enclProc(n1).getMethod)
-          val types = staticTypes(n1) // todo check definition
-          SomeCorrelatedFunction(Map(receiver -> ComposedTypes(SetType(types), TypesBottom)))
+    (ideN1, n2) =>
+      if (n2.getMethod.isStatic)
+        ifdsCallStartEdges(ideN1, n2) flatMap idFactFunPairSet
+      else {
+        val n1 = ideN1.n
+        val edgeFn = n1.getLastInstruction match {
+          case invokeInstr: SSAInvokeInstruction =>
+            val receiver = Receiver(invokeInstr.getReceiver, enclProc(n1).getMethod)
+            val types = staticTypes(n1) // todo check definition
+            SomeCorrelatedFunction(Map(receiver -> ComposedTypes(SetType(types), TypesBottom)))
+        }
+        val d2s = ifdsCallStartEdges(ideN1, n2) - Λ
+        val nonLambdaPairs = d2s map {
+          FactFunPair(_, edgeFn)
+        }
+        val maybeLambdaSet = if (ideN1.d == Λ) idFactFunPairSet(Λ) else Set.empty
+        nonLambdaPairs ++ maybeLambdaSet
       }
-      val d2s            = ifdsCallStartEdges(ideN1, n2) - Λ
-      val nonLambdaPairs = d2s map { FactFunPair(_, edgeFn) }
-      val maybeLambdaSet = if (ideN1.d == Λ) idFactFunPairSet(Λ) else Set.empty
-      nonLambdaPairs ++ maybeLambdaSet
-    }
 
   private[this] def staticTypes(node: Node): Set[IClass] =
     (getCalledNodes(node) map {

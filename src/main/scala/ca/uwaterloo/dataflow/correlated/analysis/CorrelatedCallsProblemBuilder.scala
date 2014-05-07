@@ -48,10 +48,15 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
           val getTypes: (TypeMultiMap => TypesLattice) = m => m getOrElse (key, TypesTop)
           key -> getTypes(m1) ⊓ getTypes(m2)
       })(breakOut)
+
+    override def toString: String =
+      if (this == Top) "top (empty set of types)"
+      else super.toString
   }
 
   case object ⊥ extends MapLatticeElem {
     override def ⊓(el: MapLatticeElem): MapLatticeElem = ⊥
+    override def toString: String = "bottom (all types)"
   }
 
   sealed trait ComposedTypes {
