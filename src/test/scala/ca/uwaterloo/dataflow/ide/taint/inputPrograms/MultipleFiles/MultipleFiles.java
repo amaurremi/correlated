@@ -1,7 +1,5 @@
 package ca.uwaterloo.dataflow.ide.taint.inputPrograms.MultipleFiles;
 
-import ca.uwaterloo.dataflow.ide.taint.inputPrograms.SecretAssertions;
-
 // a version of FunctionCall3 that involves multiple files
 public class MultipleFiles {
 
