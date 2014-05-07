@@ -24,5 +24,5 @@ class CcTaintAnalysisSpecBuilder(
 ) extends AbstractTaintAnalysisSpecBuilder(fileName) with CorrelatedCallsProblem {
 
   override val assertionMap: Map[String, LatticeElem] =
-    Map("shouldNotBeSecretCC" -> Top)
+    Map("shouldBeSecret" -> Bottom, "shouldNotBeSecretCC" -> Top)
 }
