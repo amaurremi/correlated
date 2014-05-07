@@ -5,7 +5,7 @@ import ca.uwaterloo.dataflow.common.AbstractIdeToIfds
 /**
  * Take the result of a correlated calls analysis and return a more precise result of the source IFDS analysis.
  */
-trait CorrelatedCallsToIfds extends CorrelatedCallsProblem with AbstractIdeToIfds { // todo Order?
+trait CorrelatedCallsToIfds extends AbstractIdeToIfds with CorrelatedCallsProblem { // todo Order?
 
   /**
    * Converts the IDE correlated calls result into an improved IFDS result.
@@ -14,9 +14,9 @@ trait CorrelatedCallsToIfds extends CorrelatedCallsProblem with AbstractIdeToIfd
    */
   // todo If the fact is an ArrayElement, we make it reachable. Is that correct?
   override def ifdsResult: Map[Node, Set[Fact]] =
-    solvedResult.foldLeft(Map[Node, Set[Fact]]() withDefault { _ => Set.empty}) {
-      case (result, (XNode(n, a@ArrayElement), _))                      =>
-        result + (n -> (result(n) + a))
+    solvedResult.foldLeft(Map[Node, Set[Fact]]() withDefaultValue Set.empty[Fact]) {
+      case (result, (XNode(n, ArrayElement), _))                      =>
+        result + (n -> (result(n) + ArrayElement))
       case (result, (XNode(n, f: Field), _))                          =>
         result + (n -> (result(n) + f)) // todo I think that's wrong
       case (result, (XNode(n, v@Variable(m, el)), l))

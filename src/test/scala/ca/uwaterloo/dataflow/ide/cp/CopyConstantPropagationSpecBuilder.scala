@@ -18,10 +18,4 @@ class CopyConstantPropagationSpecBuilder(fileName: String) extends CopyConstantP
   def shouldNotBeAConstant(variable: SpecVariableFact) {
     variable shouldSatisfy { !isConstant(_) }
   }
-
-  /**
-   * A map from method names to lattice elements. For a given assertion method, indicates what
-   * lattice element should be expected.
-   */
-  override val assertionMap: Map[String, LatticeElem] = throw new UnsupportedOperationException
 }
