@@ -10,12 +10,6 @@ import org.scalatest.Assertions
 trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProblem { this: IdeSolver =>
 
   /**
-   * A map from method names to lattice elements. For a given assertion method, indicates what
-   * lattice element should be expected.
-   */
-  val assertionMap: Map[String, LatticeElem]
-
-  /**
    * A variable with the given name that occurs in the given method.
    * Note that each variable within a method, and each method within the test program, should have a unique name.
    */
@@ -85,31 +79,5 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
       val resultElem = solvedResult(mainReturnsAtFact)
       assert(condition(resultElem))
     }
-  }
-
-  def assertSecretValues() {
-    traverseSupergraph collect {
-      case node if (supergraph isCall node) && node.getLastInstruction.isInstanceOf[SSAInvokeInstruction] =>
-        (node, node.getLastInstruction.asInstanceOf[SSAInvokeInstruction])
-    } foreach {
-      case (node, invokeInstr) =>
-        targetStartNodes(node) foreach {
-          startNode =>
-            assertionMap.get(getMethodName(startNode)) foreach {
-              assertResult(_)(getResultAtCallNode(node, invokeInstr))
-          }
-        }
-    }
-  }
-
-  private[this] def getResultAtCallNode(node: Node, instr: SSAInvokeInstruction): LatticeElem = {
-    val optValue: Option[LatticeElem] = solvedResult collectFirst {
-      case (s@XNode(`node`, Variable(method, elem)), value)
-        if (method == node.getMethod) &&
-           (instr.getNumberOfParameters > 0) &&
-           (getValNum(elem, s) == getValNumFromParameterNum(instr, 0)) =>
-        value
-    }
-    optValue getOrElse Top
   }
 }

@@ -1,7 +1,9 @@
 package ca.uwaterloo.dataflow.ide.taint.inputPrograms.Generics;
 
 import ca.uwaterloo.dataflow.ide.taint.inputPrograms.SecretAssertions;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Generics {
 

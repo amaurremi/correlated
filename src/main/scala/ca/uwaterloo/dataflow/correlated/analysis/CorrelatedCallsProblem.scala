@@ -17,7 +17,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
     (ideN1, n2) => {
       val d2s = ifdsEndReturnEdges(ideN1, n2)
       val optLocalVar = ideN1.d match {
-        case Variable(method, elem) if method == ideN1.n.getMethod =>
+        case Variable(method, elem) if method == ideN1.n.getMethod => // todo what if the receiver is a field?
           Some(elem)
         case _                                                     =>
           None

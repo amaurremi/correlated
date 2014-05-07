@@ -6,5 +6,5 @@ public abstract class SecretAssertions {
 
     public static void shouldNotBeSecret(Object o) {}
 
-    public static void shouldNotBeSecretCC(Object o) {}
+    public static void shouldNotBeSecretCc(Object o) {}
 }

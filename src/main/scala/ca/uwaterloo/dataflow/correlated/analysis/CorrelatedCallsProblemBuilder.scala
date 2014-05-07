@@ -27,9 +27,15 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
   case class Receiver(valueNumber: Int, method: IMethod)
 
-  sealed trait MapLatticeElem extends Lattice[MapLatticeElem]
+  sealed trait MapLatticeElem extends Lattice[MapLatticeElem] {
+    def get(receiver: Receiver): TypesLattice
+  }
 
   case class ReceiverToTypes(mapping: TypeMultiMap) extends MapLatticeElem {
+
+    override def get(receiver: Receiver): TypesLattice =
+      mapping get receiver getOrElse TypesTop // todo correct?
+
     /**
      * Defined as join. For two multi-maps M1 and M2, computes a multi-map M3
      * that maps M1's and M2's keys to the union of their value sets.
@@ -57,6 +63,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   case object ⊥ extends MapLatticeElem {
     override def ⊓(el: MapLatticeElem): MapLatticeElem = ⊥
     override def toString: String = "bottom (all types)"
+    override def get(receiver: Receiver): TypesLattice = TypesBottom
   }
 
   sealed trait ComposedTypes {
@@ -77,7 +84,9 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     ) extends ComposedTypes
   }
 
-  sealed trait TypesLattice extends Lattice[TypesLattice]
+  sealed trait TypesLattice extends Lattice[TypesLattice] {
+    def contains(tpe: Type): Boolean
+  }
 
   case class SetType(types: Set[Type]) extends TypesLattice {
 
@@ -92,6 +101,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
         case SetType(types2) => SetType(types ++ types2)
         case TypesBottom     => TypesBottom ⊓ this
       }
+
+    override def contains(tpe: Type): Boolean = types contains tpe
   }
 
   case object TypesBottom extends TypesLattice {
@@ -99,6 +110,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     override def ⊓(el: TypesLattice) = TypesBottom
 
     override def ⊔(el: TypesLattice) = el
+
+    override def contains(tpe: Type) = true
   }
 
   val TypesTop: TypesLattice = SetType(Set.empty)
