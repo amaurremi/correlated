@@ -3,7 +3,7 @@ package ca.uwaterloo.dataflow.correlated.analysis
 import ca.uwaterloo.dataflow.common.AbstractIdeToIfds
 
 /**
- * Take the result of a correlated calls analysis and return a more precise result of the source IFDS analysis.
+ * Take the result of a correlated calls analysis and return the result of the source IFDS analysis.
  */
 trait CorrelatedCallsToIfds extends AbstractIdeToIfds with CorrelatedCallsProblem { // todo Order?
 
