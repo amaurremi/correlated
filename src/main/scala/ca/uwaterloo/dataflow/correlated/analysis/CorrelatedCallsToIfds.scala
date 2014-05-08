@@ -15,14 +15,7 @@ trait CorrelatedCallsToIfds extends AbstractIdeToIfds with CorrelatedCallsProble
   // todo If the fact is an ArrayElement, we make it reachable. Is that correct?
   override def ifdsResult: Map[Node, Set[Fact]] =
     solvedResult.foldLeft(Map[Node, Set[Fact]]() withDefaultValue Set.empty[Fact]) {
-      case (result, (XNode(n, ArrayElement), _))                       =>
-        result + (n -> (result(n) + ArrayElement))
-      case (result, (XNode(n, f: Field), _))                           =>
-        result + (n -> (result(n) + f)) // todo I think that's wrong
-      case (result, (XNode(n, v@Variable(m, el)), l))
-        if l get Receiver(el, m) contains n.getMethod.getDeclaringClass =>
-          result + (n -> (result(n) + v))
-      case (result, _)                                                  =>
-          result
+      case (result, (XNode(n, f), l)) if !l.hasEmptyMapping =>
+        result + (n -> (result(n) + f))
     }
 }
