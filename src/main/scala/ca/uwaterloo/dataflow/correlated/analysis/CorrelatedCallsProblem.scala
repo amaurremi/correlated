@@ -71,8 +71,8 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
         val edgeFn = n1.getLastInstruction match {
           case invokeInstr: SSAInvokeInstruction =>
             val receiver = Receiver(invokeInstr.getReceiver, enclProc(n1).getMethod)
-            val types = staticTypes(n1) // todo check definition
-            SomeCorrelatedFunction(Map(receiver -> ComposedTypes(SetType(types), TypesBottom)))
+            val types = staticTypes(n1)
+            SomeCorrelatedFunction(Map(receiver -> ComposedTypes(SetType(types), TypesTop)))
         }
         val d2s = ifdsCallStartEdges(ideN1, n2) - Λ
         val nonLambdaPairs = d2s map {
@@ -84,6 +84,6 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
 
   private[this] def staticTypes(node: Node): Set[IClass] =
     (getCalledNodes(node) map {
-      enclProc(_).getMethod.getDeclaringClass
+      enclProc(_).getMethod.getDeclaringClass // todo add subclasses
     }).toSet
 }

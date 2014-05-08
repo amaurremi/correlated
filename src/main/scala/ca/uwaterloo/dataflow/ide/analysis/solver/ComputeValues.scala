@@ -10,9 +10,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
 
   private[this] type JumpFn = Map[XEdge, IdeFunction]
 
-  /**
-   * [1]
-   */
+  // [1]
   private[this] val vals = mutable.Map[XNode, LatticeElem]() withDefault { _ => Top }
 
   private[this] lazy val nodeWorklist = mutable.Queue[XNode]()
@@ -65,9 +63,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
           FactFunPair(d, f)
     })(breakOut)
 
-  /**
-   * [8-10]
-   */
+  // [8-10]
   private[this] def computeStartNode(sp: XNode, jumpFunc: JumpFn) {
     for {
       c                           <- callNodesInProc(enclProc(sp.n))
