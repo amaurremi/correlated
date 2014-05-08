@@ -27,15 +27,19 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
   case class Receiver(valueNumber: Int, method: IMethod)
 
+  /**
+   * Lattice elements of lattice L in the analysis. Represents functions from receivers to sets of types.
+   */
   sealed trait MapLatticeElem extends Lattice[MapLatticeElem] {
-    def get(receiver: Receiver): TypesLattice
+    def hasEmptyMapping: Boolean
   }
 
   case class ReceiverToTypes(mapping: TypeMultiMap) extends MapLatticeElem {
 
-    override def get(receiver: Receiver): TypesLattice =
-      mapping get receiver getOrElse TypesTop // todo correct?
-
+    override def hasEmptyMapping: Boolean = mapping exists {
+      case (receiver, types) => types == TypesTop
+    }
+    
     /**
      * Defined as join. For two multi-maps M1 and M2, computes a multi-map M3
      * that maps M1's and M2's keys to the union of their value sets.
@@ -63,7 +67,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   case object ⊥ extends MapLatticeElem {
     override def ⊓(el: MapLatticeElem): MapLatticeElem = ⊥
     override def toString: String = "bottom (all types)"
-    override def get(receiver: Receiver): TypesLattice = TypesBottom
+    override def hasEmptyMapping = false
   }
 
   sealed trait ComposedTypes {
@@ -176,14 +180,22 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
         case TopCorrelatedFunction       =>
           f ⊓ this
       }
+
+    override def toString: String =
+      if (this == Id)
+        "id"
+      else super.toString
   }
 
   case object TopCorrelatedFunction extends CorrelatedFunction {
 
     override def apply(el: MapLatticeElem): MapLatticeElem = Top
 
-    override def ◦(f: CorrelatedFunction): CorrelatedFunction = TopCorrelatedFunction
+    override def ◦(f: CorrelatedFunction): CorrelatedFunction = //TopCorrelatedFunction
+      throw new UnsupportedOperationException("Top functions should not be composed")
 
     override def ⊓(f: CorrelatedFunction): CorrelatedFunction = f
+
+    override def toString: String = "λl.top"
   }
 }
