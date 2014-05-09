@@ -4,10 +4,9 @@ import ca.uwaterloo.dataflow.common.{AbstractIdeToIfds, VariableFacts}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
-import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAArrayLoadInstruction, IR, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAArrayLoadInstruction, SSAInvokeInstruction}
 import com.ibm.wala.types.FieldReference
 import org.scalatest.Assertions
-import scala.collection.breakOut
 
 sealed abstract class AbstractTaintAnalysisSpecBuilder (
   fileName: String
