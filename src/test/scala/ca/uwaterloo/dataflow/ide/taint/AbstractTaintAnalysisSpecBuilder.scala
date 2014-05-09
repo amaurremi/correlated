@@ -4,7 +4,8 @@ import ca.uwaterloo.dataflow.common.{AbstractIdeToIfds, VariableFacts}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
-import com.ibm.wala.ssa.SSAInvokeInstruction
+import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAArrayLoadInstruction, IR, SSAInvokeInstruction}
+import com.ibm.wala.types.FieldReference
 import org.scalatest.Assertions
 
 sealed abstract class AbstractTaintAnalysisSpecBuilder (
@@ -36,20 +37,37 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
     }
   }
 
+  def isValNumArrayElement(node: Node, valNum: ValueNumber): Boolean = // todo inefficient
+    instructionsInProc(node) exists {
+      case loadInstr: SSAArrayLoadInstruction =>
+        loadInstr.getDef == valNum
+      case _                                  =>
+        false
+    }
+
+  def isValNumField(node: Node, valNum: ValueNumber, field: FieldReference): Boolean = // todo inefficient
+    instructionsInProc(node) exists {
+      case fieldInstr: SSAFieldAccessInstruction =>
+        fieldInstr.getDef == valNum
+      case _                                     =>
+        false
+    }
+
   /**
    * Tells whether the argument of a secret assertion method like "shouldBeSecret" is secret.
    */
   private[this] def getResultAtCallNode(node: Node, instr: SSAInvokeInstruction): Boolean =
     ifdsResult.get(node) match {
       case Some(facts) if instr.getNumberOfParameters > 0 =>
+        val num: ValueNumber = getValNumFromParameterNum(instr, 0)
         facts exists {
           case Variable(method, elem) =>
-            method == node.getMethod && elem == getValNumFromParameterNum(instr, 0)
-          case ArrayElement           =>
-            ???
-          case Field(f)               =>
-            ???
-          case Lambda                 =>
+            method == node.getMethod && elem == num
+          case ArrayElement =>
+            isValNumArrayElement(node, num)
+          case Field(f) =>
+            isValNumField(node, num, f)
+          case Lambda =>
             false
         }
       case _ => false

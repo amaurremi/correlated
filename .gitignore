@@ -7,9 +7,7 @@ target/
 src/test/scala/ca/uwaterloo/dataflow/correlated/stats/inputPrograms/*/*.jar
 src/test/scala/ca/uwaterloo/dataflow/ide/cp/inputPrograms/*/*.jar
 src/test/scala/ca/uwaterloo/dataflow/ide/taint/inputPrograms/*/*.jar
-src/test/scala/ca/uwaterloo/dataflow/correlated/stats/inputPrograms/*/*.class
-src/test/scala/ca/uwaterloo/dataflow/ide/cp/inputPrograms/*/*.class
-src/test/scala/ca/uwaterloo/dataflow/ide/taint/inputPrograms/*/*.class
+*.class
 *.conf
 .idea/
 .idea_modules
