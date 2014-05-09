@@ -130,16 +130,13 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   case class SomeCorrelatedFunction(updates: ComposedTypeMultiMap) extends CorrelatedFunction {
 
     override def apply(el: MapLatticeElem): MapLatticeElem =
-      el match {
-        case MapLatticeElem(default, mapping) =>
-          MapLatticeElem(
-            default,
-            updates.foldLeft(mapping) {
-              case (m, (receiver, ComposedTypes(i, u))) =>
-                m updated (receiver, ((m getOrElse (receiver, TypesBottom)) ⊔ i) ⊓ u)
-            }
-          )
-      }
+      MapLatticeElem(
+        el.default,
+        updates.foldLeft(el.mapping) {
+          case (m, (receiver, ComposedTypes(i, u))) =>
+            m updated (receiver, ((m getOrElse (receiver, TypesBottom)) ⊔ i) ⊓ u)
+        }
+      )
 
     private[this] def operation(
       f: SomeCorrelatedFunction,

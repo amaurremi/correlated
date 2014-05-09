@@ -7,6 +7,7 @@ import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
 import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAArrayLoadInstruction, IR, SSAInvokeInstruction}
 import com.ibm.wala.types.FieldReference
 import org.scalatest.Assertions
+import scala.collection.breakOut
 
 sealed abstract class AbstractTaintAnalysisSpecBuilder (
   fileName: String
@@ -45,13 +46,20 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
         false
     }
 
-  def isValNumField(node: Node, valNum: ValueNumber, field: FieldReference): Boolean = // todo inefficient
-    instructionsInProc(node) exists {
-      case fieldInstr: SSAFieldAccessInstruction =>
-        fieldInstr.getDef == valNum && fieldInstr.getDeclaredField == field
-      case _                                     =>
-        false
-    }
+
+  private[this] lazy val arrayValNums: Node => Set[ValueNumber] =
+    node =>
+      (instructionsInProc(node) collect {
+        case loadInstr: SSAArrayLoadInstruction =>
+          loadInstr.getDef
+      }).toSet
+
+  private[this] lazy val fieldValNums: Node => Set[(ValueNumber, FieldReference)] =
+    node =>
+      (instructionsInProc(node) collect {
+        case fieldInstr: SSAFieldAccessInstruction =>
+          (fieldInstr.getDef, fieldInstr.getDeclaredField)
+      }).toSet
 
   /**
    * Tells whether the argument of a secret-assertion method is secret.
@@ -64,9 +72,9 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
           case Variable(method, elem) =>
             method == node.getMethod && elem == num
           case ArrayElement           =>
-            isValNumArrayElement(node, num)
+            arrayValNums(node) contains num
           case Field(f)               =>
-            isValNumField(node, num, f)
+            fieldValNums(node) contains (num, f)
           case Lambda                 =>
             false
         }
