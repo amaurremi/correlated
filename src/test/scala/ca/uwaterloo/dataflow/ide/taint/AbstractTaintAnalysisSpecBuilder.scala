@@ -54,7 +54,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
     }
 
   /**
-   * Tells whether the argument of a secret assertion method like "shouldBeSecret" is secret.
+   * Tells whether the argument of a secret-assertion method is secret.
    */
   private[this] def getResultAtCallNode(node: Node, instr: SSAInvokeInstruction): Boolean =
     ifdsResult.get(node) match {
