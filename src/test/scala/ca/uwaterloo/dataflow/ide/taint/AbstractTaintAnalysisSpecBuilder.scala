@@ -63,11 +63,11 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
         facts exists {
           case Variable(method, elem) =>
             method == node.getMethod && elem == num
-          case ArrayElement =>
+          case ArrayElement           =>
             isValNumArrayElement(node, num)
-          case Field(f) =>
+          case Field(f)               =>
             isValNumField(node, num, f)
-          case Lambda =>
+          case Lambda                 =>
             false
         }
       case _ => false
