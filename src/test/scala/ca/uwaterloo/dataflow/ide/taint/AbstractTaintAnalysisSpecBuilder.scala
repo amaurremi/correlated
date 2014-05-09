@@ -45,8 +45,12 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
         facts exists {
           case Variable(method, elem) =>
             method == node.getMethod && elem == getValNumFromParameterNum(instr, 0)
-          case _ =>
-            true // todo correct?
+          case ArrayElement           =>
+            ???
+          case Field(f)               =>
+            ???
+          case Lambda                 =>
+            false
         }
       case _ => false
     }
@@ -65,5 +69,5 @@ class CcTaintAnalysisSpecBuilder(
 ) extends AbstractTaintAnalysisSpecBuilder(fileName) with CorrelatedCallsToIfds {
 
   override val assertionMap: Map[String, Boolean] =
-    Map(shouldBeSecret -> true, shouldNotBeSecretCc -> false)
+    Map(shouldBeSecret -> true, shouldNotBeSecret -> false)
 }

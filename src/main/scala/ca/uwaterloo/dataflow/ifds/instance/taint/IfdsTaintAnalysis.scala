@@ -45,7 +45,7 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
           d1 match {
             // we are returning a secret value, because an existing (i.e. secret) fact d1 is returned
             case v@Variable(m, _) if isFactReturned(v, n1, returnInstr.getResult) =>
-              methodToReturnVars.get(m).asScala.toSet + d1
+              (methodToReturnVars get m).asScala.toSet + d1
             case _                                                                =>
               defaultResult
           }
