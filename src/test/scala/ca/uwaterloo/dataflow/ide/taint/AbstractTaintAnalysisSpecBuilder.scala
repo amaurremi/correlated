@@ -48,7 +48,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
   def isValNumField(node: Node, valNum: ValueNumber, field: FieldReference): Boolean = // todo inefficient
     instructionsInProc(node) exists {
       case fieldInstr: SSAFieldAccessInstruction =>
-        fieldInstr.getDef == valNum
+        fieldInstr.getDef == valNum && fieldInstr.getDeclaredField == field
       case _                                     =>
         false
     }

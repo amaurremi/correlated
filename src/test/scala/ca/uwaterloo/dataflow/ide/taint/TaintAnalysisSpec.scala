@@ -13,7 +13,7 @@ class TaintAnalysisSpec extends FunSpec {
       new CcTaintAnalysisSpecBuilder(test).assertSecretValues()
   }
   
-  describe("TaintAnalysis") {
+  describe("IfdsTaintAnalysis") {
     
     it("propagates secret values intra-procedurally") {
       assertSecretsFor("LocalVars")
@@ -319,10 +319,6 @@ class TaintAnalysisSpec extends FunSpec {
       assertSecretsFor("StringBuffer")
     }
 
-    it("string concatenation") {
-      assertSecretsFor("StringConcat")
-    }
-
     it("generics") {
       assertSecretsFor("Generics")
     }
@@ -333,6 +329,10 @@ class TaintAnalysisSpec extends FunSpec {
 
     it("string operations") {
       assertSecretsFor("StringOps")
+    }
+
+    it("string concatenation") {
+      assertSecretsFor("StringConcat")
     }
   }
 }
