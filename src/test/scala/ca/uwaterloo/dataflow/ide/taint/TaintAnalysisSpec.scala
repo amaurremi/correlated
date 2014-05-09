@@ -13,7 +13,11 @@ class TaintAnalysisSpec extends FunSpec {
   }
   
   describe("IfdsTaintAnalysis") {
-    
+
+    it("propagates secret values in try/catch blocks") {
+      assertSecretsFor("TryCatch")
+    }
+
     it("propagates secret values intra-procedurally") {
       assertSecretsFor("LocalVars")
     }
