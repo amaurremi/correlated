@@ -49,8 +49,8 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
             callValNum(invokeInstr) map {
               valNum =>
                 SomeCorrelatedFunction(Map(
-                  Receiver(valNum, n1.getMethod) -> ComposedTypes(TypesBottom, TypesBottom))
-                )
+                  Receiver(valNum, n1.getMethod) -> ComposedTypes(TypesBottom, TypesBottom)
+                ))
             }
         }
         idFactFunPairSet(Λ) ++ (edgeFn match {
@@ -83,7 +83,10 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       }
 
   private[this] def staticTypes(node: Node): Set[IClass] =
-    (getCalledNodes(node) map {
-      enclProc(_).getMethod.getDeclaringClass // todo add subclasses
+    (getCalledNodes(node) flatMap {
+      n =>
+        val declaringClass = enclProc(n).getMethod.getDeclaringClass
+        val subClasses = getSubClasses(declaringClass)
+        subClasses + declaringClass
     }).toSet
 }

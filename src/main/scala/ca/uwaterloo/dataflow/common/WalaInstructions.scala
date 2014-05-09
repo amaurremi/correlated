@@ -81,4 +81,8 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
   def getMethodName(node: Node): String = node.getMethod.getName.toString
 
   def getCalledNodes(node: Node) = (supergraph getCalledNodes node).asScala
+
+  lazy val getSubClasses: (IClass => Set[IClass]) =
+    c =>
+      c.getClassHierarchy.computeSubClasses(c.getReference).asScala.toSet
 }
