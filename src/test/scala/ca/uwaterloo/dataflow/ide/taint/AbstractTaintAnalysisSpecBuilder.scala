@@ -87,5 +87,5 @@ class CcTaintAnalysisSpecBuilder(
 ) extends AbstractTaintAnalysisSpecBuilder(fileName) with CorrelatedCallsToIfds {
 
   override val assertionMap: Map[String, Boolean] =
-    Map(shouldBeSecret -> true, shouldNotBeSecret -> false)
+    Map(shouldBeSecret -> true, shouldNotBeSecretCc -> false)
 }
