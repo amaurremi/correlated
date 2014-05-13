@@ -5,6 +5,12 @@ import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 
 sealed trait ReceiverI
 
+/**
+ * This object is necessary for the correlated calls analysis.
+ * When there are no relevant polymorphic receivers, all transfer functions
+ * will contain empty transformation maps and will be considered equal.
+ * So we add a fake receiver that guarantees that the transfer functions can be unequal.
+ */
 case object FakeReceiver extends ReceiverI
 
 case class Receiver private(valueNumber: Int, method: IMethod) extends ReceiverI
