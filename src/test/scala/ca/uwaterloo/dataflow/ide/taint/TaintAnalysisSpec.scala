@@ -330,12 +330,12 @@ class TaintAnalysisSpec extends FunSpec {
       assertSecretsFor("Generics2")
     }
 
-    it("string operations") {
-      assertSecretsFor("StringOps")
-    }
-
     it("string concatenation") {
       assertSecretsFor("StringConcat")
+    }
+
+    it("string operations") {
+      assertSecretsFor("StringOps")
     }
   }
 }
