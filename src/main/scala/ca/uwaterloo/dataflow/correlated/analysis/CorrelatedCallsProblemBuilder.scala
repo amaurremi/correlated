@@ -79,7 +79,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     def unionSet: TypesLattice
   }
 
-  object ComposedTypes { // todo will equals work?
+  object ComposedTypes {
 
     def apply(intersectSet: TypesLattice, unionSet: TypesLattice): ComposedTypes =
       ComposedTypesImpl(intersectSet ⊓ unionSet, unionSet)
@@ -122,9 +122,6 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     override def contains(tpe: Type) = true
   }
 
-  private[this] def withDefault(m: ComposedTypeMultiMap, r: Receiver): ComposedTypes =
-    m getOrElse (r, ComposedTypes(TypesBottom, TypesBottom))
-
   sealed trait CorrelatedFunction extends IdeFunctionI
 
   case class SomeCorrelatedFunction(updates: ComposedTypeMultiMap) extends CorrelatedFunction {
@@ -141,7 +138,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     private[this] def operation(
       f: SomeCorrelatedFunction,
       onIntersect: (ComposedTypes, ComposedTypes) => TypesLattice,
-      onUnion: (ComposedTypes, ComposedTypes) => TypesLattice
+      onUnion: (ComposedTypes, ComposedTypes) => TypesLattice,
+      withDefault: (ComposedTypeMultiMap, Receiver) => ComposedTypes
     ): CorrelatedFunction = {
       val newUpdates = (updates.keySet ++ f.updates.keySet).foldLeft(updates) {
         case (m, receiver) =>
@@ -159,7 +157,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
             _.intersectSet ⊔ _.intersectSet
           }, {
             (t1, t2) => (t1.intersectSet ⊔ t2.unionSet) ⊓ t1.unionSet
-          })
+          },
+          (m, r) => m getOrElse (r, ComposedTypes(TypesBottom, TypesTop)))
         case TopCorrelatedFunction       =>
           TopCorrelatedFunction
       }
@@ -171,7 +170,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
             _.intersectSet ⊓ _.intersectSet
           }, {
             _.unionSet ⊓ _.unionSet
-          })
+          },
+          (m, r) => m getOrElse (r, ComposedTypes(TypesBottom, TypesTop)))
         case TopCorrelatedFunction       =>
           f ⊓ this
       }
