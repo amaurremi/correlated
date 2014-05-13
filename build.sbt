@@ -17,6 +17,8 @@ libraryDependencies ++= Seq(
   "com.ibm.wala" % "com.ibm.wala.util" % "1.3.4-SNAPSHOT",
   "com.ibm.wala" % "com.ibm.wala.core" % "1.3.4-SNAPSHOT",
   "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
+  "org.scalamock" %% "scalamock-specs2-support" % "3.0.1" % "test",
+  "org.mockito" % "mockito-core" % "1.9.5",
   "org.scalaz" %% "scalaz-core" % "7.0.5")
 
 org.scalastyle.sbt.ScalastylePlugin.Settings
