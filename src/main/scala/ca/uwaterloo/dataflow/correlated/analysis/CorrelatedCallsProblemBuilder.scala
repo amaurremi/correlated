@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.correlated.analysis
 
-import ca.uwaterloo.dataflow.correlated.collector.{CorrelatedCalls, Receiver}
+import ca.uwaterloo.dataflow.correlated.collector.{FakeReceiver, ReceiverI, CorrelatedCalls, Receiver}
 import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 import com.ibm.wala.classLoader.IClass
 import scala.collection._
@@ -14,8 +14,8 @@ import scala.collection._
  */
 trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
-  type TypeMultiMap         = Map[Receiver, TypesLattice]
-  type ComposedTypeMultiMap = Map[Receiver, ComposedTypes]
+  type TypeMultiMap         = Map[ReceiverI, TypesLattice]
+  type ComposedTypeMultiMap = Map[ReceiverI, ComposedTypes]
   type Type                 = IClass
 
   override type LatticeElem = MapLatticeElem
@@ -23,7 +23,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
   val TypesTop: TypesLattice = SetType(Set.empty[Type])
 
-  lazy val ccReceivers: Set[Receiver] = CorrelatedCalls(callGraph).receiverToCallSites.keys.toSet
+  lazy val ccReceivers: Set[ReceiverI] = CorrelatedCalls(callGraph).receiverToCallSites.keys.toSet + FakeReceiver
 
   val composedTypesTop    = ComposedTypes(TypesTop, TypesTop)
   val composedTypesId     = ComposedTypes(TypesBottom, TypesTop)
@@ -34,7 +34,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   override val Id     = CorrelatedFunction(mapReceivers(composedTypesId))
   override val λTop   = CorrelatedFunction(mapReceivers(composedTypesTop))
 
-  def mapReceivers[A](value: A): Map[Receiver, A] =
+  def mapReceivers[A](value: A): Map[ReceiverI, A] =
     (ccReceivers map {
       _ -> value
     })(breakOut)

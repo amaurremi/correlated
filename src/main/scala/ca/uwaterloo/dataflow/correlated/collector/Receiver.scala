@@ -3,7 +3,11 @@ package ca.uwaterloo.dataflow.correlated.collector
 import com.ibm.wala.classLoader.{IMethod, CallSiteReference}
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 
-case class Receiver private(valueNumber: Int, method: IMethod)
+sealed trait ReceiverI
+
+case object FakeReceiver extends ReceiverI
+
+case class Receiver private(valueNumber: Int, method: IMethod) extends ReceiverI
 
 object Receiver {
 

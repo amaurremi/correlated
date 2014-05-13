@@ -2,7 +2,7 @@ package ca.uwaterloo.dataflow.ide.correlated.analysis
 
 import ca.uwaterloo.dataflow.common.{VariableFacts, WalaInstructions}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsProblemBuilder
-import ca.uwaterloo.dataflow.correlated.collector.Receiver
+import ca.uwaterloo.dataflow.correlated.collector.{ReceiverI, Receiver}
 import com.ibm.wala.classLoader.{IClass, IMethod}
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 import com.ibm.wala.ipa.callgraph.CallGraph
@@ -37,7 +37,7 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       lazy val receiver3 = mock[Receiver]
       lazy val receiver4 = mock[Receiver]
 
-      override lazy val ccReceivers: Set[Receiver] = {
+      override lazy val ccReceivers: Set[ReceiverI] = {
         assert(receiver1 != null)
         Set(receiver1, receiver2, receiver3, receiver4)
       }

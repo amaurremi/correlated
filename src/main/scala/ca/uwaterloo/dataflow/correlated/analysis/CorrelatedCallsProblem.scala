@@ -1,7 +1,7 @@
 package ca.uwaterloo.dataflow.correlated.analysis
 
 import ca.uwaterloo.dataflow.common.{VariableFacts, WalaInstructions}
-import ca.uwaterloo.dataflow.correlated.collector.Receiver
+import ca.uwaterloo.dataflow.correlated.collector.{ReceiverI, Receiver}
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 import com.ibm.wala.classLoader.{IMethod, IClass}
 import com.ibm.wala.ssa.SSAInvokeInstruction
@@ -26,7 +26,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       optLocalVar match {
         case Some(localVar) =>
           val receiver = getCcReceiver(localVar, ideN1.n.getMethod)
-          val edgefn = receiver match {
+          val edgeFn = receiver match {
             case Some(rec) =>
               CorrelatedFunction(Map(
                 rec -> ComposedTypes(TypesBottom, TypesBottom))
@@ -35,7 +35,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
               Id
           }
           val localToBottom  = (d2s - Λ) map {
-            FactFunPair(_, edgefn)
+            FactFunPair(_, edgeFn)
           }
           val maybeLambdaSet = if (ideN1.d == Λ) idFactFunPairSet(Λ) else Set.empty
           maybeLambdaSet ++ localToBottom
@@ -43,10 +43,12 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       }
     }
   
-  private[this] def getCcReceiver(vn: ValueNumber, method: IMethod): Option[Receiver] =
+  private[this] def getCcReceiver(vn: ValueNumber, method: IMethod): Option[ReceiverI] =
     ccReceivers find {
-      r =>
-        r.valueNumber == vn && r.method == method
+      case Receiver(v, m) =>
+        v == vn && m == method
+      case _              =>
+        false
     }
 
   /**
