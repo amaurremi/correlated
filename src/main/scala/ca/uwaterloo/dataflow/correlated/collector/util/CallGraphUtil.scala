@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.stats.util
+package ca.uwaterloo.dataflow.correlated.collector.util
 
 import Converter._
 import com.ibm.wala.ipa.callgraph._

@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.stats.inputPrograms.NoCcs;
+package ca.uwaterloo.dataflow.correlated.collector.inputPrograms.NoCcs;
 
 public class NoCcs {
 

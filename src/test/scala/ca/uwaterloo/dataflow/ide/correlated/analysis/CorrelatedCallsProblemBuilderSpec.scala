@@ -2,8 +2,10 @@ package ca.uwaterloo.dataflow.ide.correlated.analysis
 
 import ca.uwaterloo.dataflow.common.{VariableFacts, WalaInstructions}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsProblemBuilder
+import ca.uwaterloo.dataflow.correlated.collector.Receiver
 import com.ibm.wala.classLoader.{IClass, IMethod}
 import com.ibm.wala.dataflow.IFDS.ISupergraph
+import com.ibm.wala.ipa.callgraph.CallGraph
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
@@ -15,8 +17,9 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
   describe("CorrelatedFunction") {
 
     val ccProblemBuilder = new CorrelatedCallsProblemBuilder with WalaInstructions with VariableFacts {
-      lazy val notNeeded = throw new UnsupportedOperationException("Implementation not needed for this test")
       override type FactElem = VariableFact
+
+      lazy val notNeeded = throw new UnsupportedOperationException("Implementation not needed for this test")
       override lazy val entryPoints: Seq[Node] = notNeeded
       override lazy val supergraph: ISupergraph[Node, Procedure] = notNeeded
       override def getValNum(factElem: FactElem, node: XNode): ValueNumber = notNeeded
@@ -24,13 +27,23 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       override def endReturnEdges: IdeEdgeFn = notNeeded
       override def callReturnEdges: IdeEdgeFn = notNeeded
       override def callStartEdges: IdeEdgeFn = notNeeded
+      override lazy val callGraph: CallGraph = notNeeded
+
+      lazy val method1 = mock[IMethod]
+      lazy val method2 = mock[IMethod]
+      lazy val method3 = mock[IMethod]
+      lazy val receiver1 = mock[Receiver]
+      lazy val receiver2 = mock[Receiver]
+      lazy val receiver3 = mock[Receiver]
+      lazy val receiver4 = mock[Receiver]
+      lazy val receiver5 = mock[Receiver]
+
+      override lazy val ccReceivers: Set[Receiver] = {
+        assert(receiver1 != null)
+        Set(receiver1, receiver2, receiver3, receiver4, receiver5)
+      }
     }
 
-    val vn1 = 3
-    val vn2 = 5
-
-    val method1 = mock[IMethod]
-    val method2 = mock[IMethod]
     val class1  = mock[IClass]
     val class2  = mock[IClass]
     val class3  = mock[IClass]
@@ -40,9 +53,8 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       import ccProblemBuilder._
 
       it("identity and top functions") {
-        val r  = Receiver(vn1, method1)
         val ct = ComposedTypes(SetType(Set(class1)), SetType(Set(class2)))
-        val f  = SomeCorrelatedFunction(Map(r -> ct))
+        val f  = CorrelatedFunction(Map(receiver1 -> ct))
 
         assertResult(Id)(Id ◦ Id)
         assertResult(λTop)(Id ◦ λTop)
@@ -55,25 +67,22 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       }
 
       it("functions with a different domain") {
-        val r1  = Receiver(vn1, method1)
-        val r2  = Receiver(vn2, method2)
         val ct1 = ComposedTypes(SetType(Set(class1)), SetType(Set(class2)))
         val ct2 = ComposedTypes(SetType(Set(class3)), SetType(Set(class4)))
-        val f1  = SomeCorrelatedFunction(Map(r1 -> ct1))
-        val f2  = SomeCorrelatedFunction(Map(r2 -> ct2))
+        val f1  = CorrelatedFunction(Map(receiver1 -> ct1))
+        val f2  = CorrelatedFunction(Map(receiver2 -> ct2))
 
-        assertResult(SomeCorrelatedFunction(Map(r1 -> ct1, r2 -> ct2)))(f1 ◦ f2)
+        assertResult(CorrelatedFunction(Map(receiver1 -> ct1, receiver2 -> ct2)))(f1 ◦ f2)
       }
 
       it("functions with the same domain") {
-        val r   = Receiver(vn1, method1)
         val ct1 = ComposedTypes(SetType(Set(class1)), SetType(Set(class2)))
         val ct2 = ComposedTypes(SetType(Set(class3)), SetType(Set(class4)))
-        val f1  = SomeCorrelatedFunction(Map(r -> ct1))
-        val f2  = SomeCorrelatedFunction(Map(r -> ct2))
+        val f1  = CorrelatedFunction(Map(receiver1 -> ct1))
+        val f2  = CorrelatedFunction(Map(receiver1 -> ct2))
 
         val intersectTypes = ComposedTypes(TypesTop, SetType(Set(class2)))
-        assertResult(SomeCorrelatedFunction(Map(r -> intersectTypes)))(f1 ◦ f2)
+        assertResult(CorrelatedFunction(Map(receiver1 -> intersectTypes)))(f1 ◦ f2)
       }
     }
 
@@ -81,13 +90,12 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       import ccProblemBuilder._
 
       it("identity and top functions") {
-        val r  = Receiver(vn1, method1)
         val ct = ComposedTypes(SetType(Set(class1)), SetType(Set(class2)))
-        val f  = SomeCorrelatedFunction(Map(r -> ct))
+        val f  = CorrelatedFunction(Map(receiver1 -> ct))
 
         assertResult(Id)(Id ⊓ Id)
         assertResult(Id)(Id ⊓ λTop)
-        val function = SomeCorrelatedFunction(Map(r -> ComposedTypes(TypesBottom, SetType(Set(class2)))))
+        val function = CorrelatedFunction(Map(receiver1 -> ComposedTypes(TypesBottom, SetType(Set(class2)))))
         val actual: CorrelatedFunction = Id ⊓ f
         assertResult(function)(actual)
         assertResult(Id ⊓ f)(f ⊓ Id)
@@ -98,25 +106,22 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       }
 
       it("functions with a different domain") {
-        val r1  = Receiver(vn1, method1)
-        val r2  = Receiver(vn2, method2)
         val ct1 = ComposedTypes(SetType(Set(class1)), SetType(Set(class2)))
         val ct2 = ComposedTypes(SetType(Set(class3)), SetType(Set(class4)))
-        val f1  = SomeCorrelatedFunction(Map(r1 -> ct1))
-        val f2  = SomeCorrelatedFunction(Map(r2 -> ct2))
+        val f1  = CorrelatedFunction(Map(receiver1 -> ct1))
+        val f2  = CorrelatedFunction(Map(receiver2 -> ct2))
 
-        assertResult(SomeCorrelatedFunction(Map(r1 -> ct1, r2 -> ct2)))(f1 ⊓ f2)
+        assertResult(CorrelatedFunction(Map(receiver1 -> ct1, receiver2 -> ct2)))(f1 ⊓ f2)
       }
 
       it("functions with the same domain") {
-        val r   = Receiver(vn1, method1)
         val ct1 = ComposedTypes(SetType(Set(class1)), SetType(Set(class2)))
         val ct2 = ComposedTypes(SetType(Set(class3)), SetType(Set(class4)))
-        val f1  = SomeCorrelatedFunction(Map(r -> ct1))
-        val f2  = SomeCorrelatedFunction(Map(r -> ct2))
+        val f1  = CorrelatedFunction(Map(receiver1 -> ct1))
+        val f2  = CorrelatedFunction(Map(receiver1 -> ct2))
 
         val unionTypes = ComposedTypes(SetType(Set(class1, class3)), SetType(Set(class2, class4)))
-        assertResult(SomeCorrelatedFunction(Map(r -> unionTypes)))(f1 ⊓ f2)
+        assertResult(CorrelatedFunction(Map(receiver1 -> unionTypes)))(f1 ⊓ f2)
       }
     }
   }

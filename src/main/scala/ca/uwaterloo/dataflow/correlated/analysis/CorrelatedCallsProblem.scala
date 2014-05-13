@@ -1,8 +1,9 @@
 package ca.uwaterloo.dataflow.correlated.analysis
 
 import ca.uwaterloo.dataflow.common.{VariableFacts, WalaInstructions}
+import ca.uwaterloo.dataflow.correlated.collector.Receiver
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
-import com.ibm.wala.classLoader.IClass
+import com.ibm.wala.classLoader.{IMethod, IClass}
 import com.ibm.wala.ssa.SSAInvokeInstruction
 
 trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInstructions with VariableFacts { this: IfdsProblem =>
@@ -24,15 +25,28 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       }
       optLocalVar match {
         case Some(localVar) =>
-          val maybeLambdaSet = if (ideN1.d == Λ) idFactFunPairSet(Λ) else Set.empty
-          val localToBottom  = (d2s - Λ) map {
-            FactFunPair(_, SomeCorrelatedFunction(Map(
-              Receiver(localVar, ideN1.n.getMethod) -> ComposedTypes(TypesBottom, TypesBottom))
-            ))
+          val receiver = getCcReceiver(localVar, ideN1.n.getMethod)
+          val edgefn = receiver match {
+            case Some(rec) =>
+              CorrelatedFunction(Map(
+                rec -> ComposedTypes(TypesBottom, TypesBottom))
+              )
+            case None      =>
+              Id
           }
+          val localToBottom  = (d2s - Λ) map {
+            FactFunPair(_, edgefn)
+          }
+          val maybeLambdaSet = if (ideN1.d == Λ) idFactFunPairSet(Λ) else Set.empty
           maybeLambdaSet ++ localToBottom
         case None           => d2s flatMap idFactFunPairSet
       }
+    }
+  
+  private[this] def getCcReceiver(vn: ValueNumber, method: IMethod): Option[Receiver] =
+    ccReceivers find {
+      r =>
+        r.valueNumber == vn && r.method == method
     }
 
   /**
@@ -45,12 +59,15 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       val d2s = ifdsCallReturnEdges(ideN1, n2)
       if (d1 == Λ) {
         val edgeFn = n1.getLastInstruction match {
-          case invokeInstr: SSAInvokeInstruction =>
-            callValNum(invokeInstr) map {
+          case invokeInstr: SSAInvokeInstruction  =>
+            callValNum(invokeInstr) flatMap {
               valNum =>
-                SomeCorrelatedFunction(Map(
-                  Receiver(valNum, n1.getMethod) -> ComposedTypes(TypesBottom, TypesBottom)
-                ))
+                getCcReceiver(valNum, n1.getMethod) map {
+                  rec =>
+                    CorrelatedFunction(Map(
+                      rec -> ComposedTypes(TypesBottom, TypesBottom)
+                    ))
+                }
             }
         }
         idFactFunPairSet(Λ) ++ (edgeFn match {
@@ -70,9 +87,12 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
         val n1 = ideN1.n
         val edgeFn = n1.getLastInstruction match {
           case invokeInstr: SSAInvokeInstruction =>
-            val receiver = Receiver(invokeInstr.getReceiver, enclProc(n1).getMethod)
-            val types = staticTypes(n1)
-            SomeCorrelatedFunction(Map(receiver -> ComposedTypes(SetType(types), TypesTop)))
+            getCcReceiver(invokeInstr.getReceiver, n1.getMethod) match {
+              case Some(rec) =>
+                CorrelatedFunction(Map(rec -> ComposedTypes(SetType(staticTypes(n1)), TypesTop)))
+              case None      =>
+                Id
+            }
         }
         val d2s = ifdsCallStartEdges(ideN1, n2) - Λ
         val nonLambdaPairs = d2s map {

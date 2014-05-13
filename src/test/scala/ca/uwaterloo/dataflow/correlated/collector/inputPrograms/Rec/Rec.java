@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.stats.inputPrograms.Rec;
+package ca.uwaterloo.dataflow.correlated.collector.inputPrograms.Rec;
 
 public class Rec {
     public static void main(String[] args) {

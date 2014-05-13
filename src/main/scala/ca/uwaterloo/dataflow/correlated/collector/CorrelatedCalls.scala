@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.stats
+package ca.uwaterloo.dataflow.correlated.collector
 
 import com.ibm.wala.classLoader.CallSiteReference
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}

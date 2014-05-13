@@ -1,10 +1,9 @@
-package ca.uwaterloo.dataflow.correlated.stats
+package ca.uwaterloo.dataflow.correlated.collector
 
-import com.ibm.wala.classLoader.CallSiteReference
+import com.ibm.wala.classLoader.{IMethod, CallSiteReference}
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
-import com.ibm.wala.types.MethodReference
 
-case class Receiver private(valueNumber: Int, methodRef: MethodReference)
+case class Receiver private(valueNumber: Int, method: IMethod)
 
 object Receiver {
 
@@ -21,6 +20,6 @@ object Receiver {
         )
       }*/
       // todo: account for multiple receivers of a call site
-      Some(Receiver(calls(0).getReceiver, cgNode.getMethod.getReference))
+      Some(Receiver(calls(0).getReceiver, cgNode.getMethod))
     } else None
 }

@@ -1,6 +1,6 @@
-package ca.uwaterloo.dataflow.correlated.stats
+package ca.uwaterloo.dataflow.correlated.collector
 
-import ca.uwaterloo.correlated.stats.util.TestUtil._
+import ca.uwaterloo.dataflow.correlated.collector.util.TestUtil._
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner

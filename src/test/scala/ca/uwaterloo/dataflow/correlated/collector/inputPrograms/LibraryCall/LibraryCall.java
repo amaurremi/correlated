@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.stats.inputPrograms.LibraryCall;
+package ca.uwaterloo.dataflow.correlated.collector.inputPrograms.LibraryCall;
 
 public class LibraryCall {
     public static void main(String[] args) {
