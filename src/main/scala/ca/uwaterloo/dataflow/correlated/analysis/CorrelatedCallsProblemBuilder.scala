@@ -34,7 +34,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   override val Id     = CorrelatedFunction(mapReceivers(composedTypesId))
   override val λTop   = CorrelatedFunction(mapReceivers(composedTypesTop))
 
-  private[this] def mapReceivers[A](value: A): Map[Receiver, A] =
+  def mapReceivers[A](value: A): Map[Receiver, A] =
     (ccReceivers map {
       _ -> value
     })(breakOut)
@@ -90,6 +90,11 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
         case SetType(types2) => SetType(types ++ types2)
         case TypesBottom     => TypesBottom ⊓ this
       }
+
+    override def toString =
+      if (this == TypesTop)
+        "TypesTop"
+      else super.toString
   }
 
   case object TypesBottom extends TypesLattice {
