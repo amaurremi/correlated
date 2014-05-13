@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.stats.inputPrograms.OtherTests;
+package ca.uwaterloo.dataflow.correlated.collector.inputPrograms.OtherTests;
 
 public class OtherTests {
 

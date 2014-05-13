@@ -1,6 +1,6 @@
-package ca.uwaterloo.dataflow.correlated.stats.util
+package ca.uwaterloo.dataflow.correlated.collector.util
 
-import ca.uwaterloo.dataflow.correlated.stats.MultiMap
+import ca.uwaterloo.dataflow.correlated.collector.MultiMap
 
 object MultiMap {
 

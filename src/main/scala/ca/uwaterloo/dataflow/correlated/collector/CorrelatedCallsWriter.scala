@@ -1,6 +1,6 @@
-package ca.uwaterloo.dataflow.correlated.stats
+package ca.uwaterloo.dataflow.correlated.collector
 
-import ca.uwaterloo.dataflow.correlated.stats.util.{MultiMap, CallGraphUtil, Converter}
+import ca.uwaterloo.dataflow.correlated.collector.util.{MultiMap, CallGraphUtil, Converter}
 import com.ibm.wala.classLoader.CallSiteReference
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 import com.ibm.wala.util.graph.traverse.DFS

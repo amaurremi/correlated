@@ -20,13 +20,13 @@ abstract class ConstantPropagation(fileName: String) extends IdeProblem with Ide
       ConfigParseOptions.defaults().setAllowMissing(false),
       ConfigResolveOptions.defaults()
     )
-  private[this] val builder              = FlexibleCallGraphBuilder()(config)
-  private[this] val callGraph: CallGraph = builder.cg
+  private[this] val builder = FlexibleCallGraphBuilder()(config)
 
-  override type FactElem  = ArrayElem
-
+  override val callGraph: CallGraph                     = builder.cg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node]                   = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
+
+  override type FactElem  = ArrayElem
 
   val ideNodeString: XNode => String =
     node => {

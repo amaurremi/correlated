@@ -1,10 +1,19 @@
-package ca.uwaterloo.dataflow.correlated.stats
+package ca.uwaterloo.dataflow.correlated.collector
 
-import com.ibm.wala.classLoader.CallSiteReference
+import com.ibm.wala.classLoader.{IMethod, CallSiteReference}
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
-import com.ibm.wala.types.MethodReference
 
-case class Receiver private(valueNumber: Int, methodRef: MethodReference)
+sealed trait ReceiverI
+
+/**
+ * This object is necessary for the correlated calls analysis.
+ * When there are no relevant polymorphic receivers, all transfer functions
+ * will contain empty transformation maps and will be considered equal.
+ * So we add a fake receiver that guarantees that the transfer functions can be unequal.
+ */
+case object FakeReceiver extends ReceiverI
+
+case class Receiver private(valueNumber: Int, method: IMethod) extends ReceiverI
 
 object Receiver {
 
@@ -21,6 +30,6 @@ object Receiver {
         )
       }*/
       // todo: account for multiple receivers of a call site
-      Some(Receiver(calls(0).getReceiver, cgNode.getMethod.getReference))
+      Some(Receiver(calls(0).getReceiver, cgNode.getMethod))
     } else None
 }

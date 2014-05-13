@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.stats.inputPrograms.CcsPresent;
+package ca.uwaterloo.dataflow.correlated.collector.inputPrograms.CcsPresent;
 
 public class CcsPresent {
 

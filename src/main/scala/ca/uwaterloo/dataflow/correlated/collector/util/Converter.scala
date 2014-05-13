@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.stats.util
+package ca.uwaterloo.dataflow.correlated.collector.util
 
 import scala.collection.JavaConverters._
 

@@ -21,8 +21,8 @@ class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts
     )
 
   private[this] val builder              = FlexibleCallGraphBuilder()(config)
-  private[this] val callGraph: CallGraph = builder.cg
 
+  override val callGraph: CallGraph = builder.cg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
 

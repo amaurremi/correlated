@@ -1,7 +1,6 @@
-package ca.uwaterloo.correlated.stats.util
+package ca.uwaterloo.dataflow.correlated.collector.util
 
-import ca.uwaterloo.dataflow.correlated.stats.CorrelatedCalls
-import ca.uwaterloo.dataflow.correlated.stats.util.CallGraphUtil
+import ca.uwaterloo.dataflow.correlated.collector.CorrelatedCalls
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
@@ -35,7 +34,7 @@ object TestUtil {
         config.getString(projectPath)
       else
         throw new RuntimeException("Please specify your absolute project path in the application.config file.")
-    val testPath = "src/test/scala/ca/uwaterloo/dataflow/correlated/stats/inputPrograms/"
+    val testPath = "src/test/scala/ca/uwaterloo/dataflow/correlated/collector/inputPrograms/"
     val appJar =
       if (testName.isEmpty) {
         val jarKey = "wala.dependencies.jar"

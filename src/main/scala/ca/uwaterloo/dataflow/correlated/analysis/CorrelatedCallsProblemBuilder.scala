@@ -1,7 +1,8 @@
 package ca.uwaterloo.dataflow.correlated.analysis
 
+import ca.uwaterloo.dataflow.correlated.collector.{FakeReceiver, ReceiverI, CorrelatedCalls, Receiver}
 import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
-import com.ibm.wala.classLoader.{IClass, IMethod}
+import com.ibm.wala.classLoader.IClass
 import scala.collection._
 
 /**
@@ -13,65 +14,47 @@ import scala.collection._
  */
 trait CorrelatedCallsProblemBuilder extends IdeProblem {
 
-  type TypeMultiMap         = Map[Receiver, TypesLattice]
-  type ComposedTypeMultiMap = Map[Receiver, ComposedTypes]
+  type TypeMultiMap         = Map[ReceiverI, TypesLattice]
+  type ComposedTypeMultiMap = Map[ReceiverI, ComposedTypes]
   type Type                 = IClass
 
   override type LatticeElem = MapLatticeElem
   override type IdeFunction = CorrelatedFunction
 
-  val TypesTop: TypesLattice = SetType(Set.empty)
+  val TypesTop: TypesLattice = SetType(Set.empty[Type])
 
-  override val Bottom = MapLatticeElem(TypesBottom, Map.empty[Receiver, TypesLattice])
-  override val Top    = MapLatticeElem(TypesTop, Map.empty[Receiver, TypesLattice])
-  override val Id     = SomeCorrelatedFunction(Map.empty[Receiver, ComposedTypes])
-  override val λTop   = TopCorrelatedFunction
+  lazy val ccReceivers: Set[ReceiverI] = CorrelatedCalls(callGraph).receiverToCallSites.keys.toSet + FakeReceiver
 
-  case class Receiver(valueNumber: Int, method: IMethod)
+  val composedTypesTop    = ComposedTypes(TypesTop, TypesTop)
+  val composedTypesId     = ComposedTypes(TypesBottom, TypesTop)
+
+  override val Bottom = MapLatticeElem(mapReceivers(TypesBottom))
+  override val Top    = MapLatticeElem(mapReceivers(TypesTop))
+
+  override val Id     = CorrelatedFunction(mapReceivers(composedTypesId))
+  override val λTop   = CorrelatedFunction(mapReceivers(composedTypesTop))
+
+  def mapReceivers[A](value: A): Map[ReceiverI, A] =
+    (ccReceivers map {
+      _ -> value
+    })(breakOut)
 
   /**
    * Lattice elements of lattice L in the analysis. Represents functions from receivers to sets of types.
    */
-  sealed trait MapLatticeElem extends Lattice[MapLatticeElem] {
-
-    def default: TypesLattice
-
-    def mapping: TypeMultiMap
-
-    def hasEmptyMapping: Boolean = (default == TypesTop) || (mapping.values exists { _ == TypesTop })
+  case class MapLatticeElem(mapping: TypeMultiMap) extends Lattice[MapLatticeElem] {
 
     /**
      * Defined as join. For two multi-maps M1 and M2, computes a multi-map M3
      * that maps M1's and M2's keys to the union of their value sets.
      */
-    override def ⊓(el: MapLatticeElem): MapLatticeElem = {
-      val joinedMaps: TypeMultiMap = ((mapping.keySet ++ el.mapping.keySet) map {
-        key =>
-          key -> (mapping getOrElse (key, default)) ⊓ (el.mapping getOrElse (key, el.default))
-      })(breakOut)
-      MapLatticeElem(default ⊓ el.default, joinedMaps)
-    }
+    override def ⊓(el: MapLatticeElem): MapLatticeElem =
+      MapLatticeElem((ccReceivers map {
+        r =>
+          r -> (mapping(r) ⊓ el.mapping(r))
+      })(breakOut))
 
-    override def toString: String =
-      if (mapping.isEmpty && default == TypesTop)
-        "λr.{}"
-      else if (mapping.isEmpty && default == TypesBottom)
-        "λr.(all types)"
-       else super.toString
-  }
-
-  object MapLatticeElem {
-
-    def apply(default: TypesLattice, mapping: TypeMultiMap) =
-      MapLatticeElemImpl(default, mapping filterNot { case (r, ts) => ts == default})
-
-    def unapply(mle: MapLatticeElem): Option[(TypesLattice, TypeMultiMap)] =
-      Some(mle.default, mle.mapping)
-
-    case class MapLatticeElemImpl private[MapLatticeElem](
-     default: TypesLattice,
-     mapping: TypeMultiMap
-   ) extends MapLatticeElem
+    def hasEmptyMapping: Boolean = mapping.values exists { _ == TypesTop }
   }
 
   sealed trait ComposedTypes {
@@ -79,7 +62,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     def unionSet: TypesLattice
   }
 
-  object ComposedTypes { // todo will equals work?
+  object ComposedTypes {
 
     def apply(intersectSet: TypesLattice, unionSet: TypesLattice): ComposedTypes =
       ComposedTypesImpl(intersectSet ⊓ unionSet, unionSet)
@@ -92,9 +75,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     ) extends ComposedTypes
   }
 
-  sealed trait TypesLattice extends Lattice[TypesLattice] {
-    def contains(tpe: Type): Boolean
-  }
+  sealed trait TypesLattice extends Lattice[TypesLattice]
 
   case class SetType(types: Set[Type]) extends TypesLattice {
 
@@ -110,7 +91,10 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
         case TypesBottom     => TypesBottom ⊓ this
       }
 
-    override def contains(tpe: Type): Boolean = types contains tpe
+    override def toString =
+      if (this == TypesTop)
+        "TypesTop"
+      else super.toString
   }
 
   case object TypesBottom extends TypesLattice {
@@ -118,66 +102,42 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
     override def ⊓(el: TypesLattice) = TypesBottom
 
     override def ⊔(el: TypesLattice) = el
-
-    override def contains(tpe: Type) = true
   }
 
-  private[this] def withDefault(m: ComposedTypeMultiMap, r: Receiver): ComposedTypes =
-    m getOrElse (r, ComposedTypes(TypesBottom, TypesBottom))
+  trait CorrelatedFunction extends IdeFunctionI {
 
-  sealed trait CorrelatedFunction extends IdeFunctionI
-
-  case class SomeCorrelatedFunction(updates: ComposedTypeMultiMap) extends CorrelatedFunction {
+    val updates: ComposedTypeMultiMap
 
     override def apply(el: MapLatticeElem): MapLatticeElem =
-      el match {
-        case MapLatticeElem(default, mapping) =>
-          MapLatticeElem(
-            default,
-            updates.foldLeft(mapping) {
-              case (m, (receiver, ComposedTypes(i, u))) =>
-                m updated (receiver, ((m getOrElse (receiver, TypesBottom)) ⊔ i) ⊓ u)
-            }
-          )
-      }
-
-    private[this] def operation(
-      f: SomeCorrelatedFunction,
-      onIntersect: (ComposedTypes, ComposedTypes) => TypesLattice,
-      onUnion: (ComposedTypes, ComposedTypes) => TypesLattice
-    ): CorrelatedFunction = {
-      val newUpdates = (updates.keySet ++ f.updates.keySet).foldLeft(updates) {
-        case (m, receiver) =>
-          val t1 = withDefault(updates, receiver)
-          val t2 = withDefault(f.updates, receiver)
-          m + (receiver -> ComposedTypes(onIntersect(t1, t2), onUnion(t1, t2)))
-      }
-      SomeCorrelatedFunction(newUpdates)
-    }
+      MapLatticeElem(
+        updates.foldLeft(el.mapping) {
+          case (m, (receiver, ComposedTypes(i, u))) =>
+            m updated (receiver, (m(receiver) ⊔ i) ⊓ u)
+        }
+      )
 
     override def ◦(f: CorrelatedFunction): CorrelatedFunction =
-      f match {
-        case fun: SomeCorrelatedFunction =>
-          operation(fun, {
-            _.intersectSet ⊔ _.intersectSet
-          }, {
-            (t1, t2) => (t1.intersectSet ⊔ t2.unionSet) ⊓ t1.unionSet
-          })
-        case TopCorrelatedFunction       =>
-          TopCorrelatedFunction
-      }
+      CorrelatedFunction(
+        (ccReceivers map {
+          r =>
+            val ComposedTypes(i1, u1) = updates(r)
+            val ComposedTypes(i2, u2) = f.updates(r)
+            r -> ComposedTypes(
+              i1 ⊔ i2, (i1 ⊔ u2) ⊓ u1
+            )
+        })(breakOut)
+      )
 
     override def ⊓(f: CorrelatedFunction): CorrelatedFunction =
-      f match {
-        case fun: SomeCorrelatedFunction =>
-          operation(fun, {
-            _.intersectSet ⊓ _.intersectSet
-          }, {
-            _.unionSet ⊓ _.unionSet
-          })
-        case TopCorrelatedFunction       =>
-          f ⊓ this
-      }
+      CorrelatedFunction(
+        (ccReceivers map {
+          r =>
+            val ComposedTypes(i1, u1) = updates(r)
+            val ComposedTypes(i2, u2) = f.updates(r)
+            r -> ComposedTypes(
+              i1 ⊓ i2, u1 ⊓ u2
+            )
+        })(breakOut))
 
     override def toString: String =
       if (this == Id)
@@ -185,15 +145,23 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
       else super.toString
   }
 
-  case object TopCorrelatedFunction extends CorrelatedFunction {
+  object CorrelatedFunction {
 
-    override def apply(el: MapLatticeElem): MapLatticeElem = Top
+    def apply(pairs: ComposedTypeMultiMap): CorrelatedFunction =
+      CorrelatedFunctionImpl(
+        if (pairs.size == ccReceivers.size)
+          pairs
+        else
+          (ccReceivers map {
+            r =>
+              r -> (pairs getOrElse (r, composedTypesId))
+          })(breakOut)
+      )
 
-    override def ◦(f: CorrelatedFunction): CorrelatedFunction = //TopCorrelatedFunction
-      throw new UnsupportedOperationException("Top functions should not be composed")
+    def unapply(ct: CorrelatedFunction): Option[ComposedTypeMultiMap] = Some(ct.updates)
 
-    override def ⊓(f: CorrelatedFunction): CorrelatedFunction = f
-
-    override def toString: String = "λl.top"
+    case class CorrelatedFunctionImpl private[CorrelatedFunction](
+      updates: ComposedTypeMultiMap
+    ) extends CorrelatedFunction
   }
 }

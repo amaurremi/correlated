@@ -1,6 +1,6 @@
-package ca.uwaterloo.correlated.benchmark
+package ca.uwaterloo.dataflow.correlated.collector.benchmark
 
-import ca.uwaterloo.correlated.stats.util.TestUtil
+import ca.uwaterloo.dataflow.correlated.collector.util.TestUtil
 
 object BenchmarkRunner {
 
