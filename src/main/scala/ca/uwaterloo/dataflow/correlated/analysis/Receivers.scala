@@ -4,5 +4,5 @@ import ca.uwaterloo.dataflow.correlated.collector.ReceiverI
 
 trait Receivers {
 
-  val ccReceivers: Set[ReceiverI] // todo should be lazy somehow
+  def ccReceivers: Set[ReceiverI] // todo should be lazy somehow
 }

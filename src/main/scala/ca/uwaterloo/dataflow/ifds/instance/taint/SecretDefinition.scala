@@ -7,4 +7,6 @@ trait SecretDefinition {
   def isSecret(method: MethodReference): Boolean
 
   def isSecretSupertype(typeRef: TypeReference): Boolean
+
+  def isSecretOperation(operationName: String): Boolean
 }
