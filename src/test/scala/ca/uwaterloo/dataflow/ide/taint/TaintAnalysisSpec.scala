@@ -1,11 +1,13 @@
 package ca.uwaterloo.dataflow.ide.taint
 
-import org.junit.runner.RunWith
-import org.scalatest.FunSpec
-import org.scalatest.junit.JUnitRunner
+import org.scalatest.{BeforeAndAfterAll, FunSpec}
+import ca.uwaterloo.dataflow.SpecUtil
 
-@RunWith(classOf[JUnitRunner])
-class TaintAnalysisSpec extends FunSpec {
+class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
+
+  override def beforeAll() {
+    SpecUtil.rebuild("ide/taint", "taint")
+  }
 
   private[this] def assertSecretsFor(test: String) {
     new TaintAnalysisSpecBuilder(test).assertSecretValues()
