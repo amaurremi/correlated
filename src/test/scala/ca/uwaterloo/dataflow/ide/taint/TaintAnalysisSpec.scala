@@ -223,6 +223,10 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
       assertSecretsFor("Array6")
     }
 
+    it("array7") {
+      assertSecretsFor("Array7")
+    }
+
     it("array element passed as parameter") {
       assertSecretsFor("ArrayElementAsParameter")
     }
@@ -371,11 +375,7 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
       assertSecretsFor("StringConcat")
     }
 
-    // Tests that take long
-
-    it("array7") {
-      assertSecretsFor("Array7")
-    }
+    // Tests that take long or don't finish
 
     it("string operations") {
       assertSecretsFor("StringOps")

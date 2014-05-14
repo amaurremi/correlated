@@ -1,8 +1,10 @@
 package ca.uwaterloo.dataflow.correlated.analysis
 
-import ca.uwaterloo.dataflow.correlated.collector.ReceiverI
+import ca.uwaterloo.dataflow.correlated.collector.{FakeReceiver, ReceiverI}
 
 trait Receivers {
 
-  def ccReceivers: Set[ReceiverI] // todo should be lazy somehow
+  lazy val ccReceivers: Set[ReceiverI] = getCcReceivers + FakeReceiver
+
+  def getCcReceivers: Set[ReceiverI]
 }
