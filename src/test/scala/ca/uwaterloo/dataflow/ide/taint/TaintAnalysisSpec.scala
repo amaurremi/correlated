@@ -19,6 +19,10 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
       assertSecretsFor("TryCatch")
     }
 
+    it("propagates secret values via exception objects") {
+      assertSecretsFor("TryCatch2")
+    }
+
     it("propagates secret values intra-procedurally") {
       assertSecretsFor("LocalVars")
     }
@@ -69,6 +73,38 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
 
     it("propagates secret values along the return edge (instance method) 8") {
       assertSecretsFor("FunctionReturn8")
+    }
+
+    it("recursive call") {
+      assertSecretsFor("Recursion")
+    }
+
+    it("recursive call 2") {
+      assertSecretsFor("Recursion2")
+    }
+
+    it("recursive call 3") {
+      assertSecretsFor("Recursion3")
+    }
+
+    it("recursive call 4") {
+      assertSecretsFor("Recursion4")
+    }
+
+    it("recursive call 5") {
+      assertSecretsFor("Recursion5")
+    }
+
+    it("recursive call 6") {
+      assertSecretsFor("Recursion6")
+    }
+
+    it("recursive call 7") {
+      assertSecretsFor("Recursion7")
+    }
+
+    it("recursive call 8") {
+      assertSecretsFor("Recursion8")
     }
 
     it("propagates secret values along the call-start edge (instance method, multiple parameters, multiple files)") {
@@ -229,6 +265,10 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
 
     it("instance field initialized") {
       assertSecretsFor("Field9")
+    }
+
+    it("static initialized fields") {
+      assertSecretsFor("Field10")
     }
 
     it("field passed as parameter") {
