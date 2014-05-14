@@ -6,5 +6,5 @@ import ca.uwaterloo.dataflow.common.SuperGraphTypes
 
 trait CcReceivers extends Receivers { this: SuperGraphTypes =>
 
-  override val ccReceivers: Set[ReceiverI] = CorrelatedCalls(callGraph).receiverToCallSites.keys.toSet + FakeReceiver
+  override def ccReceivers: Set[ReceiverI] = CorrelatedCalls(callGraph).receiverToCallSites.keys.toSet + FakeReceiver
 }

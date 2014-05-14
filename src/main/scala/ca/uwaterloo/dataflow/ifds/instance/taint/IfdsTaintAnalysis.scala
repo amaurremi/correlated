@@ -20,7 +20,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       ConfigResolveOptions.defaults
     )
 
-  private[this] val builder              = FlexibleCallGraphBuilder()(config)
+  private[this] val builder = FlexibleCallGraphBuilder()(config)
 
   override val callGraph: CallGraph = builder.cg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
