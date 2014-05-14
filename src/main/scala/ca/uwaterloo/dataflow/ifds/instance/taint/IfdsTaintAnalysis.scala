@@ -2,6 +2,7 @@ package ca.uwaterloo.dataflow.ifds.instance.taint
 
 import ca.uwaterloo.dataflow.common.VariableFacts
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
+import com.ibm.wala.analysis.typeInference.TypeInference
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
@@ -52,9 +53,12 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         // Arrays
         case storeInstr: SSAArrayStoreInstruction if factIsRval(d1, method, storeInstr.getValue) =>
           defaultResult + ArrayElement
-        case loadInstr: SSAArrayLoadInstruction
-          if d1 == ArrayElement && isSecretSupertype(loadInstr.getElementType)      =>
+        case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement                            =>
+          val inference = getTypeInference(enclProc(n1))
+          if (isSecretSupertype(inference.getType(loadInstr.getDef).getTypeReference))
             defaultResult + Variable(method, loadInstr.getDef)
+          else
+            defaultResult
         //  Fields
         case putInstr: SSAPutInstruction if factIsRval(d1, method, putInstr.getVal) =>
           defaultResult + Field(putInstr.getDeclaredField)
@@ -72,6 +76,10 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           defaultResult
       }
     }
+
+  lazy val getTypeInference: Procedure => TypeInference =
+    proc =>
+      TypeInference.make(proc.getIR, true)
 
   /**
    * For a fact, checks whether the right-hand side of the assignment instruction in node 'n' is the value of the fact.

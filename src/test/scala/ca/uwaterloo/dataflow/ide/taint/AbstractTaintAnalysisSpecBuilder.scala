@@ -38,23 +38,15 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
     }
   }
 
-  def isValNumArrayElement(node: Node, valNum: ValueNumber): Boolean = // todo inefficient
-    instructionsInProc(node) exists {
-      case loadInstr: SSAArrayLoadInstruction =>
-        loadInstr.getDef == valNum
-      case _                                  =>
-        false
-    }
-
-
   private[this] lazy val arrayValNums: Node => Set[ValueNumber] =
     node =>
-      (instructionsInProc(node) collect {
-        case loadInstr: SSAArrayLoadInstruction =>
-          loadInstr.getDef
+      (instructionsInProc(node) collect { // todo inefficient
+        case loadInstr: SSAArrayLoadInstruction
+          if isSecretSupertype(getTypeInference(enclProc(node)).getType(loadInstr.getDef).getTypeReference) =>
+            loadInstr.getDef
       }).toSet
 
-  private[this] lazy val fieldValNums: Node => Set[(ValueNumber, FieldReference)] =
+  private[this] lazy val fieldValNums: Node => Set[(ValueNumber, FieldReference)] = // todo inefficient
     node =>
       (instructionsInProc(node) collect {
         case fieldInstr: SSAFieldAccessInstruction =>
