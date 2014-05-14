@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.correlated.analysis
 
-import ca.uwaterloo.dataflow.correlated.collector.{FakeReceiver, ReceiverI, CorrelatedCalls, Receiver}
+import ca.uwaterloo.dataflow.correlated.collector.ReceiverI
 import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 import com.ibm.wala.classLoader.IClass
 import scala.collection._
@@ -12,7 +12,7 @@ import scala.collection._
  *   ⊥ (bottom) refers to the least precise element of a lattice (e.g. "all types")
  *   ⊤ (top) refers to the most precise element of a lattice (e.g. "empty set")
  */
-trait CorrelatedCallsProblemBuilder extends IdeProblem {
+trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
 
   type TypeMultiMap         = Map[ReceiverI, TypesLattice]
   type ComposedTypeMultiMap = Map[ReceiverI, ComposedTypes]
@@ -22,8 +22,6 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem {
   override type IdeFunction = CorrelatedFunction
 
   val TypesTop: TypesLattice = SetType(Set.empty[Type])
-
-  lazy val ccReceivers: Set[ReceiverI] = CorrelatedCalls(callGraph).receiverToCallSites.keys.toSet + FakeReceiver
 
   val composedTypesTop    = ComposedTypes(TypesTop, TypesTop)
   val composedTypesId     = ComposedTypes(TypesBottom, TypesTop)

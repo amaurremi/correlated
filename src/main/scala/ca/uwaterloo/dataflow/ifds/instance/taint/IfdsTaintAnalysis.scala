@@ -11,7 +11,7 @@ import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFact
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import scala.collection.JavaConverters._
 
-class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts with SecretDefinition {
+abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts with SecretDefinition {
 
   private[this] val config =
     ConfigFactory.load(
