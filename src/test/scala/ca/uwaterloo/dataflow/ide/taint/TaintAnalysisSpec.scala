@@ -6,7 +6,7 @@ import org.scalatest.{BeforeAndAfterAll, FunSpec}
 class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
 
   override def beforeAll() {
-    SpecUtil.rebuild("ide/taint", "taint")
+//    SpecUtil.rebuild("ide/taint", "taint")
   }
 
   private[this] def assertSecretsFor(test: String) {
