@@ -5,7 +5,7 @@ import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
 import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretStrings}
-import com.ibm.wala.ssa.{SSAFieldAccessInstruction, SSAArrayLoadInstruction, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{DefUse, SSAFieldAccessInstruction, SSAArrayLoadInstruction, SSAInvokeInstruction}
 import com.ibm.wala.types.FieldReference
 import org.scalatest.Assertions
 
@@ -38,20 +38,17 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
     }
   }
 
-  private[this] lazy val arrayValNums: Node => Set[ValueNumber] =
-    node =>
-      (instructionsInProc(node) collect { // todo inefficient
-        case loadInstr: SSAArrayLoadInstruction
-          if isSecretSupertype(getTypeInference(enclProc(node)).getType(loadInstr.getDef).getTypeReference) =>
-            loadInstr.getDef
-      }).toSet
+  def isSecretArrayElement(node: Node, vn: ValueNumber): Boolean =
+    new DefUse(enclProc(node).getIR).getDef(vn).isInstanceOf[SSAArrayLoadInstruction] &&
+      isSecretSupertype(getTypeInference(enclProc(node)).getType(vn).getTypeReference)
 
-  private[this] lazy val fieldValNums: Node => Set[(ValueNumber, FieldReference)] = // todo inefficient
-    node =>
-      (instructionsInProc(node) collect {
-        case fieldInstr: SSAFieldAccessInstruction =>
-          (fieldInstr.getDef, fieldInstr.getDeclaredField)
-      }).toSet
+  def isSecretField(node: Node, vn: ValueNumber, field: FieldReference): Boolean =
+    new DefUse(enclProc(node).getIR).getDef(vn) match {
+      case fieldInstr: SSAFieldAccessInstruction =>
+        fieldInstr.getDeclaredField == field
+      case _                                     =>
+        false
+    }
 
   /**
    * Tells whether the argument of a secret-assertion method is secret.
@@ -64,9 +61,9 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
           case Variable(method, elem) =>
             method == node.getMethod && elem == num
           case ArrayElement           =>
-            arrayValNums(node) contains num
+            isSecretArrayElement(node, num)
           case Field(f)               =>
-            fieldValNums(node) contains (num, f)
+            isSecretField(node, num, f)
           case Lambda                 =>
             false
         }
