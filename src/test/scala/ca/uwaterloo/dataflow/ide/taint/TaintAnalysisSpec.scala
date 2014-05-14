@@ -1,6 +1,5 @@
 package ca.uwaterloo.dataflow.ide.taint
 
-import ca.uwaterloo.dataflow.SpecUtil
 import org.scalatest.{BeforeAndAfterAll, FunSpec}
 
 class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
