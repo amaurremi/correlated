@@ -157,7 +157,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   private[this] def forwardAnyNode(e: XEdge, f: IdeFunction) {
     val n = e.target
     for {
-      m                       <- followingNodes(n.n).toSeq :+ n.n // todo !!! is that correct: followingNodes should include n itself, because n can be the first node in the procedure
+      m                       <- followingNodes(n.n).toSeq // todo :+ n.n followingNodes should include n itself, because n can be the first node in the procedure?
       FactFunPair(d3, edgeFn) <- otherSuccEdges(n, m)
     } {
       propagate(e, f)(XEdge(e.source, XNode(m, d3)), edgeFn ◦ f)

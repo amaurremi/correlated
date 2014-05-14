@@ -42,18 +42,19 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val defaultResult = Set(d1)
       val method        = n1.getMethod
       n1.getLastInstruction match {
-        case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr) =>
+        case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr)         =>
           d1 match {
             // we are returning a secret value, because an existing (i.e. secret) fact d1 is returned
-            case v@Variable(m, _) if isFactReturned(v, n1, returnInstr.getResult) =>
+            case v@Variable(m, _) if isFactReturned(v, n1, returnInstr.getResult)  =>
               (methodToReturnVars get m).asScala.toSet + d1
-            case _                                                                =>
+            case _                                                                 =>
               defaultResult
           }
         // Arrays
-        case storeInstr: SSAArrayStoreInstruction if factIsRval(d1, method, storeInstr.getValue) =>
-          defaultResult + ArrayElement
-        case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement                            =>
+        case storeInstr: SSAArrayStoreInstruction
+          if factIsRval(d1, method, storeInstr.getValue)                           =>
+            defaultResult + ArrayElement
+        case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement              =>
           val inference = getTypeInference(enclProc(n1))
           if (isSecretSupertype(inference.getType(loadInstr.getDef).getTypeReference))
             defaultResult + Variable(method, loadInstr.getDef)
@@ -62,7 +63,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         //  Fields
         case putInstr: SSAPutInstruction if factIsRval(d1, method, putInstr.getVal) =>
           defaultResult + Field(putInstr.getDeclaredField)
-        case getInstr: SSAGetInstruction                                   =>
+        case getInstr: SSAGetInstruction                                            =>
           d1 match {
             case Field(field) if field == getInstr.getDeclaredField =>
               defaultResult + Variable(method, getInstr.getDef)
@@ -70,9 +71,10 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
               defaultResult
           }
         // Casts
-        case castInstr: SSACheckCastInstruction if factIsRval(d1, method, castInstr.getVal) =>
-          defaultResult + Variable(method, castInstr.getDef)
-        case _                                                             =>
+        case castInstr: SSACheckCastInstruction
+          if factIsRval(d1, method, castInstr.getVal)                               =>
+            defaultResult + Variable(method, castInstr.getDef)
+        case _                                                                      =>
           defaultResult
       }
     }
