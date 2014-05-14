@@ -28,5 +28,4 @@ class A {
         return t;
       }
     }
-
 }
