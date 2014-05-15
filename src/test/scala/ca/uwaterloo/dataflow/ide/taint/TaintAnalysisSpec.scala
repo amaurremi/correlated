@@ -388,5 +388,25 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
     it("correlated calls") {
       assertSecretsFor("Correlated1")
     }
+
+    it("correlated calls 2") {
+      assertSecretsFor("Correlated2")
+    }
+
+    it("correlated calls 3") {
+      assertSecretsFor("Correlated3")
+    }
+
+    it("correlated calls 4") {
+      assertSecretsFor("Correlated4")
+    }
+
+    it("correlated calls 5") {
+      assertSecretsFor("Correlated5")
+    }
+
+    it("correlated calls 6") {
+      assertSecretsFor("Correlated6")
+    }
   }
 }
