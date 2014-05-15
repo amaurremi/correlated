@@ -11,8 +11,8 @@ trait SecretStrings extends SecretDefinition {
   private[this] val superTypeNames = Set("Ljava/lang/String", "Ljava/lang/Object")
 
   private[this] lazy val stringOperations: Set[String] = {
-    val configFile = new File(System.getProperty("user.dir"), "src/main/scala/ca/uwaterloo/dataflow/ifds/instance/taint/impl/StringOperations.conf")
-    val config = ConfigFactory.parseFile(configFile)
+    val configPath = "src/main/scala/ca/uwaterloo/dataflow/ifds/instance/taint/impl/StringOperations.conf"
+    val config = ConfigFactory.parseFile(new File(System.getProperty("user.dir"), configPath))
     (config getStringList "stringOperations.ops").asScala.toSet
   }
 
