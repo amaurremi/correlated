@@ -107,7 +107,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
    */
   override def ifdsCallReturnEdges: IfdsEdgeFn =
     (ideN1, _) =>
-      Set(ideN1.d) // todo not for fields/static variables
+      Set(ideN1.d) // todo should we remove fields as it's done in the IFDS paper?
 
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
@@ -120,7 +120,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val callerMethod  = n1.getMethod
       val defaultResult = Set(d1)
       n1.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction if isSecret(targetMethod.getReference) =>
+        case callInstr: SSAInvokeInstruction if isSecret(targetMethod) =>
           if (d1 == Λ) {
             val valNum: ValueNumber = callValNum(callInstr).get
             val phis = getPhis(n1, valNum, callerMethod)
@@ -132,7 +132,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
               val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
               Set(substituteFact)
             case None if d1 == Λ && callValNum(callInstr).isDefined =>
-              methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get)) // todo is this the right way to keep track of return variables?
+              methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get))
               defaultResult
             case None                                               =>
               defaultResult

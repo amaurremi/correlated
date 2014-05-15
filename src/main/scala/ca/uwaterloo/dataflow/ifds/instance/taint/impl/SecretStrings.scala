@@ -1,7 +1,8 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
-import com.ibm.wala.types.{TypeReference, MethodReference}
+import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.types.TypeReference
 import com.typesafe.config.ConfigFactory
 import java.io.File
 import scala.collection.JavaConverters._
@@ -16,7 +17,7 @@ trait SecretStrings extends SecretDefinition {
     (config getStringList "stringOperations.ops").asScala.toSet
   }
 
-  override def isSecret(method: MethodReference) = method.getName.toString == "secret"
+  override def isSecret(method: IMethod) = method.getReference.getName.toString == "secret"
 
   override def isSecretSupertype(typeRef: TypeReference) = superTypeNames contains typeRef.getName.toString
 
