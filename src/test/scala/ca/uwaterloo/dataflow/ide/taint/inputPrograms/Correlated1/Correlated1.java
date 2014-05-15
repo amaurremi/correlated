@@ -19,10 +19,10 @@ public class Correlated1 {
 
 class A {
 
-//    A() {
-//        this.x = "not secret";
-//        this.y = "not secret";
-//    }
+    A() {
+        this.x = "not secret";
+        this.y = "not secret";
+    }
 
     void foo(String s) {
         this.x = s;
