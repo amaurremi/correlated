@@ -2,7 +2,7 @@ package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
 import com.ibm.wala.classLoader.IMethod
-import com.ibm.wala.types.TypeReference
+import com.ibm.wala.types.{MethodReference, TypeReference}
 import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
 import scala.collection.JavaConverters._
@@ -35,16 +35,18 @@ trait SecretStrings extends SecretDefinition {
     stringConfig.superTypes contains typeRef.getName.toString
 
   // todo subSequence?
-  override def getOperationType(op: String): Option[SecretOperation] =
-    if (stringConfig.returnSecretString contains op)
+  override def getOperationType(op: MethodReference): Option[SecretOperation] = {
+    val methodName = op.getName.toString
+    if (stringConfig.returnSecretString contains methodName)
       Some(ReturnsSecretString)
-    else if (stringConfig.returnSecretArray contains op)
+    else if (stringConfig.returnSecretArray contains methodName)
       Some(ReturnsSecretArray)
-    else if (stringConfig.returnNonSecretString contains op)
+    else if (stringConfig.returnNonSecretString contains methodName)
       Some(ReturnsNonSecretString)
-    else if (stringConfig.returnNonSecretArray contains op)
+    else if (stringConfig.returnNonSecretArray contains methodName)
       Some(ReturnsNonSecretArray)
     else None
+  }
 
   override val assumeSecretByDefault = true
 }
