@@ -319,6 +319,10 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
       assertSecretsFor("Inheritance11")
     }
 
+    it("inheritance12") {
+      assertSecretsFor("Inheritance12")
+    }
+
     it("overloading") {
       assertSecretsFor("Overloading")
     }
@@ -374,8 +378,6 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
     it("string concatenation") {
       assertSecretsFor("StringConcat")
     }
-
-    // Tests that take long or don't finish
 
     it("string operations") {
       assertSecretsFor("StringOps")
