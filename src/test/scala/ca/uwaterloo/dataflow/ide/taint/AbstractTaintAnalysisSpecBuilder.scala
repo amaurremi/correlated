@@ -16,6 +16,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
   protected val shouldBeSecret      = "shouldBeSecret"
   protected val shouldNotBeSecret   = "shouldNotBeSecret"
   protected val shouldNotBeSecretCc = "shouldNotBeSecretCc"
+  protected val shouldBeSecretNonCc = "shouldBeSecretNonCc"
 
   /**
    * A map from method names to lattice elements. For a given assertion method, indicates what
@@ -76,7 +77,7 @@ class TaintAnalysisSpecBuilder(
 ) extends AbstractTaintAnalysisSpecBuilder(fileName) with IdeFromIfdsBuilder with IdeToIfds {
 
   override val assertionMap: Map[String, Boolean] =
-    Map(shouldBeSecret -> true, shouldNotBeSecret -> false)
+    Map(shouldBeSecret -> true, shouldNotBeSecret -> false, shouldBeSecretNonCc -> true)
 }
 
 class CcTaintAnalysisSpecBuilder(

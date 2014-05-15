@@ -8,7 +8,7 @@ public class Correlated1 {
         A a = (args.length == 1) ? new A() : new B();
         a.foo(secret());
         String s3 = a.bar();
-        SecretAssertions.shouldBeSecret(s3);
+        SecretAssertions.shouldBeSecretNonCc(s3);
         SecretAssertions.shouldNotBeSecretCc(s3);
     }
 
