@@ -1,7 +1,8 @@
 package ca.uwaterloo.dataflow.common
 
-import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.classLoader.{IField, IMethod}
 import com.ibm.wala.types.FieldReference
+import com.ibm.wala.ipa.cha.IClassHierarchy
 
 trait VariableFacts extends ExplodedGraphTypes with TraverseGraph with WalaInstructions {
 
@@ -25,7 +26,10 @@ trait VariableFacts extends ExplodedGraphTypes with TraverseGraph with WalaInstr
 
   case object ArrayElement extends VariableFact
 
-  case class Field(field: FieldReference) extends VariableFact
+  case class Field(field: IField) extends VariableFact
+
+  def getIField(cha: IClassHierarchy, f: FieldReference): IField =
+    cha.resolveField(f)
 
   /**
    * Represents the Λ fact

@@ -5,8 +5,8 @@ import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
 import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretStrings}
+import com.ibm.wala.classLoader.IField
 import com.ibm.wala.ssa.{DefUse, SSAFieldAccessInstruction, SSAArrayLoadInstruction, SSAInvokeInstruction}
-import com.ibm.wala.types.FieldReference
 import org.scalatest.Assertions
 
 sealed abstract class AbstractTaintAnalysisSpecBuilder (
@@ -42,10 +42,10 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
     new DefUse(enclProc(node).getIR).getDef(vn).isInstanceOf[SSAArrayLoadInstruction] &&
       isSecretType(getTypeInference(enclProc(node)).getType(vn).getTypeReference)
 
-  def isSecretField(node: Node, vn: ValueNumber, field: FieldReference): Boolean =
+  def isSecretField(node: Node, vn: ValueNumber, field: IField): Boolean =
     new DefUse(enclProc(node).getIR).getDef(vn) match {
       case fieldInstr: SSAFieldAccessInstruction =>
-        fieldInstr.getDeclaredField == field
+        getIField(node.getMethod.getClassHierarchy, fieldInstr.getDeclaredField) == field
       case _                                     =>
         false
     }

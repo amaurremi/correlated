@@ -59,10 +59,10 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             defaultResult
         //  Fields
         case putInstr: SSAPutInstruction if factSameAsVar(d1, method, putInstr.getVal) =>
-          defaultResult + Field(putInstr.getDeclaredField)
+          defaultResult + Field(getIField(method.getClassHierarchy, putInstr.getDeclaredField))
         case getInstr: SSAGetInstruction                                            =>
           d1 match {
-            case Field(field) if field == getInstr.getDeclaredField =>
+            case Field(field) if field == getIField(method.getClassHierarchy, getInstr.getDeclaredField) =>
               defaultResult + Variable(method, getInstr.getDef)
             case _                                                  =>
               defaultResult

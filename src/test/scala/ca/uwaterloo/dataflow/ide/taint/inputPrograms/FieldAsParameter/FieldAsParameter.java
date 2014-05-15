@@ -4,6 +4,14 @@ import ca.uwaterloo.dataflow.ide.taint.inputPrograms.SecretAssertions;
 
 class X {
     static String f;
+
+    X(String s) {
+        f = s;
+    }
+
+    String bar() {
+        return f;
+    }
 }
 
 public class FieldAsParameter {
@@ -13,6 +21,7 @@ public class FieldAsParameter {
     public static void main(String[] args) {
         fieldString = secret();
         f(fieldString);
+        SecretAssertions.shouldBeSecret(new X(secret()).bar());
     }
 
     static String secret() {
