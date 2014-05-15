@@ -11,6 +11,12 @@ public class Array7 {
         Integer[] integers = new Integer[1];
         integers[0] = 1;
         SecretAssertions.shouldNotBeSecret(integers[0]);
+        Object[] objects = new Object[1];
+        objects[0] = new Object();
+        SecretAssertions.shouldBeSecret(objects[0]);
+        char[] chars = new char[1];
+        chars[0] = 'n';
+        SecretAssertions.shouldBeSecret(chars[0]);
     }
 
     static String secret() {

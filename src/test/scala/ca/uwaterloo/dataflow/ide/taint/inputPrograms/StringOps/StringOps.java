@@ -12,7 +12,6 @@ public class StringOps {
         String s3 = s.substring(0);
         String s4 = s.trim();
         String s5 = s.toUpperCase();
-        SecretAssertions.shouldBeSecret(s2);
         SecretAssertions.shouldBeSecret(s3);
         SecretAssertions.shouldBeSecret(s4);
         SecretAssertions.shouldBeSecret(s5);

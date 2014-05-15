@@ -1,12 +1,21 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint
 
-import com.ibm.wala.types.{TypeReference, MethodReference}
+import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.types.{MethodReference, TypeReference}
 
 trait SecretDefinition {
 
-  def isSecret(method: MethodReference): Boolean
+  sealed trait SecretOperation
+  case object ReturnsSecretString extends SecretOperation
+  case object ReturnsNonSecretString extends SecretOperation
+  case object ReturnsSecretArray extends SecretOperation
+  case object ReturnsNonSecretArray extends SecretOperation
 
-  def isSecretSupertype(typeRef: TypeReference): Boolean
+  def isSecret(method: IMethod): Boolean
 
-  def isSecretOperation(operationName: String): Boolean
+  def isSecretType(typeRef: TypeReference): Boolean
+
+  def getOperationType(op: MethodReference): Option[SecretOperation]
+
+  def assumeSecretByDefault: Boolean
 }

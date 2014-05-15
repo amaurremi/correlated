@@ -32,9 +32,6 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   override type FactElem = ValueNumber
   override val O: Fact   = Λ
 
-  /**
-   * Functions for all other (inter-procedural) edges.
-   */
   override def ifdsOtherSuccEdges: IfdsEdgeFn =
     (ideN1, n2) => {
       val n1            = ideN1.n
@@ -52,16 +49,16 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           }
         // Arrays
         case storeInstr: SSAArrayStoreInstruction
-          if factIsRval(d1, method, storeInstr.getValue)                           =>
+          if factSameAsVar(d1, method, storeInstr.getValue)                           =>
             defaultResult + ArrayElement
         case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement              =>
           val inference = getTypeInference(enclProc(n1))
-          if (isSecretSupertype(inference.getType(loadInstr.getDef).getTypeReference))
+          if (isSecretType(inference.getType(loadInstr.getDef).getTypeReference))
             defaultResult + Variable(method, loadInstr.getDef)
           else
             defaultResult
         //  Fields
-        case putInstr: SSAPutInstruction if factIsRval(d1, method, putInstr.getVal) =>
+        case putInstr: SSAPutInstruction if factSameAsVar(d1, method, putInstr.getVal) =>
           defaultResult + Field(putInstr.getDeclaredField)
         case getInstr: SSAGetInstruction                                            =>
           d1 match {
@@ -72,7 +69,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           }
         // Casts
         case castInstr: SSACheckCastInstruction
-          if factIsRval(d1, method, castInstr.getVal)                               =>
+          if factSameAsVar(d1, method, castInstr.getVal)                               =>
             defaultResult + Variable(method, castInstr.getDef)
         case _                                                                      =>
           defaultResult
@@ -89,12 +86,9 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
    *   int x = a
    * this checks whether 'a' has the same value number as 'fact' (and corresponds to the same method).
    */
-  private[this] def factIsRval(fact: Fact, method: IMethod, vn: ValueNumber) =
+  private[this] def factSameAsVar(fact: Fact, method: IMethod, vn: ValueNumber) =
     fact == Variable(method, vn)
 
-  /**
-   * Functions for inter-procedural edges from an end node to the return node of the callee function.
-   */
   override def ifdsEndReturnEdges: IfdsEdgeFn =
     (ideN1, _) =>
       ideN1.d match {
@@ -102,16 +96,39 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         case _                                                  => Set(ideN1.d)
       }
 
-  /**
-   * Functions for intra-procedural edges from a call to the corresponding return edges.
-   */
-  override def ifdsCallReturnEdges: IfdsEdgeFn =
-    (ideN1, _) =>
-      Set(ideN1.d) // todo not for fields/static variables
+  override def ifdsCallReturnEdges: IfdsEdgeFn =  // todo should we remove fields as it's done in the IFDS paper?
+    (ideN1, _) => {
+      val default = Set(ideN1.d)
+      val n1 = ideN1.n
+      n1.getLastInstruction match {
+        case callInstr: SSAInvokeInstruction if !callInstr.isStatic =>
+          val receiver = callInstr.getReceiver
+          val method = n1.getMethod
+          if (factSameAsVar(ideN1.d, method, receiver)) {
+            val callVN = callValNum(callInstr)
+            getOperationType(callInstr.getDeclaredTarget) match {
+              case Some(opType) =>
+                opType match {
+                  case ReturnsSecretString    =>
+                    default + Variable(method, callVN.get)
+                  case ReturnsSecretArray     =>
+                    default + ArrayElement
+                  case _                      =>
+                    default
+                }
+              case None          =>
+                if (assumeSecretByDefault && callVN.isDefined)
+                  default + Variable(method, callVN.get)
+                else
+                  default
+            }
+          }
+          else default
+        case _                                                       =>
+          default
+      }
+    }
 
-  /**
-   * Functions for inter-procedural edges from a call node to the corresponding start edges.
-   */
   override def ifdsCallStartEdges: IfdsEdgeFn =
     (ideN1, n2) => {
       val n1            = ideN1.n
@@ -120,22 +137,27 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val callerMethod  = n1.getMethod
       val defaultResult = Set(d1)
       n1.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction if isSecret(targetMethod.getReference) =>
+        case callInstr: SSAInvokeInstruction if isSecret(targetMethod) =>
           if (d1 == Λ) {
             val valNum: ValueNumber = callValNum(callInstr).get
             val phis = getPhis(n1, valNum, callerMethod)
             defaultResult + Variable(callerMethod, valNum) ++ phis
           } else defaultResult
         case callInstr: SSAInvokeInstruction                           =>
-          getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
-            case Some(argNum)                                       =>
-              val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
-              Set(substituteFact)
-            case None if d1 == Λ && callValNum(callInstr).isDefined =>
-              methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get)) // todo is this the right way to keep track of return variables?
-              defaultResult
-            case None                                               =>
-              defaultResult
+          getOperationType(n2.getMethod.getReference) match {
+            case Some(opType) =>
+              Set.empty
+            case _            =>
+              getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
+                case Some(argNum)                                       =>
+                  val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
+                  Set(substituteFact)
+                case None if d1 == Λ && callValNum(callInstr).isDefined =>
+                  methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get))
+                  defaultResult
+                case None                                               =>
+                  defaultResult
+              }
           }
         case _                                                         =>
           throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
