@@ -3,14 +3,18 @@ package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
 import com.ibm.wala.types.{TypeReference, MethodReference}
 import com.typesafe.config.ConfigFactory
+import java.io.File
 import scala.collection.JavaConverters._
 
 trait SecretStrings extends SecretDefinition {
 
   private[this] val superTypeNames = Set("Ljava/lang/String", "Ljava/lang/Object")
 
-  private[this] lazy val stringOperations: Set[String] =
-    (ConfigFactory load "src/main/config/StringOperations" getStringList "stringOperations").asScala.toSet
+  private[this] lazy val stringOperations: Set[String] = {
+    val configFile = new File(System.getProperty("user.dir"), "src/main/scala/ca/uwaterloo/dataflow/ifds/instance/taint/impl/StringOperations.conf")
+    val config = ConfigFactory.parseFile(configFile)
+    (config getStringList "stringOperations.ops").asScala.toSet
+  }
 
   override def isSecret(method: MethodReference) = method.getName.toString == "secret"
 
@@ -18,5 +22,5 @@ trait SecretStrings extends SecretDefinition {
 
   override def isSecretOperation(operationName: String): Boolean =
     stringOperations contains operationName
-  // todo split? toCharArray? subSequence? clone
+  // todo split? toCharArray? subSequence? clone?
 }
