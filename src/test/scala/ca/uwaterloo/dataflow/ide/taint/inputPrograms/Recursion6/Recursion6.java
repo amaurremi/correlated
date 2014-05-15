@@ -11,7 +11,7 @@ public class Recursion6 {
         SecretAssertions.shouldBeSecret(s2);
         String s3 = "not secret";
         String s4 = a.foo(s3, 5);
-        SecretAssertions.shouldNotBeSecret(s4);
+        SecretAssertions.shouldBeSecret(s4); // because the analysis is conservative
     }
 
     static String secret() {

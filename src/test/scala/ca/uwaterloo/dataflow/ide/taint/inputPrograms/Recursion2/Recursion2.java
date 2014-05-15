@@ -10,7 +10,7 @@ public class Recursion2 {
         SecretAssertions.shouldBeSecret(s2);
         String s3 = "not secret";
         String s4 = foo(s3, 5);
-        SecretAssertions.shouldNotBeSecret(s4);
+        SecretAssertions.shouldBeSecret(s4); // because the analysis is conservative
     }
 
     public static String foo(String s, int n){
