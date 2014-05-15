@@ -3,25 +3,48 @@ package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.types.TypeReference
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
 import scala.collection.JavaConverters._
 
 trait SecretStrings extends SecretDefinition {
 
-  private[this] val superTypeNames = Set("Ljava/lang/String", "Ljava/lang/Object")
-
-  private[this] lazy val stringOperations: Set[String] = {
+  private[this] case class SecretConfig(
+    returnSecretString: Set[String],
+    returnNonSecretString: Set[String],
+    returnSecretArray: Set[String],
+    returnNonSecretArray: Set[String],
+    superTypes: Set[String]
+  )
+  
+  private[this] lazy val stringConfig: SecretConfig = {
     val configPath = "src/main/scala/ca/uwaterloo/dataflow/ifds/instance/taint/impl/StringOperations.conf"
-    val config = ConfigFactory.parseFile(new File(System.getProperty("user.dir"), configPath))
-    (config getStringList "stringOperations.ops").asScala.toSet
+    val config: Config = ConfigFactory.parseFile(new File(System.getProperty("user.dir"), configPath))
+    val operationConf = config getConfig "stringOperations"
+    val returnSecretString = (operationConf getStringList "secretStrings").asScala.toSet
+    val returnNonSecretString = (operationConf getStringList "nonSecretStrings").asScala.toSet
+    val returnSecretArray = (operationConf getStringList "secretArrays").asScala.toSet
+    val returnNonSecretArray = (operationConf getStringList "nonSecretArrays").asScala.toSet
+    val superTypes = (config getStringList "secretTypes.types").asScala.toSet
+    SecretConfig(returnSecretString, returnNonSecretString, returnSecretArray, returnNonSecretArray, superTypes)
   }
 
   override def isSecret(method: IMethod) = method.getReference.getName.toString == "secret"
 
-  override def isSecretSupertype(typeRef: TypeReference) = superTypeNames contains typeRef.getName.toString
+  override def isSecretType(typeRef: TypeReference) =
+    stringConfig.superTypes contains typeRef.getName.toString
 
-  override def isSecretOperation(operationName: String): Boolean =
-    stringOperations contains operationName
-  // todo split? toCharArray? subSequence? clone?
+  // todo subSequence?
+  override def getOperationType(op: String): Option[SecretOperation] =
+    if (stringConfig.returnSecretString contains op)
+      Some(ReturnsSecretString)
+    else if (stringConfig.returnSecretArray contains op)
+      Some(ReturnsSecretArray)
+    else if (stringConfig.returnNonSecretString contains op)
+      Some(ReturnsNonSecretString)
+    else if (stringConfig.returnNonSecretArray contains op)
+      Some(ReturnsNonSecretArray)
+    else None
+
+  override val assumeSecretByDefault = true
 }

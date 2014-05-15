@@ -32,9 +32,6 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   override type FactElem = ValueNumber
   override val O: Fact   = Λ
 
-  /**
-   * Functions for all other (inter-procedural) edges.
-   */
   override def ifdsOtherSuccEdges: IfdsEdgeFn =
     (ideN1, n2) => {
       val n1            = ideN1.n
@@ -56,7 +53,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             defaultResult + ArrayElement
         case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement              =>
           val inference = getTypeInference(enclProc(n1))
-          if (isSecretSupertype(inference.getType(loadInstr.getDef).getTypeReference))
+          if (isSecretType(inference.getType(loadInstr.getDef).getTypeReference))
             defaultResult + Variable(method, loadInstr.getDef)
           else
             defaultResult
@@ -92,9 +89,6 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   private[this] def factIsRval(fact: Fact, method: IMethod, vn: ValueNumber) =
     fact == Variable(method, vn)
 
-  /**
-   * Functions for inter-procedural edges from an end node to the return node of the callee function.
-   */
   override def ifdsEndReturnEdges: IfdsEdgeFn =
     (ideN1, _) =>
       ideN1.d match {
@@ -102,16 +96,11 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         case _                                                  => Set(ideN1.d)
       }
 
-  /**
-   * Functions for intra-procedural edges from a call to the corresponding return edges.
-   */
   override def ifdsCallReturnEdges: IfdsEdgeFn =
     (ideN1, _) =>
+
       Set(ideN1.d) // todo should we remove fields as it's done in the IFDS paper?
 
-  /**
-   * Functions for inter-procedural edges from a call node to the corresponding start edges.
-   */
   override def ifdsCallStartEdges: IfdsEdgeFn =
     (ideN1, n2) => {
       val n1            = ideN1.n

@@ -40,7 +40,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
 
   def isSecretArrayElement(node: Node, vn: ValueNumber): Boolean =
     new DefUse(enclProc(node).getIR).getDef(vn).isInstanceOf[SSAArrayLoadInstruction] &&
-      isSecretSupertype(getTypeInference(enclProc(node)).getType(vn).getTypeReference)
+      isSecretType(getTypeInference(enclProc(node)).getType(vn).getTypeReference)
 
   def isSecretField(node: Node, vn: ValueNumber, field: FieldReference): Boolean =
     new DefUse(enclProc(node).getIR).getDef(vn) match {
@@ -56,7 +56,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
   private[this] def getResultAtCallNode(node: Node, instr: SSAInvokeInstruction): Boolean =
     ifdsResult.get(node) match {
       case Some(facts) if instr.getNumberOfParameters > 0 =>
-        val num: ValueNumber = getValNumFromParameterNum(instr, 0)
+        val num = getValNumFromParameterNum(instr, 0)
         facts exists {
           case Variable(method, elem) =>
             method == node.getMethod && elem == num
