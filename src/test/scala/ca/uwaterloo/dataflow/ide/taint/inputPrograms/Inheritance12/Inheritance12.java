@@ -7,14 +7,14 @@ class X {
 }
 
 class Y extends X {
-    public String foo(String s){ return "N"; }
+    public String foo(String s){ return s; }
 }
 
 public class Inheritance12 {
 
     public static void main(String[] args) {
         X x = args.length == 0 ? new Y() : new X();
-        SecretAssertions.shouldNotBeSecret(x.foo(secret()));
+        SecretAssertions.shouldBeSecret(x.foo(secret()));
     }
 
     static String secret() {
