@@ -42,14 +42,15 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr)         =>
           d1 match {
             // we are returning a secret value, because an existing (i.e. secret) fact d1 is returned
-            case v@Variable(m, _) if isFactReturned(v, n1, returnInstr.getResult)  =>
-              (methodToReturnVars get m).asScala.toSet + d1
-            case _                                                                 =>
+            case v@Variable(m, _)
+              if isFactReturned(v, n1, returnInstr.getResult) =>
+                (methodToReturnVars get m).asScala.toSet + d1
+            case _                                            =>
               defaultResult
           }
         // Arrays
         case storeInstr: SSAArrayStoreInstruction
-          if factSameAsVar(d1, method, storeInstr.getValue)                           =>
+          if factSameAsVar(d1, method, storeInstr.getValue)                        =>
             defaultResult + ArrayElement
         case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement              =>
           val inference = getTypeInference(enclProc(n1))
@@ -60,18 +61,19 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         //  Fields
         case putInstr: SSAPutInstruction if factSameAsVar(d1, method, putInstr.getVal) =>
           defaultResult + Field(getIField(method.getClassHierarchy, putInstr.getDeclaredField))
-        case getInstr: SSAGetInstruction                                            =>
+        case getInstr: SSAGetInstruction                                               =>
           d1 match {
-            case Field(field) if field == getIField(method.getClassHierarchy, getInstr.getDeclaredField) =>
-              defaultResult + Variable(method, getInstr.getDef)
-            case _                                                  =>
+            case Field(field)
+              if field == getIField(method.getClassHierarchy, getInstr.getDeclaredField) =>
+                defaultResult + Variable(method, getInstr.getDef)
+            case _                                                                       =>
               defaultResult
           }
         // Casts
         case castInstr: SSACheckCastInstruction
           if factSameAsVar(d1, method, castInstr.getVal)                               =>
             defaultResult + Variable(method, castInstr.getDef)
-        case _                                                                      =>
+        case _                                                                         =>
           defaultResult
       }
     }
@@ -132,30 +134,26 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val callerMethod  = n1.getMethod
       val defaultResult = Set(d1)
       n1.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction if isSecret(targetMethod) =>
+        case callInstr: SSAInvokeInstruction if isSecret(targetMethod)                    =>
           if (d1 == Λ) {
             val valNum: ValueNumber = callValNum(callInstr).get
             val phis = getPhis(n1, valNum, callerMethod)
             defaultResult + Variable(callerMethod, valNum) ++ phis
           } else defaultResult
-        case callInstr: SSAInvokeInstruction                           =>
-          getOperationType(n2.getMethod.getReference) match {
-            case Some(opType) =>
-              Set.empty
-            case _            =>
-              getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
-                case Some(argNum)                                       =>
-                  val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
-                  Set(substituteFact)
-                case None if d1 == Λ && callValNum(callInstr).isDefined =>
-                  methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get))
-                  defaultResult
-                case None                                               =>
-                  defaultResult
-              }
+        case callInstr: SSAInvokeInstruction
+          if callInstr.getDeclaredTarget.getDeclaringClass.getName.toString == secretType => // todo is this enough to check that we're invoking a library call?
+            Set.empty
+        case callInstr: SSAInvokeInstruction                                              =>
+          getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
+            case Some(argNum)                                       =>
+              val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
+              Set(substituteFact)
+            case None if d1 == Λ && callValNum(callInstr).isDefined =>
+              methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get))
+              defaultResult
+            case None                                               =>
+              defaultResult
           }
-        case _                                                         =>
-          throw new UnsupportedOperationException("callStartEdges invoked on non-call instruction")
       }
     }
 

@@ -35,6 +35,8 @@ trait SecretStrings extends SecretDefinition {
   override def isSecret(method: IMethod) =
     Method(method) == stringConfig.secretMethod
 
+  override def secretType: String = stringConfig.secretMethod.retType
+
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeRef.getName.toString
 
@@ -45,6 +47,7 @@ trait SecretStrings extends SecretDefinition {
       None
     else if (stringConfig.returnSecretArray contains methodName)
       Some(ReturnsSecretArray)
-    else Some(ReturnsSecretValue)
+    else
+      Some(ReturnsSecretValue)
   }
 }

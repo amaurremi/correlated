@@ -12,6 +12,8 @@ trait SecretDefinition {
 
   def isSecret(method: IMethod): Boolean
 
+  def secretType: String
+
   def isSecretArrayElementType(typeRef: TypeReference): Boolean
 
   def getOperationType(op: MethodReference): Option[SecretOperation]
