@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.ide.taint
 
-import ca.uwaterloo.dataflow.common.{AbstractIdeToIfds, VariableFacts}
+import ca.uwaterloo.dataflow.common.{Method, AbstractIdeToIfds, VariableFacts}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
@@ -13,15 +13,17 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
   fileName: String
 ) extends IfdsTaintAnalysis(fileName) with VariableFacts with AbstractIdeToIfds with Assertions with SecretStrings {
 
-  protected val secret                    = "secret"
-  protected val notSecret                 = "notSecret"
-  protected val secretStandardNotSecretCc = "secretStandardNotSecretCc"
+  def secretAssertion(name: String) = Method(name, 1, isStatic = true, "void")
+
+  protected val secret                    = secretAssertion("secret")
+  protected val notSecret                 = secretAssertion("notSecret")
+  protected val secretStandardNotSecretCc = secretAssertion("secretStandardNotSecretCc")
 
   /**
    * A map from method names to lattice elements. For a given assertion method, indicates what
    * lattice element should be expected.
    */
-  val assertionMap: Map[String, Boolean]
+  val assertionMap: Map[Method, Boolean]
 
   def assertSecretValues() {
     traverseSupergraph collect {
@@ -31,7 +33,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
       case (node, invokeInstr) =>
         targetStartNodes(node) foreach {
           startNode =>
-            assertionMap.get(getMethodName(startNode)) foreach {
+            assertionMap.get(Method(startNode.getMethod)) foreach {
               assertResult(_)(getResultAtCallNode(node, invokeInstr))
             }
         }
@@ -40,7 +42,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
 
   def isSecretArrayElement(node: Node, vn: ValueNumber): Boolean =
     new DefUse(enclProc(node).getIR).getDef(vn).isInstanceOf[SSAArrayLoadInstruction] &&
-      isSecretType(getTypeInference(enclProc(node)).getType(vn).getTypeReference)
+      isSecretArrayElementType(getTypeInference(enclProc(node)).getType(vn).getTypeReference)
 
   def isSecretField(node: Node, vn: ValueNumber, field: IField): Boolean =
     new DefUse(enclProc(node).getIR).getDef(vn) match {
@@ -75,7 +77,7 @@ class TaintAnalysisSpecBuilder(
   fileName: String
 ) extends AbstractTaintAnalysisSpecBuilder(fileName) with IdeFromIfdsBuilder with IdeToIfds {
 
-  override val assertionMap: Map[String, Boolean] =
+  override val assertionMap: Map[Method, Boolean] =
     Map(secret -> true, notSecret -> false, secretStandardNotSecretCc -> true)
 }
 
@@ -83,6 +85,6 @@ class CcTaintAnalysisSpecBuilder(
   fileName: String
 ) extends AbstractTaintAnalysisSpecBuilder(fileName) with CorrelatedCallsToIfds with CcReceivers {
 
-  override val assertionMap: Map[String, Boolean] =
+  override val assertionMap: Map[Method, Boolean] =
     Map(secret -> true, notSecret -> false, secretStandardNotSecretCc -> false)
 }

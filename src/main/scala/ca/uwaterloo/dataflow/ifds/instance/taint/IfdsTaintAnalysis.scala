@@ -53,7 +53,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             defaultResult + ArrayElement
         case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement              =>
           val inference = getTypeInference(enclProc(n1))
-          if (isSecretType(inference.getType(loadInstr.getDef).getTypeReference))
+          if (isSecretArrayElementType(inference.getType(loadInstr.getDef).getTypeReference))
             defaultResult + Variable(method, loadInstr.getDef)
           else
             defaultResult
@@ -109,18 +109,13 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             getOperationType(callInstr.getDeclaredTarget) match {
               case Some(opType) =>
                 opType match {
-                  case ReturnsSecretString    =>
+                  case ReturnsSecretValue    =>
                     default + Variable(method, callVN.get)
                   case ReturnsSecretArray     =>
                     default + ArrayElement
-                  case _                      =>
-                    default
                 }
               case None          =>
-                if (assumeSecretByDefault && callVN.isDefined)
-                  default + Variable(method, callVN.get)
-                else
-                  default
+                default
             }
           }
           else default
