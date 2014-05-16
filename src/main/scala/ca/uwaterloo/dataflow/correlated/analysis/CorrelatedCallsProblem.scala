@@ -60,7 +60,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       val n1 = ideN1.n
       val d1 = ideN1.d
       val d2s = ifdsCallReturnEdges(ideN1, n2)
-      if (d1 == Λ) {
+      /*if (d1 == Λ) {
         val edgeFn = n1.getLastInstruction match {
           case invokeInstr: SSAInvokeInstruction if !invokeInstr.isStatic =>
             getCcReceiver(invokeInstr.getReceiver, n1.getMethod) map {
@@ -77,7 +77,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
           case None    =>
             d2s flatMap idFactFunPairSet
         })
-      } else d2s flatMap idFactFunPairSet
+      } else*/ d2s flatMap idFactFunPairSet
     }
 
   override def callStartEdges: IdeEdgeFn =
@@ -90,7 +90,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
           case invokeInstr: SSAInvokeInstruction =>
             getCcReceiver(invokeInstr.getReceiver, n1.getMethod) match {
               case Some(rec) =>
-                CorrelatedFunction(Map(rec -> ComposedTypes(SetType(staticTypes(n1)), TypesTop)))
+                CorrelatedFunction(Map(rec -> ComposedTypes(SetType(staticTypes(n2)), TypesTop)))
               case None                          =>
                 Id
             }
