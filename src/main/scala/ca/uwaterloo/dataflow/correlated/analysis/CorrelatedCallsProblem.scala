@@ -17,6 +17,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
   override def endReturnEdges: IdeEdgeFn =
     (ideN1, n2) => {
       val d2s = ifdsEndReturnEdges(ideN1, n2)
+      // setting local variables to bottom (all types)
       val optLocalVar = ideN1.d match {
         case Variable(method, elem) if method == ideN1.n.getMethod => // todo what if the receiver is a field?
           Some(elem)
@@ -95,18 +96,14 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
             }
         }
         val d2s = ifdsCallStartEdges(ideN1, n2) - Λ
-        val nonLambdaPairs = d2s map {
-          FactFunPair(_, edgeFn)
-        }
+        val nonLambdaPairs = d2s map { FactFunPair(_, edgeFn) }
         val maybeLambdaSet = if (ideN1.d == Λ) idFactFunPairSet(Λ) else Set.empty
         nonLambdaPairs ++ maybeLambdaSet
       }
 
-  private[this] def staticTypes(node: Node): Set[IClass] =
-    (getCalledNodes(node) flatMap {
-      n =>
-        val declaringClass = enclProc(n).getMethod.getDeclaringClass
-        val subClasses = getSubClasses(declaringClass)
-        subClasses + declaringClass
-    }).toSet
+  private[this] def staticTypes(node: Node): Set[IClass] = {
+    val declaringClass = enclProc(node).getMethod.getDeclaringClass
+    val subClasses = getSubClasses(declaringClass)
+    (subClasses + declaringClass).toSet
+}
 }
