@@ -52,33 +52,9 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
         false
     }
 
-  /**
-   * Creates a new fact
-   */
   override def callReturnEdges: IdeEdgeFn =
-    (ideN1, n2) => {
-      val n1 = ideN1.n
-      val d1 = ideN1.d
-      val d2s = ifdsCallReturnEdges(ideN1, n2)
-      /*if (d1 == Λ) {
-        val edgeFn = n1.getLastInstruction match {
-          case invokeInstr: SSAInvokeInstruction if !invokeInstr.isStatic =>
-            getCcReceiver(invokeInstr.getReceiver, n1.getMethod) map {
-              rec =>
-                CorrelatedFunction(Map(
-                  rec -> ComposedTypes(TypesBottom, TypesBottom)
-              ))
-            }
-          case _ => None
-        }
-        idFactFunPairSet(Λ) ++ (edgeFn match {
-          case Some(f) =>
-            (d2s - Λ) map { FactFunPair(_, f) }
-          case None    =>
-            d2s flatMap idFactFunPairSet
-        })
-      } else*/ d2s flatMap idFactFunPairSet
-    }
+    (ideN1, n2) =>
+      ifdsCallReturnEdges(ideN1, n2) flatMap idFactFunPairSet
 
   override def callStartEdges: IdeEdgeFn =
     (ideN1, n2) =>
@@ -103,7 +79,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
 
   private[this] def staticTypes(node: Node): Set[IClass] = {
     val declaringClass = enclProc(node).getMethod.getDeclaringClass
-    val subClasses = getSubClasses(declaringClass)
+    val subClasses = Set.empty[IClass] //getSubClasses(declaringClass)
     (subClasses + declaringClass).toSet
 }
 }
