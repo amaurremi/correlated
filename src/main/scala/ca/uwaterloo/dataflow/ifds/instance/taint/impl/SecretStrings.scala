@@ -29,7 +29,10 @@ trait SecretStrings extends SecretDefinition {
     SecretConfig(returnSecretString, returnNonSecretString, returnSecretArray, returnNonSecretArray, superTypes)
   }
 
-  override def isSecret(method: IMethod) = method.getReference.getName.toString == "secret"
+  override def isSecret(method: IMethod) =
+    method.getReference.getName.toString == "secret" &&
+      method.getNumberOfParameters == 0 &&
+      isSecretType(method.getReturnType)
 
   override def isSecretType(typeRef: TypeReference) =
     stringConfig.superTypes contains typeRef.getName.toString
