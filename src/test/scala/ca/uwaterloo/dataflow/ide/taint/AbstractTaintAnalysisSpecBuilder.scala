@@ -13,7 +13,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
   fileName: String
 ) extends IfdsTaintAnalysis(fileName) with VariableFacts with AbstractIdeToIfds with Assertions with SecretStrings {
 
-  def secretAssertion(name: String) = Method(name, 1, isStatic = true, "void")
+  def secretAssertion(name: String) = Method(name, 1, isStatic = true, "V")
 
   protected val secret                    = secretAssertion("secret")
   protected val notSecret                 = secretAssertion("notSecret")

@@ -13,7 +13,8 @@ trait SecretStrings extends SecretDefinition {
   private[this] case class SecretConfig(
     whiteList: Set[String],
     returnSecretArray: Set[String],
-    arrayElemTypes: Set[String]
+    arrayElemTypes: Set[String],
+    secretMethod: Method
   )
   
   private[this] lazy val stringConfig: SecretConfig = {
@@ -23,10 +24,16 @@ trait SecretStrings extends SecretDefinition {
     val whiteList = (operationConf getStringList "whiteList").asScala.toSet
     val returnSecretArray = (operationConf getStringList "secretArrays").asScala.toSet
     val superTypes = (config getStringList "secretTypes.types").asScala.toSet
-    SecretConfig(whiteList, returnSecretArray, superTypes)
+    val methodConfig = config getConfig "secretMethod"
+    val name = methodConfig getString "name"
+    val tpe = methodConfig getString "type"
+    val params = methodConfig getInt "params"
+    val static = methodConfig getBoolean "static"
+    SecretConfig(whiteList, returnSecretArray, superTypes, Method(name, params, static, tpe))
   }
 
-  override def isSecret(method: IMethod) = Method(method) == Method("secret", parameterNum = 0, isStatic = true, "String")
+  override def isSecret(method: IMethod) =
+    Method(method) == stringConfig.secretMethod
 
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeRef.getName.toString
