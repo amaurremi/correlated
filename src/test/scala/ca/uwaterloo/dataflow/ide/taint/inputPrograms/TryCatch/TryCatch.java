@@ -7,16 +7,16 @@ public class TryCatch {
     public static void main(String[] args) {
         try {
             String s1 = secret();
-            SecretAssertions.shouldBeSecret(s1);
-            SecretAssertions.shouldNotBeSecret("not secret");
+            SecretAssertions.secret(s1);
+            SecretAssertions.notSecret("not secret");
         } catch(Exception e) {
             String s2 = secret();
-            SecretAssertions.shouldBeSecret(s2);
-            SecretAssertions.shouldNotBeSecret("not secret");
+            SecretAssertions.secret(s2);
+            SecretAssertions.notSecret("not secret");
         } finally {
             String s3 = secret();
-            SecretAssertions.shouldBeSecret(s3);
-            SecretAssertions.shouldNotBeSecret("not secret");
+            SecretAssertions.secret(s3);
+            SecretAssertions.notSecret("not secret");
         }
     }
 

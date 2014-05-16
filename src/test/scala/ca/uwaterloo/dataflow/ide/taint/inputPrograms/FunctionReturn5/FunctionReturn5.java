@@ -6,7 +6,7 @@ public class FunctionReturn5 {
 
     public static void main(String[] args) {
        String s = (new X()).f();
-       SecretAssertions.shouldBeSecret(s);
+       SecretAssertions.secret(s);
     }
 
     static class X {

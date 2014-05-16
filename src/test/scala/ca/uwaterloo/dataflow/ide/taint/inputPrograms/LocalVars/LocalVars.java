@@ -6,7 +6,7 @@ public class LocalVars {
 
     public static void main(String[] args) {
         String x = secret();
-        SecretAssertions.shouldBeSecret(x);
+        SecretAssertions.secret(x);
     }
 
     static String secret() {

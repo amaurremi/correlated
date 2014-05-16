@@ -11,8 +11,7 @@ public class Correlated2 {
         String s1 = secret();
         String s2 = a.foo(s1);
         String s3 = a.bar(s2);
-        SecretAssertions.shouldBeSecretNonCc(s3);
-        SecretAssertions.shouldNotBeSecretCc(s3);
+        SecretAssertions.secretStandardNotSecretCc(s3);
 
     }
 

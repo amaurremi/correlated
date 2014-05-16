@@ -9,9 +9,9 @@ public class Ternary {
         String t = "not secret";
         String r = (args.length == 0) ? s : t;
 
-        SecretAssertions.shouldBeSecret(s);
-        SecretAssertions.shouldNotBeSecret(t);
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
+        SecretAssertions.notSecret(t);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

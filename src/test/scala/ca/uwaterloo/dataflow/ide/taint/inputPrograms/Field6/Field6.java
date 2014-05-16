@@ -11,11 +11,11 @@ public class Field6 {
 
     public static void main(String[] args) {
         String s = secret();
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
         X.f = s;
         X.g = "not secret";
-        SecretAssertions.shouldBeSecret(X.f);
-        SecretAssertions.shouldNotBeSecret(X.g); // field-sensitive
+        SecretAssertions.secret(X.f);
+        SecretAssertions.notSecret(X.g); // field-sensitive
     }
 
     static String secret() {

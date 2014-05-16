@@ -11,7 +11,7 @@ public class Do2 {
             s = secret();
             i++;
         } while (i < 10);
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

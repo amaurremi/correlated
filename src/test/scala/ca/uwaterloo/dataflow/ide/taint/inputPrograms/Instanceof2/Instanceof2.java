@@ -8,7 +8,7 @@ public class Instanceof2 {
         Object o = "not secret";
         if (o instanceof String){
           String s = (String)o; 
-          SecretAssertions.shouldNotBeSecret(s);
+          SecretAssertions.notSecret(s);
         }
     }
 

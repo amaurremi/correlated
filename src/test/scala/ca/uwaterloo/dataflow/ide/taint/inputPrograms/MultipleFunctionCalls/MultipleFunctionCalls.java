@@ -12,7 +12,7 @@ public class MultipleFunctionCalls{
     }
 
     static String f(String s) {
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
         return s;
     }
 

@@ -8,7 +8,7 @@ public class NestedIf2 {
         String s = "not secret";
         String t = secret();
         if (args != null) {
-            SecretAssertions.shouldNotBeSecret(s);
+            SecretAssertions.notSecret(s);
             if (args.length > 5){
                 s = "not secret";
             } else {
@@ -17,7 +17,7 @@ public class NestedIf2 {
         } else {
             s = "not secret";
         }
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

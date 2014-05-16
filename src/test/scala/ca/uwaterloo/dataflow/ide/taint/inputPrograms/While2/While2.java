@@ -11,7 +11,7 @@ public class While2 {
             s = secret();
             i++;
         }
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

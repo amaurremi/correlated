@@ -15,7 +15,7 @@ public class Generics2 {
         Cell<String> cell = new Cell<String>();
         cell.set(s);
         String s2 = cell.get();
-        SecretAssertions.shouldBeSecret(s2);
+        SecretAssertions.secret(s2);
     }
 
     static String secret() {

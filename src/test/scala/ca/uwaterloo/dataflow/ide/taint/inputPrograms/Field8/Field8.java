@@ -7,7 +7,7 @@ public class Field8 {
     static String s = secret();
 
     public static void main(String[] args) {
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

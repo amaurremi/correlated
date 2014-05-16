@@ -8,10 +8,10 @@ public class Recursion6 {
         A a = new A();
         String s1 = secret();
         String s2 = a.foo(s1, 5);
-        SecretAssertions.shouldBeSecret(s2);
+        SecretAssertions.secret(s2);
         String s3 = "not secret";
         String s4 = a.foo(s3, 5);
-        SecretAssertions.shouldBeSecret(s4); // because the analysis is conservative
+        SecretAssertions.secret(s4); // because the analysis is conservative
     }
 
     static String secret() {

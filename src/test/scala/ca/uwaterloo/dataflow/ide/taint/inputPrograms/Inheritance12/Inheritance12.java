@@ -14,7 +14,7 @@ public class Inheritance12 {
 
     public static void main(String[] args) {
         X x = args.length == 0 ? new Y() : new X();
-        SecretAssertions.shouldBeSecret(x.foo(secret()));
+        SecretAssertions.secret(x.foo(secret()));
     }
 
     static String secret() {

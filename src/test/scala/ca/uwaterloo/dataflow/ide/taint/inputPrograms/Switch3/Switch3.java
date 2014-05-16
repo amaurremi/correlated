@@ -13,7 +13,7 @@ public class Switch3 {
             default:
                s = "not secret";
         }
-        SecretAssertions.shouldNotBeSecret(s);
+        SecretAssertions.notSecret(s);
     }
 
     static String secret() {

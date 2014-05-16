@@ -19,7 +19,7 @@ public class Inheritance4 {
         } else {
           x = new Y();
         }
-        SecretAssertions.shouldBeSecret(x.foo());
+        SecretAssertions.secret(x.foo());
     }
 
     static String secret() {

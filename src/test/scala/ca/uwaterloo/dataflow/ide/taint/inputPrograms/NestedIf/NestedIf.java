@@ -15,7 +15,7 @@ public class NestedIf {
         } else {
             s = "not secret";
         }
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

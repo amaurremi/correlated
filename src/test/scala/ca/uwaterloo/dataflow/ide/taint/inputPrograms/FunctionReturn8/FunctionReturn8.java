@@ -6,9 +6,9 @@ public class FunctionReturn8 {
 
     public static void main(String[] args) {
        String s1 = (new X()).f(secret());
-       SecretAssertions.shouldBeSecret(s1);
+       SecretAssertions.secret(s1);
        String s2 = (new X()).f("not secret");
-       SecretAssertions.shouldNotBeSecret(s2);
+       SecretAssertions.notSecret(s2);
     }
 
     static class X {

@@ -6,7 +6,7 @@ public class ReturnSecret {
 
     public static void main(String[] args) {
         String s = f();
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String f() {

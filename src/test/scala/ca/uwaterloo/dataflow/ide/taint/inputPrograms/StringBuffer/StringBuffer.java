@@ -8,7 +8,7 @@ public class StringBuffer {
        String s1 = secret();
        java.lang.StringBuffer sb = new java.lang.StringBuffer(s1);
        String s3 = sb.toString();
-       SecretAssertions.shouldBeSecret(s3);
+       SecretAssertions.secret(s3);
     }
 
     static String f() {

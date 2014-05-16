@@ -10,9 +10,9 @@ public class Field2 {
 
     public static void main(String[] args) {
         String s = "not secret";
-        SecretAssertions.shouldNotBeSecret(s);
+        SecretAssertions.notSecret(s);
         X.f = s;
-        SecretAssertions.shouldNotBeSecret(X.f);
+        SecretAssertions.notSecret(X.f);
     }
 
     static String secret() {

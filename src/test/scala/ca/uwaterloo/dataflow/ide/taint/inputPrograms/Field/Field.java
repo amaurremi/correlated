@@ -10,11 +10,11 @@ public class Field {
 
     public static void main(String[] args) {
         String s = secret();
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
         X.f = s;
-        SecretAssertions.shouldBeSecret(X.f);
+        SecretAssertions.secret(X.f);
         X.f = "not secret";
-        SecretAssertions.shouldBeSecret(X.f);
+        SecretAssertions.secret(X.f);
     }
 
     static String secret() {

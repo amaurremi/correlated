@@ -12,7 +12,7 @@ public class Cast5 {
            x = "not secret";
         }
         String s = (String)x;
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

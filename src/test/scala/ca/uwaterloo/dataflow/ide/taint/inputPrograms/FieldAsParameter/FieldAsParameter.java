@@ -21,7 +21,7 @@ public class FieldAsParameter {
     public static void main(String[] args) {
         fieldString = secret();
         f(fieldString);
-        SecretAssertions.shouldBeSecret(new X(secret()).bar());
+        SecretAssertions.secret(new X(secret()).bar());
     }
 
     static String secret() {
@@ -29,6 +29,6 @@ public class FieldAsParameter {
     }
 
     static void f(String string) {
-        SecretAssertions.shouldBeSecret(string);
+        SecretAssertions.secret(string);
     }
 }

@@ -10,8 +10,7 @@ public class Correlated3 {
  
         String s1 = secret();
         String s3 = a.makeCalls(s1);
-        SecretAssertions.shouldBeSecretNonCc(s3);
-        SecretAssertions.shouldNotBeSecretCc(s3);
+        SecretAssertions.secretStandardNotSecretCc(s3);
     }
 
     static String secret() {

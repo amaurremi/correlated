@@ -8,7 +8,7 @@ public class StringConcat {
        String s1 = secret();
        String s2 = "not secret";
        String s3 = s1 + s2;
-       SecretAssertions.shouldBeSecret(s3);
+       SecretAssertions.secret(s3);
     }
 
     static String f() {

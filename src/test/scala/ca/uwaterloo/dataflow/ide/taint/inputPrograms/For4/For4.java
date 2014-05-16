@@ -12,7 +12,7 @@ public class For4 {
                 continue;
             }
         }
-        SecretAssertions.shouldBeSecret(s); // the analysis doesn't even know that we always enter the loop
+        SecretAssertions.secret(s); // the analysis doesn't even know that we always enter the loop
     }
 
     static String secret() {

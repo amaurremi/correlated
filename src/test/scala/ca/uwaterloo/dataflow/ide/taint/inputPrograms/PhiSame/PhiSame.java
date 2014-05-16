@@ -11,7 +11,7 @@ public class PhiSame {
         } else {
             s = secret();
         }
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

@@ -10,7 +10,7 @@ public class If2 {
         if (args != null) {
             s = "not secret";
         }
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

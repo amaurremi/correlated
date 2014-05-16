@@ -7,10 +7,10 @@ public class Cast {
 
     public static void main(String[] args) {
         String s = secret();
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
         Object o = s;
         String s2 = (String) o;
-        SecretAssertions.shouldBeSecret(s2);
+        SecretAssertions.secret(s2);
     }
 
     static String secret() {

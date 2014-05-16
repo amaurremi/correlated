@@ -8,7 +8,7 @@ public class Field10 {
     public static void main(String[] args) {
         A a = new A();
         B b = new B();
-        SecretAssertions.shouldBeSecret(B.bs);
+        SecretAssertions.secret(B.bs);
     }
 
     static String secret() {

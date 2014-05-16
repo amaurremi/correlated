@@ -11,7 +11,7 @@ public class Do {
             s = "not secret";
             i++;
         } while (i < 10);
-        SecretAssertions.shouldNotBeSecret(s);
+        SecretAssertions.notSecret(s);
     }
 
     static String secret() {

@@ -11,7 +11,7 @@ public class If4 {
         } else {
             s = secret();
         }
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

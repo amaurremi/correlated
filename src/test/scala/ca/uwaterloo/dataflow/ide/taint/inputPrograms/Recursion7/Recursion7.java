@@ -8,7 +8,7 @@ public class Recursion7 {
         A a = new A();
         String s1 = secret();
         String s2 = a.foo(s1, 5);
-        SecretAssertions.shouldBeSecret(s2);
+        SecretAssertions.secret(s2);
     }
 
     static String secret() {

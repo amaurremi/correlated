@@ -12,7 +12,7 @@ public class For3 {
 		 break;
  	    }
         }
-        SecretAssertions.shouldNotBeSecret(s);
+        SecretAssertions.notSecret(s);
     }
 
     static String secret() {

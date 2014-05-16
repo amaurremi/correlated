@@ -12,7 +12,7 @@ public class FunctionCall2 {
 
     private static class X {
          public String f(String s) {
-            SecretAssertions.shouldBeSecret(s);
+            SecretAssertions.secret(s);
             return s;
         }
     }

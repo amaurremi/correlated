@@ -14,6 +14,6 @@ public class ArrayElementAsParameter {
     }
 
     static void f(String string) {
-        SecretAssertions.shouldBeSecret(string);
+        SecretAssertions.secret(string);
     }
 }

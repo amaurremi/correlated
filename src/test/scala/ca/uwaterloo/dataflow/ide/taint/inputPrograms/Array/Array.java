@@ -8,7 +8,7 @@ public class Array {
         String s = secret();
         String[] strings = new String[1];
         strings[0] = s;
-        SecretAssertions.shouldBeSecret(strings[0]);
+        SecretAssertions.secret(strings[0]);
     }
 
     static String secret() {

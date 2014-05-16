@@ -6,15 +6,15 @@ public class StringOps {
 
     public static void main(String[] args) {
         String s = secret();
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
         String s2 = "".trim();
-        SecretAssertions.shouldNotBeSecret(s2);
+        SecretAssertions.notSecret(s2);
         String s3 = s.substring(0);
         String s4 = s.trim();
         String s5 = s.toUpperCase();
-        SecretAssertions.shouldBeSecret(s3);
-        SecretAssertions.shouldBeSecret(s4);
-        SecretAssertions.shouldBeSecret(s5);
+        SecretAssertions.secret(s3);
+        SecretAssertions.secret(s4);
+        SecretAssertions.secret(s5);
     }
 
     static String secret() {

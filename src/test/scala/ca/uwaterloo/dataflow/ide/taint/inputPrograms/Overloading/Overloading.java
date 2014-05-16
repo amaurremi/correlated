@@ -9,7 +9,7 @@ public class Overloading {
 
     public static void main(String[] args) {
         String s = foo(3);
-        SecretAssertions.shouldNotBeSecret(s);
+        SecretAssertions.notSecret(s);
     }
 
     static String secret() {

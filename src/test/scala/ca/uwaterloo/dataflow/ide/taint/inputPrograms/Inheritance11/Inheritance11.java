@@ -12,7 +12,7 @@ public class Inheritance11 {
         X x = new X(){
           public String foo(){ return secret(); }
         };
-        SecretAssertions.shouldBeSecret(x.foo());
+        SecretAssertions.secret(x.foo());
     }
 
     static String secret() {

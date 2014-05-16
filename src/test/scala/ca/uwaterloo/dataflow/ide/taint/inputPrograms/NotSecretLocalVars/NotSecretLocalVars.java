@@ -9,9 +9,9 @@ public class NotSecretLocalVars {
         int y = 1;
         String z = secret();
 
-        SecretAssertions.shouldNotBeSecret(x);
-        SecretAssertions.shouldNotBeSecret(y);
-        SecretAssertions.shouldBeSecret(z);
+        SecretAssertions.notSecret(x);
+        SecretAssertions.notSecret(y);
+        SecretAssertions.secret(z);
     }
 
     static String notSecret() {

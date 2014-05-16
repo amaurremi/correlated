@@ -24,9 +24,9 @@ public class TryCatch2 {
           throw new MyException(secret());
         } catch(MyException e) {
             String s1 = e.get1();
-            SecretAssertions.shouldBeSecret(s1);
+            SecretAssertions.secret(s1);
             String s2 = e.get2();
-            SecretAssertions.shouldNotBeSecret(s2);
+            SecretAssertions.notSecret(s2);
         } 
     }
 

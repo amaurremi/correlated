@@ -9,7 +9,7 @@ public class Array5 {
         String s2 = "not secret";
         String[] strings = new String[]{ s1, s2 };
         for (int i=0; i < strings.length; i++){
-          SecretAssertions.shouldBeSecret(strings[i]);
+          SecretAssertions.secret(strings[i]);
         }
     }
 

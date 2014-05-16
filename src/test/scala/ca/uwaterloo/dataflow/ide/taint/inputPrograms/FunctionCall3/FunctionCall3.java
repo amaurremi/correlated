@@ -13,8 +13,8 @@ public class FunctionCall3 {
 
     private static class X {
          public String f(String s1, String s2) {
-            SecretAssertions.shouldBeSecret(s1);
-            SecretAssertions.shouldNotBeSecret(s2);
+            SecretAssertions.secret(s1);
+            SecretAssertions.notSecret(s2);
             return s1;
         }
     }

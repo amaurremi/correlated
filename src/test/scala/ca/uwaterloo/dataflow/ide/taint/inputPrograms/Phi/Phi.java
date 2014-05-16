@@ -11,7 +11,7 @@ public class Phi {
         } else {
             s = "not secret";
         }
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

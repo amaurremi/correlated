@@ -9,7 +9,7 @@ public class For2 {
         for (int i=0; i < 10; i++){
             s = secret();
         }
-        SecretAssertions.shouldBeSecret(s);
+        SecretAssertions.secret(s);
     }
 
     static String secret() {

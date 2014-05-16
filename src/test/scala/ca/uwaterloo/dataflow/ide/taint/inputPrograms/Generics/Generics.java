@@ -12,7 +12,7 @@ public class Generics {
         List<String> list = new ArrayList<String>();
         list.add(s);
         String s2 = list.get(0);
-        SecretAssertions.shouldBeSecret(s2);
+        SecretAssertions.secret(s2);
     }
 
     static String secret() {
