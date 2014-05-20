@@ -14,22 +14,39 @@ trait SecretStrings extends SecretDefinition {
     whiteList: Set[String],
     returnSecretArray: Set[String],
     arrayElemTypes: Set[String],
-    secretMethod: Method
+    secretMethod: Method,
+    appendMethod: AppendMethod
   )
-  
+
+  private[this] case class AppendMethod(
+    methodName: String,
+    classes: Set[String]
+  )
+
+  private[this] def toSet[T](list: java.util.List[T]): Set[T] = list.asScala.toSet[T] 
+
   private[this] lazy val stringConfig: SecretConfig = {
     val configPath = "src/main/scala/ca/uwaterloo/dataflow/ifds/instance/taint/impl/StringOperations.conf"
     val config: Config = ConfigFactory.parseFile(new File(System.getProperty("user.dir"), configPath))
     val operationConf = config getConfig "stringOperations"
-    val whiteList = (operationConf getStringList "whiteList").asScala.toSet
-    val returnSecretArray = (operationConf getStringList "secretArrays").asScala.toSet
-    val superTypes = (config getStringList "secretTypes.types").asScala.toSet
+    val whiteList = toSet(operationConf getStringList "whiteList")
+    val returnSecretArray = toSet(operationConf getStringList "secretArrays")
+    val superTypes = toSet(config getStringList "secretTypes.types")
     val methodConfig = config getConfig "secretMethod"
     val name = methodConfig getString "name"
     val tpe = methodConfig getString "type"
     val params = methodConfig getInt "params"
     val static = methodConfig getBoolean "static"
-    SecretConfig(whiteList, returnSecretArray, superTypes, Method(name, params, static, tpe))
+    val appendConfig = config getConfig "appendMethod"
+    val appendMethodName = appendConfig getString "name"
+    val appendClasses = toSet(appendConfig getStringList "classes")
+    SecretConfig(
+      whiteList, 
+      returnSecretArray, 
+      superTypes, 
+      Method(name, params, static, tpe), 
+      AppendMethod(appendMethodName, appendClasses)
+    )
   }
 
   override def isSecret(method: IMethod) =
@@ -47,6 +64,8 @@ trait SecretStrings extends SecretDefinition {
       None
     else if (stringConfig.returnSecretArray contains methodName)
       Some(ReturnsSecretArray)
+    else if (stringConfig.appendMethod.methodName == methodName && (stringConfig.appendMethod.classes contains op.getDeclaringClass.getName.toString))
+      Some(ConcatenatesStrings)
     else
       Some(ReturnsSecretValue)
   }
