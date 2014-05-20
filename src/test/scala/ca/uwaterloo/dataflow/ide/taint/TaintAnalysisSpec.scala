@@ -367,6 +367,50 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
       assertSecretsFor("StringBuffer")
     }
 
+    it("StringBuffer2") {
+      assertSecretsFor("StringBuffer2")
+    }
+
+    it("StringBuffer3") {
+      assertSecretsFor("StringBuffer3")
+    }
+
+    it("StringBuffer4") {
+      assertSecretsFor("StringBuffer4")
+    }
+
+    it("StringBuffer5") {
+      assertSecretsFor("StringBuffer5")
+    }
+
+    it("StringBuffer6") {
+      assertSecretsFor("StringBuffer6")
+    }
+
+    it("StringBuilder") {
+      assertSecretsFor("StringBuilder")
+    }
+
+    it("StringBuilder1") {
+      assertSecretsFor("StringBuilder1")
+    }
+
+    it("StringBuilder2") {
+      assertSecretsFor("StringBuilder2")
+    }
+
+    it("StringBuilder3") {
+      assertSecretsFor("StringBuilder3")
+    }
+
+    it("StringBuilder4") {
+      assertSecretsFor("StringBuilder4")
+    }
+
+    it("StringBuilder5") {
+      assertSecretsFor("StringBuilder5")
+    }
+
     it("generics") {
       assertSecretsFor("Generics")
     }
