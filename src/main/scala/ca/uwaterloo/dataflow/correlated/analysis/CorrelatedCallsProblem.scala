@@ -64,14 +64,18 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
                 rec -> composedTypesTop
             ))
           }
-        case _ => None
+        case _                                                          =>
+          None
       }
-      idFactFunPairSet(Λ) ++ (edgeFn match {
+      edgeFn match {
         case Some(f) =>
-          (d2s - Λ) map { FactFunPair(_, f) }
-        case None    =>
+          val d2sWithoutLambda = (d2s - Λ) map {
+            FactFunPair(_, f)
+          }
+          d2sWithoutLambda ++ idFactFunPairSet(Λ)
+        case None =>
           d2s flatMap idFactFunPairSet
-      })
+      }
     }
 
   override def callStartEdges: IdeEdgeFn =
