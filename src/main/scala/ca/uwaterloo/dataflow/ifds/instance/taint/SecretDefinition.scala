@@ -16,6 +16,8 @@ trait SecretDefinition {
 
   def secretType: String
 
+  def isConcatClass(typeRef: TypeReference): Boolean
+
   def isSecretArrayElementType(typeRef: TypeReference): Boolean
 
   def getOperationType(op: MethodReference): Option[SecretOperation]

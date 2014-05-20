@@ -54,8 +54,13 @@ trait SecretStrings extends SecretDefinition {
 
   override def secretType: String = stringConfig.secretMethod.retType
 
+  override def isConcatClass(typeRef: TypeReference): Boolean =
+    stringConfig.appendMethod.classes contains typeName(typeRef)
+
   override def isSecretArrayElementType(typeRef: TypeReference) =
-    stringConfig.arrayElemTypes contains typeRef.getName.toString
+    stringConfig.arrayElemTypes contains typeName(typeRef)
+
+  private[this] def typeName(tpe: TypeReference): String = tpe.getName.toString
 
   // todo subSequence? copyValueOf? format? getChars? valueOf?
   override def getOperationType(op: MethodReference): Option[SecretOperation] = {
