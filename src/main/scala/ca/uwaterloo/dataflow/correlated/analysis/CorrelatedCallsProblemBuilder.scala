@@ -24,6 +24,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
   val TypesTop: TypesLattice = SetType(Set.empty[Type])
 
   val composedTypesTop    = ComposedTypes(TypesTop, TypesTop)
+  val composedTypesBottom = ComposedTypes(TypesBottom, TypesBottom)
   val composedTypesId     = ComposedTypes(TypesBottom, TypesTop)
 
   override val Bottom = MapLatticeElem(mapReceivers(TypesBottom))

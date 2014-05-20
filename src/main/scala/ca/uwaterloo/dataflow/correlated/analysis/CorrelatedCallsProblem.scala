@@ -19,9 +19,11 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       val d2s = ifdsEndReturnEdges(ideN1, n2)
       // setting local variables to bottom (all types)
       val optLocalVar = ideN1.d match {
-        case Variable(method, elem) if method == ideN1.n.getMethod => // todo what if the receiver is a field?
-          Some(elem)
-        case _                                                     =>
+        case Variable(method, elem)
+          if method == ideN1.n.getMethod && (method.isStatic || elem != 1) => // todo excluding this. correct?
+          // todo what if the receiver is a field?
+            Some(elem)
+        case _                                                             =>
           None
       }
       optLocalVar match {
@@ -29,9 +31,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
           val receiver = getCcReceiver(localVar, ideN1.n.getMethod)
           val edgeFn = receiver match {
             case Some(rec) =>
-              CorrelatedFunction(Map(
-                rec -> ComposedTypes(TypesBottom, TypesBottom))
-              )
+              CorrelatedFunction(Map(rec -> composedTypesBottom))
             case None      =>
               Id
           }
@@ -53,8 +53,26 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
     }
 
   override def callReturnEdges: IdeEdgeFn =
-    (ideN1, n2) =>
-      ifdsCallReturnEdges(ideN1, n2) flatMap idFactFunPairSet
+    (ideN1, n2) => {
+      val n1 = ideN1.n
+      val d2s = ifdsCallReturnEdges(ideN1, n2)
+      val edgeFn = n1.getLastInstruction match {
+        case invokeInstr: SSAInvokeInstruction if !invokeInstr.isStatic =>
+          getCcReceiver(invokeInstr.getReceiver, n1.getMethod) map {
+            rec =>
+              CorrelatedFunction(Map(
+                rec -> composedTypesTop
+            ))
+          }
+        case _ => None
+      }
+      idFactFunPairSet(Λ) ++ (edgeFn match {
+        case Some(f) =>
+          (d2s - Λ) map { FactFunPair(_, f) }
+        case None    =>
+          d2s flatMap idFactFunPairSet
+      })
+    }
 
   override def callStartEdges: IdeEdgeFn =
     (ideN1, n2) =>
