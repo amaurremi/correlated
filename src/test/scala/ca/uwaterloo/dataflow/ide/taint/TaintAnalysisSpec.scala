@@ -402,8 +402,16 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
         assertSecretsFor("StringConcat")
       }
 
+      it("string concatenation2") {
+        assertSecretsFor("StringConcat2")
+      }
+
       it("string operations") {
         assertSecretsFor("StringOps")
+      }
+
+      it("string builder field") {
+        assertSecretsFor("StringBuilder1")
       }
     }
 
