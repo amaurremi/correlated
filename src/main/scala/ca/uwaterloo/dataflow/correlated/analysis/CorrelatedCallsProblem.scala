@@ -73,7 +73,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
             FactFunPair(_, f)
           }
           d2sWithoutLambda ++ idFactFunPairSet(Λ)
-        case None =>
+        case None    =>
           d2s flatMap idFactFunPairSet
       }
     }
@@ -89,7 +89,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
             getCcReceiver(invokeInstr.getReceiver, n1.getMethod) match {
               case Some(rec) =>
                 CorrelatedFunction(Map(rec -> ComposedTypes(SetType(staticTypes(n2)), TypesTop)))
-              case None                          =>
+              case None      =>
                 Id
             }
         }
@@ -102,6 +102,6 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
   private[this] def staticTypes(node: Node): Set[IClass] = {
     val declaringClass = enclProc(node).getMethod.getDeclaringClass
     val subClasses = Set.empty[IClass] //getSubClasses(declaringClass)
-    (subClasses + declaringClass).toSet
-}
+    subClasses + declaringClass
+  }
 }
