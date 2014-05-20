@@ -61,7 +61,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         //  Fields
         case putInstr: SSAPutInstruction
           if factSameAsVar(d1, method, putInstr.getVal) ||
-             isConcatClass(getTypeInference(enclProc(n1)).getType(putInstr.getVal).getTypeReference) =>
+             isConcatClass(getTypeInference(enclProc(n1)).getType(putInstr.getVal)) =>
             defaultResult + Field(getIField(method.getClassHierarchy, putInstr.getDeclaredField))
         case getInstr: SSAGetInstruction                                                             =>
           d1 match {

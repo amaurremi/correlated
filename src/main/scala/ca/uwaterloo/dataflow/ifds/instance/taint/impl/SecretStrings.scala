@@ -2,6 +2,7 @@ package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 
 import ca.uwaterloo.dataflow.common.Method
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
+import com.ibm.wala.analysis.typeInference.TypeAbstraction
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.types.{MethodReference, TypeReference}
 import com.typesafe.config.{Config, ConfigFactory}
@@ -54,13 +55,17 @@ trait SecretStrings extends SecretDefinition {
 
   override def secretType: String = stringConfig.secretMethod.retType
 
-  override def isConcatClass(typeRef: TypeReference): Boolean =
-    stringConfig.appendMethod.classes contains typeName(typeRef)
+  override def isConcatClass(typeAbs: TypeAbstraction): Boolean =
+    if (typeAbs == TypeAbstraction.TOP)
+      false
+    else
+      stringConfig.appendMethod.classes contains typeName(typeAbs.getTypeReference)
 
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeName(typeRef)
 
-  private[this] def typeName(tpe: TypeReference): String = tpe.getName.toString
+  private[this] def typeName(tpe: TypeReference): String =
+    tpe.getName.toString
 
   // todo subSequence? copyValueOf? format? getChars? valueOf?
   override def getOperationType(op: MethodReference): Option[SecretOperation] = {

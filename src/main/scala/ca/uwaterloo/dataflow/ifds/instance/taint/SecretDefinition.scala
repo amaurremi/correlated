@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint
 
-import ca.uwaterloo.dataflow.common.Method
+import com.ibm.wala.analysis.typeInference.TypeAbstraction
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.types.{MethodReference, TypeReference}
 
@@ -16,7 +16,7 @@ trait SecretDefinition {
 
   def secretType: String
 
-  def isConcatClass(typeRef: TypeReference): Boolean
+  def isConcatClass(typeRef: TypeAbstraction): Boolean
 
   def isSecretArrayElementType(typeRef: TypeReference): Boolean
 
