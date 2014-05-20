@@ -15,9 +15,7 @@ trait CorrelatedCallsToIfds extends AbstractIdeToIfds with CorrelatedCallsProble
   override def ifdsResult: Map[Node, Set[Fact]] =
     solvedResult.foldLeft(Map[Node, Set[Fact]]() withDefaultValue Set.empty[Fact]) {
       case (result, (XNode(n, f), l)) =>
-        if (l.hasEmptyMapping)
-          result + (n -> Set.empty[Fact])
-        else if (f == Lambda)
+        if (l.hasEmptyMapping || f == Lambda)
           result + (n -> result(n))
         else
           result + (n -> (result(n) + f))
