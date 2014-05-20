@@ -11,11 +11,6 @@ public class StringConcat {
        SecretAssertions.secret(s3);
     }
 
-    static String f() {
-        String s = secret();
-        return s;
-    }
-
     static String secret() {
         return "secret";
     }

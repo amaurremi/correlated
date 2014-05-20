@@ -10,6 +10,7 @@ trait SecretDefinition {
   case object ReturnsSecretValue extends SecretOperation
   case object ReturnsSecretArray extends SecretOperation
   case object ConcatenatesStrings extends SecretOperation
+  case object StringConcatConstructor extends SecretOperation
 
   def isSecret(method: IMethod): Boolean
 

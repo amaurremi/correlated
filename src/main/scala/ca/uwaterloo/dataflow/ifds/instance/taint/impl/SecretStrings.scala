@@ -59,13 +59,20 @@ trait SecretStrings extends SecretDefinition {
 
   // todo subSequence? copyValueOf? format? getChars? valueOf?
   override def getOperationType(op: MethodReference): Option[SecretOperation] = {
-    val methodName = op.getName.toString
-    if (stringConfig.whiteList contains methodName)
-      None
-    else if (stringConfig.returnSecretArray contains methodName)
+    val methodName    = op.getName.toString
+    val className     = op.getDeclaringClass.getName.toString
+    val isConcatClass = stringConfig.appendMethod.classes contains className
+    val isStringClass = className == secretType
+    if ((stringConfig.returnSecretArray contains methodName) && isStringClass)
       Some(ReturnsSecretArray)
-    else if (stringConfig.appendMethod.methodName == methodName && (stringConfig.appendMethod.classes contains op.getDeclaringClass.getName.toString))
+    else if (stringConfig.appendMethod.methodName == methodName && isConcatClass)
       Some(ConcatenatesStrings)
+    else if (isConcatClass && op.isInit)
+      Some (StringConcatConstructor)
+    else if (methodName == "toString" && isConcatClass)
+      Some(ReturnsSecretValue)
+    else if ((stringConfig.whiteList contains methodName) && isStringClass || !isStringClass)
+      None
     else
       Some(ReturnsSecretValue)
   }

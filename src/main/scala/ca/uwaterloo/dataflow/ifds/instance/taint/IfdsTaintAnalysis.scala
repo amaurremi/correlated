@@ -100,26 +100,36 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   override def ifdsCallReturnEdges: IfdsEdgeFn =  // todo should we remove fields as it's done in the IFDS paper?
     (ideN1, _) => {
-      val default = Set(ideN1.d)
-      val n1 = ideN1.n
+      val d1      = ideN1.d
+      val default = Set(d1)
+      val n1      = ideN1.n
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction if !callInstr.isStatic =>
           val receiver = callInstr.getReceiver
           val method = n1.getMethod
-          if (factSameAsVar(ideN1.d, method, receiver)) {
-            getOperationType(callInstr.getDeclaredTarget) match {
-              case Some(ReturnsSecretValue) =>
-                default + Variable(method, callValNum(callInstr).get)
-              case Some(ReturnsSecretArray) =>
-                default + ArrayElement
-              case None          =>
-                default
-            }
-          } else default
+          lazy val factEqReceiver = factSameAsVar(d1, method, receiver)
+          lazy val defaultPlusVar = default + Variable(method, callValNum(callInstr).get)
+          getOperationType(callInstr.getDeclaredTarget) match {
+            case Some(ReturnsSecretValue) if factEqReceiver                =>
+              defaultPlusVar
+            case Some(ReturnsSecretArray) if factEqReceiver                =>
+              default + ArrayElement
+            case Some(ConcatenatesStrings)
+              if factEqReceiver || isSecondArgument(d1, method, callInstr) =>
+                defaultPlusVar
+            case Some(StringConcatConstructor)
+              if isSecondArgument(d1, method, callInstr)                   =>
+                default + Variable(method, callInstr.getUse(0))
+            case _                                                         =>
+              default
+          }
         case _                                                       =>
           default
       }
     }
+
+  private[this] def isSecondArgument(d1: Fact, method: IMethod, callInstr: SSAInvokeInstruction): Boolean =
+    callInstr.getNumberOfUses >= 1 && factSameAsVar(d1, method, callInstr.getUse(1))
 
   override def ifdsCallStartEdges: IfdsEdgeFn =
     (ideN1, n2) => {
@@ -129,28 +139,30 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val callerMethod  = n1.getMethod
       val defaultResult = Set(d1)
       n1.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction if isSecret(targetMethod)                    =>
-          if (d1 == Λ) {
+        case callInstr: SSAInvokeInstruction =>
+          if (isSecret(targetMethod) && d1 == Λ) {
             val valNum: ValueNumber = callValNum(callInstr).get
             val phis = getPhis(n1, valNum, callerMethod)
             defaultResult + Variable(callerMethod, valNum) ++ phis
-          } else defaultResult
-        case callInstr: SSAInvokeInstruction
-          if callInstr.getDeclaredTarget.getDeclaringClass.getName.toString == secretType => // todo is this enough to check that we're invoking a library call?
+          } else if (invokedOnSecretClass(callInstr) || // todo is this enough to check that we're invoking a library call?
+                     getOperationType(callInstr.getDeclaredTarget) == Some(ConcatenatesStrings))
             Set.empty
-        case callInstr: SSAInvokeInstruction                                              =>
-          getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
-            case Some(argNum)                                       =>
-              val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
-              Set(substituteFact)
-            case None if d1 == Λ && callValNum(callInstr).isDefined =>
-              methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get))
-              defaultResult
-            case None                                               =>
-              defaultResult
-          }
+          else
+            getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
+              case Some(argNum)                                       =>
+                val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
+                Set(substituteFact)
+              case None if d1 == Λ && callValNum(callInstr).isDefined =>
+                methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get))
+                defaultResult
+              case None                                               =>
+                defaultResult
+            }
       }
     }
+  
+  private[this] def invokedOnSecretClass(callInstr: SSAInvokeInstruction): Boolean =
+    callInstr.getDeclaredTarget.getDeclaringClass.getName.toString == secretType
 
   private[this] def getPhis(node: Node, valNum: ValueNumber, method: IMethod): Set[Fact] =
     (enclProc(node).getIR.iteratePhis().asScala collect {
