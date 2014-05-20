@@ -1,7 +1,7 @@
 package ca.uwaterloo.dataflow.correlated.analysis
 
 import ca.uwaterloo.dataflow.common.{VariableFacts, WalaInstructions}
-import ca.uwaterloo.dataflow.correlated.collector.{ReceiverI, Receiver}
+import ca.uwaterloo.dataflow.correlated.collector.{FakeReceiver, ReceiverI, Receiver}
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 import com.ibm.wala.classLoader.{IMethod, IClass}
 import com.ibm.wala.ssa.SSAInvokeInstruction
@@ -48,7 +48,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
     ccReceivers find {
       case Receiver(v, m) =>
         v == vn && m == method
-      case _              =>
+      case FakeReceiver   =>
         false
     }
 
@@ -69,19 +69,17 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       }
       edgeFn match {
         case Some(f) =>
-          val d2sWithoutLambda = (d2s - Λ) map {
-            FactFunPair(_, f)
-          }
-          d2sWithoutLambda ++ idFactFunPairSet(Λ)
+          d2s map { FactFunPair(_, f) }
         case None    =>
           d2s flatMap idFactFunPairSet
       }
     }
 
   override def callStartEdges: IdeEdgeFn =
-    (ideN1, n2) =>
+    (ideN1, n2) => {
+      val d2s = ifdsCallStartEdges(ideN1, n2)
       if (n2.getMethod.isStatic)
-        ifdsCallStartEdges(ideN1, n2) flatMap idFactFunPairSet
+        d2s flatMap idFactFunPairSet
       else {
         val n1 = ideN1.n
         val edgeFn = n1.getLastInstruction match {
@@ -89,15 +87,15 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
             getCcReceiver(invokeInstr.getReceiver, n1.getMethod) match {
               case Some(rec) =>
                 CorrelatedFunction(Map(rec -> ComposedTypes(SetType(staticTypes(n2)), TypesTop)))
-              case None      =>
+              case None =>
                 Id
             }
         }
-        val d2s = ifdsCallStartEdges(ideN1, n2) - Λ
-        val nonLambdaPairs = d2s map { FactFunPair(_, edgeFn) }
-        val maybeLambdaSet = if (ideN1.d == Λ) idFactFunPairSet(Λ) else Set.empty
-        nonLambdaPairs ++ maybeLambdaSet
+        d2s map {
+          FactFunPair(_, edgeFn)
+        }
       }
+    }
 
   private[this] def staticTypes(node: Node): Set[IClass] = {
     val declaringClass = enclProc(node).getMethod.getDeclaringClass
