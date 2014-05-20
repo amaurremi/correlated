@@ -107,10 +107,9 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           val receiver = callInstr.getReceiver
           val method = n1.getMethod
           if (factSameAsVar(ideN1.d, method, receiver)) {
-            val callVN = callValNum(callInstr)
             getOperationType(callInstr.getDeclaredTarget) match {
               case Some(ReturnsSecretValue) =>
-                default + Variable(method, callVN.get)
+                default + Variable(method, callValNum(callInstr).get)
               case Some(ReturnsSecretArray) =>
                 default + ArrayElement
               case None          =>
