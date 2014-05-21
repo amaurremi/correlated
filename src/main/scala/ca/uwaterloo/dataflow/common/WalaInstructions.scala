@@ -85,16 +85,12 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
 
   def getCalledNodes(node: Node) = (supergraph getCalledNodes node).asScala
 
-  private[WalaInstructions] def getReceiverTypes(pa: PointerAnalysis, callInstr: SSAInvokeInstruction, node: CGNode): Set[IClass] =
-    callValNum(callInstr) match {
-      case Some(vn) =>
-        val key = pa.getHeapModel.getPointerKeyForLocal(node, vn)
-        (pa.getPointsToSet(key).asScala map {
-          _.getConcreteType
-        })(breakOut)
-      case None =>
-        Set.empty[IClass]
-    }
+  private[WalaInstructions] def getReceiverTypes(pa: PointerAnalysis, callInstr: SSAInvokeInstruction, node: CGNode): Set[IClass] = {
+    val key = pa.getHeapModel.getPointerKeyForLocal(node, callInstr.getReceiver)
+    (pa.getPointsToSet(key).asScala map {
+      _.getConcreteType
+    })(breakOut)
+  }
 
   lazy val getDeclaringClasses: (PointerAnalysis, SSAInvokeInstruction, Node) => Map[IClass, Set[IClass]] =
     (pa, callInstr, sourceNode) => {
