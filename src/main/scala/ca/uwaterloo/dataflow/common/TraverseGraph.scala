@@ -21,11 +21,10 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   /**
    * Return-site nodes that correspond to call node n
    */
-  def returnNodes(n: Node): Iterator[Node] = {
+  def returnNodes(n: Node): Iterator[Node] =
     targetStartNodes(n) flatMap { s =>
       supergraph.getReturnSites(n, enclProc(s)).asScala
     }
-  }
 
   /**
    * Returns the start node of the argument's enclosing procedure.
