@@ -112,13 +112,16 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val default = Set(d1)
       val n1 = ideN1.n
       n1.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction =>
+        case callInstr: SSAInvokeInstruction => // todo this method is hard to reason about and needs refactoring.
           val method = n1.getMethod
           lazy val defaultPlusVar = default + Variable(method, callValNum(callInstr).get)
           val value = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
           getOperationType(callInstr.getDeclaredTarget, n1.getNode, value) match {
             case Some(SecretLibraryCall)             =>
               defaultPlusVar
+            case Some(ReturnsSecretValue)
+              if callInstr.isStatic && d1 == Λ       =>
+                defaultPlusVar
             case Some(opType) if !callInstr.isStatic =>
               val receiver = callInstr.getReceiver
               val factEqReceiver = factSameAsVar(d1, method, receiver)
