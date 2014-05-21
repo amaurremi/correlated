@@ -10,7 +10,7 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
 
   private[this] def assertSecretsFor(test: String) {
     new TaintAnalysisSpecBuilder(test).assertSecretValues()
-//    new CcTaintAnalysisSpecBuilder(test).assertSecretValues()
+    new CcTaintAnalysisSpecBuilder(test).assertSecretValues()
   }
   
   describe("IfdsTaintAnalysis") {
