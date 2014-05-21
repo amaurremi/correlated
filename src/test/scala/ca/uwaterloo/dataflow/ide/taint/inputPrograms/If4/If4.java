@@ -12,6 +12,14 @@ public class If4 {
             s = secret();
         }
         SecretAssertions.secret(s);
+        String t = secret();
+        String a;
+        if (args == null) {
+            a = t;
+        } else {
+            a = "not secret";
+        }
+        SecretAssertions.secret(a);
     }
 
     static String secret() {

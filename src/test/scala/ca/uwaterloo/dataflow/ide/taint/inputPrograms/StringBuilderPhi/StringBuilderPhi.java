@@ -11,6 +11,7 @@ public class StringBuilderPhi {
         SecretAssertions.secret(sb);
         SecretAssertions.secret(sb1);
         SecretAssertions.secret(o);
+
         StringBuilder sb2 = new StringBuilder();
         SecretAssertions.notSecret(sb2);
         sb2.append(secret());

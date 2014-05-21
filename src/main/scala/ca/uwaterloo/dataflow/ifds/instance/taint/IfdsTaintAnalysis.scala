@@ -2,7 +2,7 @@ package ca.uwaterloo.dataflow.ifds.instance.taint
 
 import ca.uwaterloo.dataflow.common.VariableFacts
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
-import com.ibm.wala.analysis.typeInference.TypeInference
+import com.ibm.wala.analysis.typeInference.{PointType, TypeInference}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
@@ -39,7 +39,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val defaultResult = Set(d1)
       val method        = n1.getMethod
       n1.getLastInstruction match {
-        case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr)                           =>
+        case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr)          =>
           d1 match {
             // we are returning a secret value, because an existing (i.e. secret) fact d1 is returned
             case v@Variable(m, _)
@@ -50,9 +50,9 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           }
         // Arrays
         case storeInstr: SSAArrayStoreInstruction
-          if factSameAsVar(d1, method, storeInstr.getValue)                                          =>
+          if factSameAsVar(d1, method, storeInstr.getValue)                         =>
             defaultResult + ArrayElement
-        case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement                                =>
+        case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement               =>
           val inference = getTypeInference(enclProc(n1))
           if (isSecretArrayElementType(inference.getType(loadInstr.getDef).getTypeReference))
             defaultResult + Variable(method, loadInstr.getDef)
@@ -63,7 +63,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           if factSameAsVar(d1, method, putInstr.getVal) ||
              isConcatClass(getTypeInference(enclProc(n1)).getType(putInstr.getVal)) =>
             defaultResult + Field(getIField(method.getClassHierarchy, putInstr.getDeclaredField))
-        case getInstr: SSAGetInstruction                                                             =>
+        case getInstr: SSAGetInstruction                                            =>
           d1 match {
             case Field(field)
               if field == getIField(method.getClassHierarchy, getInstr.getDeclaredField) =>
@@ -73,9 +73,9 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           }
         // Casts
         case castInstr: SSACheckCastInstruction
-          if factSameAsVar(d1, method, castInstr.getVal)                                             =>
+          if factSameAsVar(d1, method, castInstr.getVal)                            =>
             defaultResult + Variable(method, castInstr.getDef)
-        case _                                                                                       =>
+        case _                                                                      =>
           defaultResult
       }
     }
@@ -100,7 +100,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         case _                                                  => Set(ideN1.d)
       }
 
-  override def ifdsCallReturnEdges: IfdsEdgeFn =  // todo should we remove fields as it's done in the IFDS paper?
+  override def ifdsCallReturnEdges: IfdsEdgeFn =  // todo should we remove fields similar to how it's done in the IFDS paper?
     (ideN1, _) => {
       val d1 = ideN1.d
       val default = Set(d1)
@@ -122,10 +122,10 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
                   default + ArrayElement
                 case ConcatenatesStrings
                   if factEqReceiver || isSecondArgument(d1, method, callInstr) =>
-                  defaultPlusVar
+                    defaultPlusVar + Variable(method, callInstr.getReceiver)
                 case StringConcatConstructor
                   if isSecondArgument(d1, method, callInstr)                   =>
-                  default + Variable(method, callInstr.getUse(0))
+                    default + Variable(method, callInstr.getUse(0))
                 case _                                                         =>
                   default
               }
@@ -148,9 +148,13 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction =>
           if (isSecret(targetMethod) && d1 == Λ) {
-            val valNum: ValueNumber = callValNum(callInstr).get
-            val phis = getPhis(n1, valNum, callerMethod)
+            val valNum = callValNum(callInstr).get
+            val phis = getPhis(n1, valNum, callerMethod, getAllArgs = false)
             defaultResult + Variable(callerMethod, valNum) ++ phis
+          } else if (isConcatConstructor(targetMethod) && d1 == Λ){
+            val valNum = initValNum(targetMethod, callInstr)
+            val phis = getPhis(n1, valNum, callerMethod, getAllArgs = true)
+            defaultResult ++ phis
           } else if (exclude(callInstr))
             Set.empty
           else
@@ -166,6 +170,9 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             }
       }
     }
+
+  private[this] def isConcatConstructor(method: IMethod): Boolean =
+    method.isInit && isConcatClass(new PointType(method.getDeclaringClass))
   
   private[this] def exclude(callInstr: SSAInvokeInstruction): Boolean = {
     lazy val operationType = getOperationType(callInstr.getDeclaredTarget)
@@ -177,11 +184,13 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   private[this] def invokedOnSecretClass(callInstr: SSAInvokeInstruction): Boolean =
     callInstr.getDeclaredTarget.getDeclaringClass.getName.toString == secretType
 
-  private[this] def getPhis(node: Node, valNum: ValueNumber, method: IMethod): Set[Fact] =
-    (enclProc(node).getIR.iteratePhis().asScala collect {
-      case phiInstr: SSAPhiInstruction if phiInstr.getUse(0) == valNum || phiInstr.getUse(1) == valNum =>
-        Variable(method, phiInstr.getDef)
-    }).toSet
+  private[this] def getPhis(node: Node, valNum: ValueNumber, method: IMethod, getAllArgs: Boolean): Set[Fact] =
+    (phiInstructions(node) collect {
+      case phiInstr if phiInstr.getUse(0) == valNum || phiInstr.getUse(1) == valNum =>
+        val phi = Variable(method, phiInstr.getDef)
+        val args = if (getAllArgs) Set(Variable(method, phiInstr.getUse(0)), Variable(method, phiInstr.getUse(1))) else Set.empty[Variable]
+        args + phi
+    }).flatten.toSet[Fact]
 
   private[this] val methodToReturnVars = new HashSetMultiMap[IMethod, Variable]
 
