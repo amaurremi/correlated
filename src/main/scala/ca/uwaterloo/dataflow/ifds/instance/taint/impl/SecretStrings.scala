@@ -1,10 +1,11 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 
-import ca.uwaterloo.dataflow.common.Method
+import ca.uwaterloo.dataflow.common._
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
 import com.ibm.wala.analysis.typeInference.TypeAbstraction
 import com.ibm.wala.classLoader.IMethod
-import com.ibm.wala.types.{MethodReference, TypeReference}
+import com.ibm.wala.ipa.callgraph.CGNode
+import com.ibm.wala.types.TypeReference
 import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
 import scala.collection.JavaConverters._
@@ -62,10 +63,7 @@ trait SecretStrings extends SecretDefinition {
   override def secretType: String = stringConfig.secretMethod.retType
 
   override def isConcatClass(typeAbs: TypeAbstraction): Boolean =
-    if (typeAbs == TypeAbstraction.TOP)
-      false
-    else
-      stringConfig.appendMethod.classes contains typeName(typeAbs.getTypeReference)
+    typeAbs == TypeAbstraction.TOP || (stringConfig.appendMethod.classes contains typeName(typeAbs.getTypeReference))
 
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeName(typeRef)
@@ -73,16 +71,24 @@ trait SecretStrings extends SecretDefinition {
   private[this] def typeName(tpe: TypeReference): String =
     tpe.getName.toString
 
-  override def getOperationType(op: MethodReference): Option[SecretOperation] = {
-    val methodName    = op.getName.toString
-    val className     = op.getDeclaringClass.getName.toString
+  override def getOperationType(node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation] = {
+    val op = node.getMethod
+    val methodName = op.getName.toString
+    val className = op.getDeclaringClass.getName.toString
     val isConcatClass = stringConfig.appendMethod.classes contains className
     val isAppendMethodName = stringConfig.appendMethod.methodName == methodName
     val isStringClass = className == secretType
     val secretArrayMethodName = stringConfig.returnSecretArray contains methodName
     val libOptions = stringConfig.libraryOptions
     val isLibCall = libOptions.excludePrefixes exists { className.startsWith }
-    val isDefaultSecret = libOptions.defaultSecretTypes contains op.getReturnType.getName.toString
+    val retType = op.getReturnType.getName.toString
+    val types = vn match {
+      case Some(n) =>
+        getTypes(node, n) map { _.getName.toString }
+      case None    =>
+        Set.empty[String]
+    }
+    val isDefaultSecret = (libOptions.defaultSecretTypes intersect (types + retType)).nonEmpty
     val isWhiteListedLib = isDefaultSecret && (libOptions.whiteList contains getFullName(className, methodName))
 
     if (secretArrayMethodName && isStringClass) // todo refactor this terrible conditional
@@ -100,7 +106,7 @@ trait SecretStrings extends SecretDefinition {
     else if ((stringConfig.whiteList contains methodName) && isStringClass || !isStringClass)
       None
     else
-        Some(ReturnsSecretValue)
+      Some(ReturnsSecretValue)
   }
 
   private[this] def getFullName(className: String, methodName: String) =

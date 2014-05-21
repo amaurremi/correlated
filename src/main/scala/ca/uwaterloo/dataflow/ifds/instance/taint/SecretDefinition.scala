@@ -1,10 +1,12 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint
 
+import ca.uwaterloo.dataflow.common.VariableFacts
 import com.ibm.wala.analysis.typeInference.TypeAbstraction
 import com.ibm.wala.classLoader.IMethod
-import com.ibm.wala.types.{MethodReference, TypeReference}
+import com.ibm.wala.ipa.callgraph.CGNode
+import com.ibm.wala.types.TypeReference
 
-trait SecretDefinition {
+trait SecretDefinition extends VariableFacts {
 
   sealed trait SecretOperation
   case object ReturnsSecretValue extends SecretOperation
@@ -28,5 +30,5 @@ trait SecretDefinition {
 
   def isSecretArrayElementType(typeRef: TypeReference): Boolean
 
-  def getOperationType(op: MethodReference): Option[SecretOperation]
+  def getOperationType(node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation]
 }

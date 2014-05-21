@@ -6,6 +6,7 @@ import com.ibm.wala.analysis.typeInference.{PointType, TypeInference}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis
 import com.ibm.wala.ssa._
 import com.ibm.wala.util.collections.HashSetMultiMap
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
@@ -26,6 +27,11 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   override val callGraph: CallGraph = builder.cg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[Node] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
+  override val pointerAnalysis: PointerAnalysis =
+    builder match {
+      case b: FlexibleCallGraphBuilder =>
+        b.getPointerAnalysis
+    }
 
   override def getValNum(factElem: ValueNumber, node: XNode): ValueNumber = factElem
 
@@ -109,7 +115,8 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         case callInstr: SSAInvokeInstruction =>
           val method = n1.getMethod
           lazy val defaultPlusVar = default + Variable(method, callValNum(callInstr).get)
-          getOperationType(callInstr.getDeclaredTarget) match {
+          val value = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
+          getOperationType(n1.getNode, value) match {
             case Some(SecretLibraryCall)             =>
               defaultPlusVar
             case Some(opType) if !callInstr.isStatic =>
@@ -155,7 +162,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             val valNum = initValNum(targetMethod, callInstr)
             val phis = getPhis(n1, valNum, callerMethod, getAllArgs = true)
             defaultResult ++ phis
-          } else if (exclude(callInstr))
+          } else if (exclude(n1, callInstr))
             Set.empty
           else
             getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
@@ -174,8 +181,9 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   private[this] def isConcatConstructor(method: IMethod): Boolean =
     method.isInit && isConcatClass(new PointType(method.getDeclaringClass))
   
-  private[this] def exclude(callInstr: SSAInvokeInstruction): Boolean = {
-    lazy val operationType = getOperationType(callInstr.getDeclaredTarget)
+  private[this] def exclude(node: Node, callInstr: SSAInvokeInstruction): Boolean = {
+    val vn = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
+    lazy val operationType = getOperationType(node.getNode, vn)
     lazy val ops: Set[SecretOperation] = Set(ConcatenatesStrings, NonSecretLibraryCall, SecretLibraryCall)
     invokedOnSecretClass(callInstr) || // todo is this enough to check that we're invoking a library call?
       operationType.isDefined && (ops contains operationType.get)
