@@ -93,7 +93,7 @@ trait SecretStrings extends SecretDefinition {
       Some (StringConcatConstructor)
     else if (methodName == "toString" && isConcatClass)
       Some(ReturnsSecretValue)
-    else if (isLibCall && isDefaultSecret && !isWhiteListedLib)
+    else if (isLibCall && isDefaultSecret && !isWhiteListedLib && !isStringClass)
       Some(SecretLibraryCall)
     else if (isLibCall && (!isDefaultSecret || isDefaultSecret && isWhiteListedLib))
         Some(NonSecretLibraryCall)

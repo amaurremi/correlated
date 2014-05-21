@@ -129,7 +129,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
                 case _                                                         =>
                   default
               }
-            case None                                 =>
+            case _                                    =>
               default
           }
       }

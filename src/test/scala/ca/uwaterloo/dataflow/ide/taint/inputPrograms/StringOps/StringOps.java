@@ -6,7 +6,6 @@ public class StringOps {
 
     public static void main(String[] args) {
         String s = secret();
-        SecretAssertions.secret(s);
         String s2 = "".trim();
         SecretAssertions.notSecret(s2);
         String s3 = s.substring(0);
