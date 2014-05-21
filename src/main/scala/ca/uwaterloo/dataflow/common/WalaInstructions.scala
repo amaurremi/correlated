@@ -2,10 +2,13 @@ package ca.uwaterloo.dataflow.common
 
 import com.ibm.wala.classLoader.IClass
 import com.ibm.wala.ipa.callgraph.CGNode
+import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.ssa.{SSAReturnInstruction, SSAInstruction, SSAInvokeInstruction}
 import scala.collection.JavaConverters._
+import scala.collection.breakOut
 
 trait WalaInstructions { this: VariableFacts with TraverseGraph =>
 
@@ -82,7 +85,29 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
 
   def getCalledNodes(node: Node) = (supergraph getCalledNodes node).asScala
 
-  lazy val getSubClasses: (IClass => Set[IClass]) =
-    c =>
-      c.getClassHierarchy.computeSubClasses(c.getReference).asScala.toSet
+  private[WalaInstructions] def getReceiverTypes(pa: PointerAnalysis, callInstr: SSAInvokeInstruction, node: CGNode): Set[IClass] =
+    callValNum(callInstr) match {
+      case Some(vn) =>
+        val key = pa.getHeapModel.getPointerKeyForLocal(node, vn)
+        (pa.getPointsToSet(key).asScala map {
+          _.getConcreteType
+        })(breakOut)
+      case None =>
+        Set.empty[IClass]
+    }
+
+  lazy val getDeclaringClasses: (PointerAnalysis, SSAInvokeInstruction, Node) => Map[IClass, Set[IClass]] =
+    (pa, callInstr, sourceNode) => {
+      val targetSelector = new ClassHierarchyMethodTargetSelector(sourceNode.getMethod.getClassHierarchy)
+      getReceiverTypes(pa, callInstr, sourceNode.getNode).foldLeft(Map[IClass, Set[IClass]]() withDefaultValue Set.empty[IClass]) {
+        case (result, receiverType) =>
+          val targetMethod = targetSelector.getCalleeTarget(sourceNode.getNode, callInstr.getCallSite, receiverType)
+          if (targetMethod == null)
+            result
+          else {
+            val targetClass = targetMethod.getDeclaringClass
+            result + (targetClass -> (result(targetClass) + receiverType))
+          }
+      }
+    }
 }

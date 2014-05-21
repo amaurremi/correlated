@@ -5,8 +5,11 @@ import ca.uwaterloo.dataflow.correlated.collector.{FakeReceiver, ReceiverI, Rece
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 import com.ibm.wala.classLoader.{IMethod, IClass}
 import com.ibm.wala.ssa.SSAInvokeInstruction
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis
 
 trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInstructions with VariableFacts { this: IfdsProblem =>
+
+  def pointerAnalysis: PointerAnalysis
 
   override type FactElem = ValueNumber
 
@@ -86,7 +89,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
           case invokeInstr: SSAInvokeInstruction =>
             getCcReceiver(invokeInstr.getReceiver, n1.getMethod) match {
               case Some(rec) =>
-                CorrelatedFunction(Map(rec -> ComposedTypes(SetType(staticTypes(n2)), TypesTop)))
+                CorrelatedFunction(Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, n1, n2)), TypesTop)))
               case None =>
                 Id
             }
@@ -97,9 +100,8 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       }
     }
 
-  private[this] def staticTypes(node: Node): Set[IClass] = {
-    val declaringClass = enclProc(node).getMethod.getDeclaringClass
-    val subClasses = Set.empty[IClass] //getSubClasses(declaringClass)
-    subClasses + declaringClass
+  private[this] def staticTypes(callInstr: SSAInvokeInstruction, sourceNode: Node, targetNode: Node): Set[IClass] = {
+    val enclosingClass = enclProc(targetNode).getMethod.getDeclaringClass
+    getDeclaringClasses(pointerAnalysis, callInstr, sourceNode)(enclosingClass) + enclosingClass
   }
 }

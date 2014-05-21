@@ -6,7 +6,9 @@ import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
 import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretStrings}
 import com.ibm.wala.classLoader.IField
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis
 import com.ibm.wala.ssa.{DefUse, SSAFieldAccessInstruction, SSAArrayLoadInstruction, SSAInvokeInstruction}
+import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import org.scalatest.Assertions
 
 sealed abstract class AbstractTaintAnalysisSpecBuilder (
@@ -87,4 +89,10 @@ class CcTaintAnalysisSpecBuilder(
 
   override val assertionMap: Map[Method, Boolean] =
     Map(secret -> true, notSecret -> false, secretStandardNotSecretCc -> false)
+
+  override def pointerAnalysis: PointerAnalysis =
+    builder match {
+      case b: FlexibleCallGraphBuilder =>
+        b.getPointerAnalysis
+    }
 }
