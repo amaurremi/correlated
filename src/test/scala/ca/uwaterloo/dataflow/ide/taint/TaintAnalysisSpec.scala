@@ -393,9 +393,13 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
       }
     }
 
-    describe("string operations and StringBuffer") {
+    describe("string operations and concatenation") {
       it("StringBuffer") {
         assertSecretsFor("StringBuffer")
+      }
+
+      it("StringBuilder phi instructions and assignments") {
+        assertSecretsFor("StringBuilderPhi")
       }
 
       it("string concatenation") {
@@ -410,7 +414,7 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
         assertSecretsFor("StringOps")
       }
 
-      it("string builder field") {
+      it("string builder field assignment") {
         assertSecretsFor("StringBuilder1")
       }
     }
