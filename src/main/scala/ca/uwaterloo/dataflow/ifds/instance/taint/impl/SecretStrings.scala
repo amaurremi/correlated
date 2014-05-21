@@ -5,7 +5,7 @@ import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
 import com.ibm.wala.analysis.typeInference.TypeAbstraction
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.types.TypeReference
+import com.ibm.wala.types.{MethodReference, TypeReference}
 import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
 import scala.collection.JavaConverters._
@@ -71,8 +71,7 @@ trait SecretStrings extends SecretDefinition {
   private[this] def typeName(tpe: TypeReference): String =
     tpe.getName.toString
 
-  override def getOperationType(node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation] = {
-    val op = node.getMethod
+  override def getOperationType(op: MethodReference, node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation] = {
     val methodName = op.getName.toString
     val className = op.getDeclaringClass.getName.toString
     val isConcatClass = stringConfig.appendMethod.classes contains className

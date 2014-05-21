@@ -4,7 +4,7 @@ import ca.uwaterloo.dataflow.common.VariableFacts
 import com.ibm.wala.analysis.typeInference.TypeAbstraction
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.CGNode
-import com.ibm.wala.types.TypeReference
+import com.ibm.wala.types.{MethodReference, TypeReference}
 
 trait SecretDefinition extends VariableFacts {
 
@@ -30,5 +30,5 @@ trait SecretDefinition extends VariableFacts {
 
   def isSecretArrayElementType(typeRef: TypeReference): Boolean
 
-  def getOperationType(node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation]
+  def getOperationType(op: MethodReference, node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation]
 }

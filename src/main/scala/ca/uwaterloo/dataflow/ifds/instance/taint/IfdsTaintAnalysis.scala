@@ -116,7 +116,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           val method = n1.getMethod
           lazy val defaultPlusVar = default + Variable(method, callValNum(callInstr).get)
           val value = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
-          getOperationType(n1.getNode, value) match {
+          getOperationType(callInstr.getDeclaredTarget, n1.getNode, value) match {
             case Some(SecretLibraryCall)             =>
               defaultPlusVar
             case Some(opType) if !callInstr.isStatic =>
@@ -183,7 +183,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   
   private[this] def exclude(node: Node, callInstr: SSAInvokeInstruction): Boolean = {
     val vn = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
-    lazy val operationType = getOperationType(node.getNode, vn)
+    lazy val operationType = getOperationType(callInstr.getDeclaredTarget, node.getNode, vn)
     lazy val ops: Set[SecretOperation] = Set(ConcatenatesStrings, NonSecretLibraryCall, SecretLibraryCall)
     invokedOnSecretClass(callInstr) || // todo is this enough to check that we're invoking a library call?
       operationType.isDefined && (ops contains operationType.get)
