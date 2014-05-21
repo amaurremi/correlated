@@ -16,7 +16,8 @@ trait SecretStrings extends SecretDefinition {
     returnSecretArray: Set[String],
     arrayElemTypes: Set[String],
     secretMethod: Method,
-    appendMethod: AppendMethod
+    appendMethod: AppendMethod,
+    libraryOptions: LibraryOptions
   )
 
   private[this] case class AppendMethod(
@@ -41,12 +42,17 @@ trait SecretStrings extends SecretDefinition {
     val appendConfig = config getConfig "appendMethod"
     val appendMethodName = appendConfig getString "name"
     val appendClasses = toSet(appendConfig getStringList "classes")
+    val libConfig = config getConfig "library"
+    val exclPref = toSet(libConfig getStringList "excludePrefixes")
+    val defSecret = toSet(libConfig getStringList "defaultSecretTypes")
+    val libWhiteList = toSet(libConfig getStringList "whiteList")
     SecretConfig(
       whiteList, 
       returnSecretArray, 
       superTypes, 
       Method(name, params, static, tpe), 
-      AppendMethod(appendMethodName, appendClasses)
+      AppendMethod(appendMethodName, appendClasses),
+      LibraryOptions(exclPref, defSecret, libWhiteList)
     )
   }
 
@@ -67,23 +73,36 @@ trait SecretStrings extends SecretDefinition {
   private[this] def typeName(tpe: TypeReference): String =
     tpe.getName.toString
 
-  // todo subSequence? copyValueOf? format? getChars? valueOf?
   override def getOperationType(op: MethodReference): Option[SecretOperation] = {
     val methodName    = op.getName.toString
     val className     = op.getDeclaringClass.getName.toString
     val isConcatClass = stringConfig.appendMethod.classes contains className
+    val isAppendMethodName = stringConfig.appendMethod.methodName == methodName
     val isStringClass = className == secretType
-    if ((stringConfig.returnSecretArray contains methodName) && isStringClass)
+    val secretArrayMethodName = stringConfig.returnSecretArray contains methodName
+    val libOptions = stringConfig.libraryOptions
+    val isLibCall = libOptions.excludePrefixes exists { className.startsWith }
+    val isDefaultSecret = libOptions.defaultSecretTypes contains op.getReturnType.getName.toString
+    val isWhiteListedLib = isDefaultSecret && (libOptions.whiteList contains getFullName(className, methodName))
+
+    if (secretArrayMethodName && isStringClass) // todo refactor this terrible conditional
       Some(ReturnsSecretArray)
-    else if (stringConfig.appendMethod.methodName == methodName && isConcatClass)
+    else if (isAppendMethodName && isConcatClass)
       Some(ConcatenatesStrings)
     else if (isConcatClass && op.isInit)
       Some (StringConcatConstructor)
     else if (methodName == "toString" && isConcatClass)
       Some(ReturnsSecretValue)
+    else if (isLibCall && isDefaultSecret && !isWhiteListedLib)
+      Some(SecretLibraryCall)
+    else if (isLibCall && (!isDefaultSecret || isDefaultSecret && isWhiteListedLib))
+        Some(NonSecretLibraryCall)
     else if ((stringConfig.whiteList contains methodName) && isStringClass || !isStringClass)
       None
     else
-      Some(ReturnsSecretValue)
+        Some(ReturnsSecretValue)
   }
+
+  private[this] def getFullName(className: String, methodName: String) =
+    className + "/" + methodName
 }

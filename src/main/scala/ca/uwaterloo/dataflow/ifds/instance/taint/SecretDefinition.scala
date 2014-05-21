@@ -11,6 +11,14 @@ trait SecretDefinition {
   case object ReturnsSecretArray extends SecretOperation
   case object ConcatenatesStrings extends SecretOperation
   case object StringConcatConstructor extends SecretOperation
+  case object NonSecretLibraryCall extends SecretOperation
+  case object SecretLibraryCall extends SecretOperation
+
+  case class LibraryOptions(
+    excludePrefixes: Set[String],
+    defaultSecretTypes: Set[String],
+    whiteList: Set[String]
+  )
 
   def isSecret(method: IMethod): Boolean
 

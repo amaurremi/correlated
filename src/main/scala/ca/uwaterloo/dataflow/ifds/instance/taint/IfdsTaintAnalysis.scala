@@ -102,31 +102,36 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   override def ifdsCallReturnEdges: IfdsEdgeFn =  // todo should we remove fields as it's done in the IFDS paper?
     (ideN1, _) => {
-      val d1      = ideN1.d
+      val d1 = ideN1.d
       val default = Set(d1)
-      val n1      = ideN1.n
+      val n1 = ideN1.n
       n1.getLastInstruction match {
-        case callInstr: SSAInvokeInstruction if !callInstr.isStatic =>
-          val receiver = callInstr.getReceiver
+        case callInstr: SSAInvokeInstruction =>
           val method = n1.getMethod
-          lazy val factEqReceiver = factSameAsVar(d1, method, receiver)
           lazy val defaultPlusVar = default + Variable(method, callValNum(callInstr).get)
           getOperationType(callInstr.getDeclaredTarget) match {
-            case Some(ReturnsSecretValue) if factEqReceiver                =>
+            case Some(SecretLibraryCall)             =>
               defaultPlusVar
-            case Some(ReturnsSecretArray) if factEqReceiver                =>
-              default + ArrayElement
-            case Some(ConcatenatesStrings)
-              if factEqReceiver || isSecondArgument(d1, method, callInstr) =>
-                defaultPlusVar
-            case Some(StringConcatConstructor)
-              if isSecondArgument(d1, method, callInstr)                   =>
-                default + Variable(method, callInstr.getUse(0))
-            case _                                                         =>
+            case Some(opType) if !callInstr.isStatic =>
+              val receiver = callInstr.getReceiver
+              val factEqReceiver = factSameAsVar(d1, method, receiver)
+              opType match {
+                case ReturnsSecretValue if factEqReceiver                      =>
+                  defaultPlusVar
+                case ReturnsSecretArray if factEqReceiver                      =>
+                  default + ArrayElement
+                case ConcatenatesStrings
+                  if factEqReceiver || isSecondArgument(d1, method, callInstr) =>
+                  defaultPlusVar
+                case StringConcatConstructor
+                  if isSecondArgument(d1, method, callInstr)                   =>
+                  default + Variable(method, callInstr.getUse(0))
+                case _                                                         =>
+                  default
+              }
+            case None                                 =>
               default
           }
-        case _                                                       =>
-          default
       }
     }
 
@@ -146,8 +151,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             val valNum: ValueNumber = callValNum(callInstr).get
             val phis = getPhis(n1, valNum, callerMethod)
             defaultResult + Variable(callerMethod, valNum) ++ phis
-          } else if (invokedOnSecretClass(callInstr) || // todo is this enough to check that we're invoking a library call?
-                     getOperationType(callInstr.getDeclaredTarget) == Some(ConcatenatesStrings))
+          } else if (exclude(callInstr))
             Set.empty
           else
             getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
@@ -162,6 +166,13 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             }
       }
     }
+  
+  private[this] def exclude(callInstr: SSAInvokeInstruction): Boolean = {
+    lazy val operationType = getOperationType(callInstr.getDeclaredTarget)
+    lazy val ops: Set[SecretOperation] = Set(ConcatenatesStrings, NonSecretLibraryCall, SecretLibraryCall)
+    invokedOnSecretClass(callInstr) || // todo is this enough to check that we're invoking a library call?
+      operationType.isDefined && (ops contains operationType.get)
+  }
   
   private[this] def invokedOnSecretClass(callInstr: SSAInvokeInstruction): Boolean =
     callInstr.getDeclaredTarget.getDeclaringClass.getName.toString == secretType
