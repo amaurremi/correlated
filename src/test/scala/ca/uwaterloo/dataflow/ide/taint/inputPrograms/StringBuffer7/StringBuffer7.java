@@ -17,11 +17,6 @@ public class StringBuffer7 {
       sb.append(secret());
     }
 
-    static String f() {
-        String s = secret();
-        return s;
-    }
-
     static String secret() {
         return "secret";
     }
