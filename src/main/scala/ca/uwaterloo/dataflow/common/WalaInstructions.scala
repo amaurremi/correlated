@@ -1,11 +1,13 @@
 package ca.uwaterloo.dataflow.common
 
-import com.ibm.wala.classLoader.IClass
+import com.ibm.wala.classLoader.{IMethod, IClass}
 import com.ibm.wala.ipa.callgraph.CGNode
+import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAReturnInstruction, SSAInstruction, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{SSAPhiInstruction, SSAReturnInstruction, SSAInstruction, SSAInvokeInstruction}
 import scala.collection.JavaConverters._
+import scala.collection.breakOut
 
 trait WalaInstructions { this: VariableFacts with TraverseGraph =>
 
@@ -75,6 +77,14 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
     if (callInstr.getNumberOfReturnValues == 1)
       Some(callInstr.getReturnValue(0))
     else None
+  
+  /**
+   * Value number of a constructor
+   */
+  def initValNum(method: IMethod, callInstr: SSAInvokeInstruction): ValueNumber = {
+    assert(method.isInit)
+    callInstr.getUse(0)
+  }
 
   def hasRetValue(retInstr: SSAReturnInstruction) = retInstr.getResult >= 0
 
@@ -82,7 +92,36 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
 
   def getCalledNodes(node: Node) = (supergraph getCalledNodes node).asScala
 
-  lazy val getSubClasses: (IClass => Set[IClass]) =
-    c =>
-      c.getClassHierarchy.computeSubClasses(c.getReference).asScala.toSet
+  private[WalaInstructions] def getReceiverTypes(
+    callInstr: SSAInvokeInstruction,
+    node: CGNode
+  ): Set[IClass] =
+    getTypes(node, callInstr.getReceiver)
+
+  def getTypes(node: CGNode, vn: ValueNumber): Set[IClass] = {
+    val key = pointerAnalysis.getHeapModel.getPointerKeyForLocal(node, vn)
+    (pointerAnalysis.getPointsToSet(key).asScala map {
+      _.getConcreteType
+    })(breakOut)
+  }
+
+  lazy val getDeclaringClasses: (SSAInvokeInstruction, Node) => Map[IClass, Set[IClass]] =
+    (callInstr, sourceNode) => {
+      val targetSelector = new ClassHierarchyMethodTargetSelector(sourceNode.getMethod.getClassHierarchy)
+      getReceiverTypes(callInstr, sourceNode.getNode).foldLeft(Map[IClass, Set[IClass]]() withDefaultValue Set.empty[IClass]) {
+        case (result, receiverType) =>
+          val targetMethod = targetSelector.getCalleeTarget(sourceNode.getNode, callInstr.getCallSite, receiverType)
+          if (targetMethod == null)
+            result
+          else {
+            val targetClass = targetMethod.getDeclaringClass
+            result + (targetClass -> (result(targetClass) + receiverType))
+          }
+      }
+    }
+
+  def phiInstructions(node: Node): Set[SSAPhiInstruction] =
+    (enclProc(node).getIR.iteratePhis().asScala collect {
+      case i: SSAPhiInstruction => i
+    }).toSet
 }

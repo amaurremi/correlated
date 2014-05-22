@@ -21,11 +21,10 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   /**
    * Return-site nodes that correspond to call node n
    */
-  def returnNodes(n: Node): Iterator[Node] = {
+  def returnNodes(n: Node): Iterator[Node] =
     targetStartNodes(n) flatMap { s =>
       supergraph.getReturnSites(n, enclProc(s)).asScala
     }
-  }
 
   /**
    * Returns the start node of the argument's enclosing procedure.
@@ -42,7 +41,7 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
    */
   def callReturnPairs(exit: Node): Iterator[(Node, Node)] = { // todo is this correct?
     for {
-      r <- (supergraph getSuccNodes exit).asScala // todo this should give us the return sites we're looking for. is that right?
+      r <- followingNodes(exit)
       if supergraph isReturn r
       c <- supergraph.getCallSites(r, enclProc(exit)).asScala
     } yield c -> r
@@ -64,7 +63,7 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   ): Set[Node] =
     if (enclProc(startNode) != proc)
       acc
-    else supergraph.getSuccNodes(startNode).asScala.toSet flatMap {
+    else followingNodes(startNode).toSet flatMap {
       (next: Node) =>
         if (acc contains next)
           acc + startNode

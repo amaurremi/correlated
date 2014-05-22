@@ -16,7 +16,7 @@ public class Array7 {
         SecretAssertions.secret(objects[0]);
         char[] chars = new char[1];
         chars[0] = 'n';
-        SecretAssertions.secret(chars[0]);
+        SecretAssertions.notSecret(chars[0]);
     }
 
     static String secret() {
