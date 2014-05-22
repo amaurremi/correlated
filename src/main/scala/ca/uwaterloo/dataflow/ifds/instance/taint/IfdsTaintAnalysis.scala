@@ -108,7 +108,8 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           // We passed a StringBuilder/StringBuffer as a parameter to the enclosing method;
           // the current fact ideN1.d corresponds to this parameter. We need to make sure
           // that the StringBuilder/buffer in the calling method becomes secret.
-            Set(Variable(n2.getMethod, getValNumFromParameterNum(n2, getParameterNumber(ideN1).get)))
+            val callInstr = getCallInstr(ideN1.n, n2)
+            Set(Variable(n2.getMethod, getValNumFromParameterNum(callInstr, getParameterNumber(ideN1).get)))
         case Variable(method, _) if method == ideN1.n.getMethod             =>
           Set.empty
         case _                                                              =>

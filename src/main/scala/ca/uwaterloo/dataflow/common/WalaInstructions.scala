@@ -80,6 +80,17 @@ trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
   def getValNumFromParameterNum(n: Node, argNum: Int): ValueNumber =
     enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
+  def getCallInstr(exit: Node, ret: Node): SSAInvokeInstruction = {
+    val callNodes = callReturnPairs(exit).toSeq collect {
+      case (c: Node, r: Node) if r == ret => c
+    }
+    assert(callNodes.size == 1)
+    callNodes.head.getLastInstruction match {
+      case callInstr: SSAInvokeInstruction =>
+        callInstr
+    }
+  }
+
   /**
    * Get the value number for the ith parameter.
    * @param argNum the number of the parameter, excluding this // todo account for non-static methods

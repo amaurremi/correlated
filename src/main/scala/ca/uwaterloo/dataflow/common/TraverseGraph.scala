@@ -46,7 +46,7 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
       c <- supergraph.getCallSites(r, enclProc(exit)).asScala
     } yield c -> r
   }
-
+  
   /**
    * All intra-procedural nodes from the start of a procedure.
    */
