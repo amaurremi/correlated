@@ -17,7 +17,7 @@ class B extends A {
     }
 
     public void bar(String s) {
-        SecretAssertions.notSecret(s);
+        SecretAssertions.secretStandardNotSecretCc(s);
     }
 }
 
