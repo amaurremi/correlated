@@ -438,6 +438,10 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
         assertSecretsFor("StringBuffer6")
       }
 
+      it("StringBuffer7") {
+        assertSecretsFor("StringBuffer7")
+      }
+
       it("StringBuilder") {
         assertSecretsFor("StringBuilder")
       }
@@ -460,6 +464,14 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
 
       it("StringBuilder5") {
         assertSecretsFor("StringBuilder5")
+      }
+
+      it("StringBuilder6") {
+        assertSecretsFor("StringBuilder6")
+      }
+
+      it("StringBuilder7") {
+        assertSecretsFor("StringBuilder7")
       }
     }
 
@@ -497,6 +509,18 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
 
       it("correlated calls 7") {
         assertSecretsFor("Correlated7")
+      }
+
+      it("correlated calls 8") {
+        assertSecretsFor("Correlated8")
+      }
+
+      it("correlated calls 9") {
+        assertSecretsFor("Correlated9")
+      }
+
+      it("correlated calls 10") {
+        assertSecretsFor("Correlated10")
       }
     }
   }
