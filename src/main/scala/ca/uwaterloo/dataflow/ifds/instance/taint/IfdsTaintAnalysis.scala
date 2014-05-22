@@ -100,10 +100,19 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
     fact == Variable(method, vn)
 
   override def ifdsEndReturnEdges: IfdsEdgeFn =
-    (ideN1, _) =>
+    (ideN1, n2) =>
       ideN1.d match {
-        case Variable(method, _) if method == ideN1.n.getMethod => Set.empty
-        case _                                                  => Set(ideN1.d)
+        case v@Variable(method, vn)
+          if getParameterNumber(ideN1).isDefined &&
+             isConcatClass(getTypeInference(enclProc(ideN1.n)).getType(vn)) =>
+          // We passed a StringBuilder/StringBuffer as a parameter to the enclosing method;
+          // the current fact ideN1.d corresponds to this parameter. We need to make sure
+          // that the StringBuilder/buffer in the calling method becomes secret.
+            Set(Variable(n2.getMethod, getValNumFromParameterNum(n2, getParameterNumber(ideN1).get)))
+        case Variable(method, _) if method == ideN1.n.getMethod             =>
+          Set.empty
+        case _                                                              =>
+          Set(ideN1.d)
       }
 
   override def ifdsCallReturnEdges: IfdsEdgeFn =  // todo should we remove fields similar to how it's done in the IFDS paper?

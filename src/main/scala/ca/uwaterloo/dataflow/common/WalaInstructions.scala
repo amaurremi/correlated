@@ -5,17 +5,20 @@ import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.ssa.{SSAPhiInstruction, SSAReturnInstruction, SSAInstruction, SSAInvokeInstruction}
+import com.ibm.wala.ssa._
 import scala.collection.JavaConverters._
 import scala.collection.breakOut
 
-trait WalaInstructions { this: VariableFacts with TraverseGraph =>
+trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
 
   override type Node      = BasicBlockInContext[IExplodedBasicBlock]
   override type Procedure = CGNode
 
   def firstParameter(instr: SSAInvokeInstruction): Int =
     if (instr.isStatic) 0 else 1
+
+  def firstParameter(node: Node): Int =
+    if (node.getMethod.isStatic) 0 else 1
 
   /**
    * If the variable corresponding to this node's fact is passed as a parameter to this call instruction,
@@ -27,6 +30,21 @@ trait WalaInstructions { this: VariableFacts with TraverseGraph =>
         val valNum = getValNum(elem, node)
         firstParameter(callInstr) to callInstr.getNumberOfParameters - 1 find {
           callInstr.getUse(_) == valNum
+        }
+      case ArrayElement | Field(_) | Lambda => None // todo fields???
+    }
+
+  /**
+   * If the variable corresponding to this node's fact is passed as a parameter to the enclosing method,
+   * returns the number of the parameter.
+   */
+  def getParameterNumber(node: XNode): Option[Int] =
+    node.d match {
+      case Variable(method, elem)           =>
+        val valNum = getValNum(elem, node)
+        val ir: IR = enclProc(node.n).getIR
+        firstParameter(node.n) to node.n.getMethod.getNumberOfParameters - 1 find {
+           ir.getParameter(_) == valNum
         }
       case ArrayElement | Field(_) | Lambda => None // todo fields???
     }
