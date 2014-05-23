@@ -18,9 +18,9 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
           // setting local variables to bottom
           val localReceivers = ccReceivers filter {
             case Receiver(vn, method) =>
-              method == ideN1.n.getMethod &&
-                returnInstr.getResult != vn &&
-                (method.isStatic || vn != 1) // todo excluding this. correct?
+              method == ideN1.n.getMethod &&   // considering only local variables
+                returnInstr.getResult != vn && // not setting to bottom the return value
+                (method.isStatic || vn != 1)   // excluding this
             case _                    =>
               false
           }
@@ -68,17 +68,23 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
   override def callStartEdges: IdeEdgeFn =
     (ideN1, n2) => {
       val d2s = ifdsCallStartEdges(ideN1, n2)
+      val localsInTargetToBottomMap: ComposedTypeMultiMap = (ccReceivers collect {
+        case r@Receiver(vn, method)
+          if method == n2.getMethod && (method.isStatic || vn != 1) =>
+            r -> composedTypesBottom
+      }).toMap
       if (n2.getMethod.isStatic)
-        d2s flatMap idFactFunPairSet
+        d2s map { FactFunPair(_, CorrelatedFunction(localsInTargetToBottomMap)) }
       else {
         val n1 = ideN1.n
         val edgeFn = n1.getLastInstruction match {
           case invokeInstr: SSAInvokeInstruction =>
             getCcReceiver(invokeInstr.getReceiver, n1.getMethod) match {
               case Some(rec) =>
-                CorrelatedFunction(Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, n1, n2)), TypesTop)))
+                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, n1, n2)), TypesTop))
+                CorrelatedFunction(matchStaticTypes ++ localsInTargetToBottomMap)
               case None =>
-                Id
+                CorrelatedFunction(localsInTargetToBottomMap)
             }
         }
         d2s map {
