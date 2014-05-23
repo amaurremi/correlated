@@ -39,7 +39,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   override val O: Fact   = Λ
 
   override def ifdsOtherSuccEdges: IfdsEdgeFn =
-    (ideN1, n2) => {
+    (ideN1, _) => {
       val n1            = ideN1.n
       val d1            = ideN1.d
       val defaultResult = Set(d1)
@@ -54,7 +54,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             case _                                            =>
               defaultResult
           }
-        case _: SSAGotoInstruction                                                 =>
+        /*case _: SSAGotoInstruction                                                 =>
           // if we have a conditional branch, look at phis.
           // todo this is wrong. it's not clear to me where we should be looking at phis.
           d1 match {
@@ -63,7 +63,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
               defaultResult ++ phi.toSet
             case _                     =>
               defaultResult
-          }
+          }*/
         // Arrays
         case storeInstr: SSAArrayStoreInstruction
           if factSameAsVar(d1, method, storeInstr.getValue)                         =>

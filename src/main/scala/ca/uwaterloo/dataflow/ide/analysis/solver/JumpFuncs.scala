@@ -101,7 +101,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       (c, r)               <- callReturnPairs(node)
       d4                   <- forwardExitD4s.get(c, sp).asScala
       FactFunPair(d1, f4)  <- callStartEdges(XNode(c, d4), sp.n)
-      if sp.d == d1 // todo just include sp.d into pattern matching?
+      if sp.d == d1
       FactFunPair(d5, f5)  <- endReturnEdges(n, r)
       rn                    = XNode(r, d5)
       sumEdge               = XEdge(XNode(c, d4), rn)
@@ -157,7 +157,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   private[this] def forwardAnyNode(e: XEdge, f: IdeFunction) {
     val n = e.target
     for {
-      m                       <- followingNodes(n.n).toSeq // todo :+ n.n followingNodes should include n itself, because n can be the first node in the procedure?
+      m                       <- followingNodes(n.n).toSeq
       FactFunPair(d3, edgeFn) <- otherSuccEdges(n, m)
     } {
       propagate(e, f)(XEdge(e.source, XNode(m, d3)), edgeFn ◦ f)
@@ -173,7 +173,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     val f2 = f ⊓ jf
     if (f2 != jf) {
       jumpFn += e -> f2
-      if (f2 != λTop) forwardExitFromPropagate(e, f2, oldE, oldF) // todo check if that method makes sense
+      if (f2 != λTop) forwardExitFromPropagate(e, f2, oldE, oldF)
       pathWorklist enqueue e
     }
   }

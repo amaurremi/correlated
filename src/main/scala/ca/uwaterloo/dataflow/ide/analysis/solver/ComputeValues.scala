@@ -36,7 +36,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
         computeCallNode(node)
     }
     // Phase II(ii)
-    for { // todo correct (differs from paper)?
+    for {
       (XEdge(sp, n), fPrime) <- jumpFunc
       if fPrime != λTop
       if !(n.isCallNode || n.isStartNode)

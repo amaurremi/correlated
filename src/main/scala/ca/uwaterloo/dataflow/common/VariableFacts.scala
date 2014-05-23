@@ -1,8 +1,8 @@
 package ca.uwaterloo.dataflow.common
 
 import com.ibm.wala.classLoader.{IField, IMethod}
-import com.ibm.wala.types.FieldReference
 import com.ibm.wala.ipa.cha.IClassHierarchy
+import com.ibm.wala.types.FieldReference
 
 trait VariableFacts extends ExplodedGraphTypes with TraverseGraph with WalaInstructions {
 
