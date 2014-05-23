@@ -4,7 +4,7 @@ import ca.uwaterloo.dataflow.common.{VariableFacts, WalaInstructions}
 import ca.uwaterloo.dataflow.correlated.collector.{FakeReceiver, ReceiverI, Receiver}
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
 import com.ibm.wala.classLoader.{IMethod, IClass}
-import com.ibm.wala.ssa.SSAInvokeInstruction
+import com.ibm.wala.ssa.{SSAReturnInstruction, SSAInvokeInstruction}
 
 trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInstructions with VariableFacts { this: IfdsProblem =>
 
@@ -12,38 +12,28 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
 
   override def otherSuccEdges: IdeEdgeFn  =
     (ideN1, n2) =>
-      ifdsOtherSuccEdges(ideN1, n2) flatMap idFactFunPairSet
+      ideN1.n.getLastInstruction match {
+        case returnInstr: SSAReturnInstruction =>
+          val d2s = ifdsOtherSuccEdges(ideN1, n2)
+          // setting local variables to bottom
+          val localReceivers = ccReceivers filter {
+            case Receiver(vn, method) =>
+              method == ideN1.n.getMethod &&
+                returnInstr.getResult != vn &&
+                (method.isStatic || vn != 1) // todo excluding this. correct?
+            case _                    =>
+              false
+          }
+          val edgeFn = CorrelatedFunction((localReceivers map { _ -> composedTypesBottom }).toMap)
+          d2s map { FactFunPair(_, edgeFn) }
+        case _                                 =>
+          ifdsOtherSuccEdges(ideN1, n2) flatMap idFactFunPairSet
+      }
 
   override def endReturnEdges: IdeEdgeFn =
-    (ideN1, n2) => {
-      val d2s = ifdsEndReturnEdges(ideN1, n2)
-      // setting local variables to bottom (all types)
-      val optLocalVar = ideN1.d match {
-        case Variable(method, elem)
-          if method == ideN1.n.getMethod && (method.isStatic || elem != 1) => // todo excluding this. correct?
-          // todo what if the receiver is a field?
-            Some(elem)
-        case _                                                             =>
-          None
-      }
-      optLocalVar match {
-        case Some(localVar) =>
-          val receiver = getCcReceiver(localVar, ideN1.n.getMethod)
-          val edgeFn = receiver match {
-            case Some(rec) =>
-              CorrelatedFunction(Map(rec -> composedTypesBottom))
-            case None      =>
-              Id
-          }
-          val localToBottom  = (d2s - Λ) map {
-            FactFunPair(_, edgeFn)
-          }
-          val maybeLambdaSet = if (ideN1.d == Λ) idFactFunPairSet(Λ) else Set.empty
-          maybeLambdaSet ++ localToBottom
-        case None           => d2s flatMap idFactFunPairSet
-      }
-    }
-  
+    (ideN1, n2) =>
+      ifdsEndReturnEdges(ideN1, n2) flatMap idFactFunPairSet
+
   private[this] def getCcReceiver(vn: ValueNumber, method: IMethod): Option[ReceiverI] =
     ccReceivers find {
       case Receiver(v, m) =>
