@@ -54,6 +54,16 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             case _                                            =>
               defaultResult
           }
+        case _: SSAGotoInstruction                                                 =>
+          // if we have a conditional branch, look at phis.
+          // todo this is wrong. it's not clear to me where we should be looking at phis.
+          d1 match {
+            case Variable(`method`, v) =>
+              val phi: Option[Fact] = getPhis(n1, v, method, getAllArgs = false).headOption
+              defaultResult ++ phi.toSet
+            case _                     =>
+              defaultResult
+          }
         // Arrays
         case storeInstr: SSAArrayStoreInstruction
           if factSameAsVar(d1, method, storeInstr.getValue)                         =>
@@ -205,6 +215,11 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   private[this] def invokedOnSecretClass(callInstr: SSAInvokeInstruction): Boolean =
     callInstr.getDeclaredTarget.getDeclaringClass.getName.toString == secretType
 
+  /**
+   * Returns the Variables corresponding to a phi instruction.
+   * @param getAllArgs If false, returns only the variable corresponding to the whole phi variable. Otherwise
+   *                   returns also the arguments of the phi intsruciton.
+   */
   private[this] def getPhis(node: Node, valNum: ValueNumber, method: IMethod, getAllArgs: Boolean): Set[Fact] =
     (phiInstructions(node) collect {
       case phiInstr if phiInstr.getUse(0) == valNum || phiInstr.getUse(1) == valNum =>
