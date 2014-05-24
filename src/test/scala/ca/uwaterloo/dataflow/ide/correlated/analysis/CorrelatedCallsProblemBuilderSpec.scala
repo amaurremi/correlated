@@ -24,7 +24,8 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       override lazy val entryPoints: Seq[Node] = notNeeded
       override lazy val supergraph: ISupergraph[Node, Procedure] = notNeeded
       override def getValNum(factElem: FactElem, node: XNode): ValueNumber = notNeeded
-      override def otherSuccEdges: IdeEdgeFn = notNeeded
+      override def otherSuccEdges: IdeOtherEdgeFn = notNeeded
+      override def otherSuccEdgesPhi: IdeOtherEdgeFn = notNeeded
       override def endReturnEdges: IdeEdgeFn = notNeeded
       override def callReturnEdges: IdeEdgeFn = notNeeded
       override def callStartEdges: IdeEdgeFn = notNeeded

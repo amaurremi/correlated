@@ -158,7 +158,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     val n = e.target
     for {
       m                       <- followingNodes(n.n).toSeq
-      FactFunPair(d3, edgeFn) <- otherSuccEdges(n, m)
+      FactFunPair(d3, edgeFn) <- otherSuccEdges(n)
     } {
       propagate(e, f)(XEdge(e.source, XNode(m, d3)), edgeFn ◦ f)
     }
