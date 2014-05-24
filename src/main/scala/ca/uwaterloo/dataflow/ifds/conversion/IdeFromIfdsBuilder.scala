@@ -13,14 +13,19 @@ trait IdeFromIfdsBuilder extends IdeProblem { this: IfdsProblem =>
   override val Id: IdeFunction     = IfdsIdFunction
   override val λTop: IdeFunction   = IfdsTopFunction
 
-  override def otherSuccEdges: IdeEdgeFn  = zipWithId(ifdsOtherSuccEdges)
-  override def endReturnEdges: IdeEdgeFn  = zipWithId(ifdsEndReturnEdges)
-  override def callReturnEdges: IdeEdgeFn = zipWithId(ifdsCallReturnEdges)
-  override def callStartEdges: IdeEdgeFn  = zipWithId(ifdsCallStartEdges)
+  override def otherSuccEdges: IdeOtherEdgeFn      = zipWithIdOther(ifdsOtherSuccEdges)
+  override def otherSuccEdgesPhi: IdeOtherEdgeFn   = zipWithIdOther(ifdsOtherSuccEdgesPhi)
+  override def endReturnEdges: IdeEdgeFn           = zipWithId(ifdsEndReturnEdges)
+  override def callReturnEdges: IdeEdgeFn          = zipWithId(ifdsCallReturnEdges)
+  override def callStartEdges: IdeEdgeFn           = zipWithId(ifdsCallStartEdges)
 
   private[this] def zipWithId(f: IfdsEdgeFn): IdeEdgeFn =
     (ideN1, d1) =>
-      f(XNode(ideN1.n, ideN1.d), d1) map { FactFunPair(_, IfdsIdFunction) }
+      f(ideN1, d1) map { FactFunPair(_, IfdsIdFunction) }
+
+  private[this] def zipWithIdOther(f: IfdsOtherEdgeFn): IdeOtherEdgeFn =
+    ideN1 =>
+      f(ideN1) map { FactFunPair(_, IfdsIdFunction) }
 
   trait IfdsLatticeElem extends Lattice[IfdsLatticeElem]
 

@@ -6,6 +6,8 @@ trait IfdsFlowFunctions extends ExplodedGraphTypes {
 
   type IfdsEdgeFn = (XNode, Node) => Set[Fact]
 
+  type IfdsOtherEdgeFn = XNode => Set[Fact]
+
   /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
@@ -24,5 +26,10 @@ trait IfdsFlowFunctions extends ExplodedGraphTypes {
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  def ifdsOtherSuccEdges: IfdsEdgeFn
+  def ifdsOtherSuccEdges: IfdsOtherEdgeFn
+
+  /**
+   * Functions for edges to phi instructions
+   */
+  def ifdsOtherSuccEdgesPhi: IfdsOtherEdgeFn
 }

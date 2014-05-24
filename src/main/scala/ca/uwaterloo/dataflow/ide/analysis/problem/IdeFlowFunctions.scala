@@ -22,6 +22,11 @@ trait IdeFlowFunctions { this: IdeExplodedGraphTypes with IdeConstants =>
   type IdeEdgeFn = (XNode, Node) => Set[FactFunPair]
 
   /**
+   * An edge function for "other" edges that doesn't require the target node of an edge as input.
+   */
+  type IdeOtherEdgeFn = XNode => Set[FactFunPair]
+
+  /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
   def callStartEdges: IdeEdgeFn
@@ -39,7 +44,12 @@ trait IdeFlowFunctions { this: IdeExplodedGraphTypes with IdeConstants =>
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  def otherSuccEdges: IdeEdgeFn
+  def otherSuccEdges: IdeOtherEdgeFn
+
+  /**
+   * Functions for phi instructions.
+   */
+  def otherSuccEdgesPhi: IdeOtherEdgeFn
 
   /**
    * Helper function analogous to callStartFns, but returns only the factoids, without the edge functions.

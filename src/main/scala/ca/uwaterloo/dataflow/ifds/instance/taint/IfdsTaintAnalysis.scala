@@ -38,8 +38,8 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   override type FactElem = ValueNumber
   override val O: Fact   = Λ
 
-  override def ifdsOtherSuccEdges: IfdsEdgeFn =
-    (ideN1, _) => {
+  override def ifdsOtherSuccEdges: IfdsOtherEdgeFn =
+    ideN1 => {
       val n1            = ideN1.n
       val d1            = ideN1.d
       val defaultResult = Set(d1)
@@ -125,6 +125,30 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         case _                                                              =>
           Set(ideN1.d)
       }
+
+
+  /**
+   * Functions for edges to phi instructions
+   */
+  override def ifdsOtherSuccEdgesPhi: IfdsOtherEdgeFn =
+    ideN1 => {
+      val d1 = ideN1.d
+      val n1 = ideN1.n
+      ideN1.d match {
+        case Variable(m, vn) if m == n1.getMethod =>
+          (n1.iteratePhis().asScala flatMap {
+            phiInstr =>
+              0 to phiInstr.getNumberOfUses - 1 find {
+                phiInstr.getUse(_) == vn
+              } match {
+                case Some(_) => Set(d1, Variable(m, phiInstr.getDef))
+                case None    => Set(d1)
+              }
+          }).toSet
+        case _                                    =>
+          Set(d1)
+      }
+    }
 
   override def ifdsCallReturnEdges: IfdsEdgeFn =  // todo should we remove fields similar to how it's done in the IFDS paper?
     (ideN1, _) => {

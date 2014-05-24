@@ -10,11 +10,11 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
 
   override type FactElem = ValueNumber
 
-  override def otherSuccEdges: IdeEdgeFn  =
-    (ideN1, n2) =>
+  override def otherSuccEdges: IdeOtherEdgeFn  =
+    ideN1 =>
       ideN1.n.getLastInstruction match {
         case returnInstr: SSAReturnInstruction =>
-          val d2s = ifdsOtherSuccEdges(ideN1, n2)
+          val d2s = ifdsOtherSuccEdges(ideN1)
           // setting local variables to bottom
           val localReceivers = ccReceivers filter {
             case Receiver(vn, method) =>
@@ -27,7 +27,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
           val edgeFn = CorrelatedFunction((localReceivers map { _ -> composedTypesBottom }).toMap)
           d2s map { FactFunPair(_, edgeFn) }
         case _                                 =>
-          ifdsOtherSuccEdges(ideN1, n2) flatMap idFactFunPairSet
+          ifdsOtherSuccEdges(ideN1) flatMap idFactFunPairSet
       }
 
   override def endReturnEdges: IdeEdgeFn =
@@ -92,6 +92,11 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
         }
       }
     }
+
+
+  override def otherSuccEdgesPhi: IdeOtherEdgeFn =
+    ideN =>
+      ifdsOtherSuccEdgesPhi(ideN) flatMap idFactFunPairSet
 
   private[this] def staticTypes(callInstr: SSAInvokeInstruction, sourceNode: Node, targetNode: Node): Set[IClass] = {
     val enclosingClass = enclProc(targetNode).getMethod.getDeclaringClass
