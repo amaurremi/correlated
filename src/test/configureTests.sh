@@ -6,8 +6,7 @@
 ### Replace the `jrepath' value with your path to the rt.jar file
 jrepath="C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar"
 
-testroot=ca/uwaterloo/dataflow/ide
-testdirs="$testroot/cp $testroot/taint"
+testroot=ca/uwaterloo/dataflow/ide/taint
 
 root=`pwd`
 if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -26,18 +25,17 @@ function createJar() {
 }
 
 function createConfigFile() {
-    testdir=$1
-    testname=$2
-    dir="resources/ca/uwaterloo/dataflow/ide/$testdir"
+    testname=$1
+    dir="resources/ca/uwaterloo/dataflow/ide/taint"
     mkdir -p $dir
     cd $dir
-    testpath="$root/scala/ca/uwaterloo/dataflow/ide/$testdir/inputPrograms/$testname/$testname.jar"
+    testpath="$root/scala/ca/uwaterloo/dataflow/ide/taint/inputPrograms/$testname/$testname.jar"
     contents="
     wala {\n
       jre-lib-path = \"$jrepath\"\n
       dependencies.jar += \"$testpath\"\n
       entry {\n
-       class = \"Lca/uwaterloo/dataflow/ide/$testdir/inputPrograms/$testname/$testname\"\n
+       class = \"Lca/uwaterloo/dataflow/ide/taint/inputPrograms/$testname/$testname\"\n
        method = \"main([Ljava/lang/String;)V\"\n
       }\n
     }\n
@@ -46,17 +44,14 @@ function createConfigFile() {
     cd "$root"
 }
 
-for testdir in $testdirs ; do
-    echo "Configuring tests for [$testdir]"
+cd scala
+for test in `ls -d $testroot/inputPrograms/*/` ; do
+    testname=`basename $test`
+    echo -n `basename $test`...
+    testParent=`dirname $test`
     cd scala
-    for test in `ls -d $testdir/inputPrograms/*/` ; do
-        testname=`basename $test`
-        echo -n `basename $test`...
-        testParent=`dirname $test`
-        cd scala
-        createJar $testParent $testname > /dev/null 2>&1
-        createConfigFile `basename $testdir` $testname
-        echo "[DONE]"
-    done
-    cd "$root"
+    createJar $testParent $testname > /dev/null 2>&1
+    createConfigFile $testname
+    echo "[DONE]"
 done
+cd "$root"
