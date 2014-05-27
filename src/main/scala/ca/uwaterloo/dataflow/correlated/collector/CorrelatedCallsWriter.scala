@@ -4,7 +4,6 @@ import ca.uwaterloo.dataflow.correlated.collector.util.{MultiMap, CallGraphUtil,
 import com.ibm.wala.classLoader.CallSiteReference
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 import com.ibm.wala.util.graph.traverse.DFS
-import scala.Some
 import scalaz.{Scalaz, Applicative, Semigroup, Writer}
 
 object CorrelatedCallsWriter {
@@ -23,7 +22,7 @@ object CorrelatedCallsWriter {
     val cgNodes = toScalaList(DFS.getReachableNodes(cg).iterator)
     val rcs = getRcs(cg)
     for {
-      _ <- CorrelatedCalls(
+      _ <- CorrelatedCallStats(
         rcs     = rcs,
         cgNodes = cgNodes.toSet
       ).tell
@@ -46,7 +45,7 @@ object CorrelatedCallsWriter {
     for {
       maps  <- callSites.traverse[CorrelatedCallWriter, ReceiverToCallSites](callSiteWriter(cg, cgNode, rcs))
       ccMap  = getCcMap(maps)
-      _     <- CorrelatedCalls(
+      _     <- CorrelatedCallStats(
         totalCallSites      = callSites.toSet,
         receiverToCallSites = ccMap,
         rcCcReceivers       = if (rcs contains cgNode) ccMap.keySet else Set.empty
@@ -75,7 +74,7 @@ object CorrelatedCallsWriter {
       case Some(receiver) =>
         val receiverToCallSite = Map(receiver -> Set(callSite))
         for {
-          _ <- CorrelatedCalls(
+          _ <- CorrelatedCallStats(
             polymorphicCallSites = Set(callSite)
           ).tell
         } yield receiverToCallSite
@@ -87,10 +86,10 @@ object CorrelatedCallsWriter {
   /**
    * The implicit functions 's' and 'applicative' are necessary to use scalaz's Writer monad.
    */
-  implicit val s = new Semigroup[CorrelatedCalls]{
+  implicit val s = new Semigroup[CorrelatedCallStats]{
 
-    override def append(f1: CorrelatedCalls, f2: => CorrelatedCalls): CorrelatedCalls =
-      CorrelatedCalls(
+    override def append(f1: CorrelatedCallStats, f2: => CorrelatedCallStats): CorrelatedCallStats =
+      CorrelatedCallStats(
         f1.cgNodes ++ f2.cgNodes,
         f1.rcs ++ f2.rcs,
         f1.rcCcReceivers ++ f2.rcCcReceivers,
@@ -101,7 +100,7 @@ object CorrelatedCallsWriter {
   }
 
   implicit val applicative = new Applicative[CorrelatedCallWriter] {
-    override def point[A](a: => A): CorrelatedCallWriter[A] = Writer(CorrelatedCalls.empty, a)
+    override def point[A](a: => A): CorrelatedCallWriter[A] = Writer(CorrelatedCallStats.empty, a)
 
     override def ap[A, B](
       fa: => CorrelatedCallWriter[A]

@@ -6,5 +6,5 @@ import scalaz.Writer
 package object collector {
   type MultiMap[K, V] = Map[K, Set[V]]
   type ReceiverToCallSites = MultiMap[Receiver, CallSiteReference]
-  type CorrelatedCallWriter[T] = Writer[CorrelatedCalls, T]
+  type CorrelatedCallWriter[T] = Writer[CorrelatedCallStats, T]
 }

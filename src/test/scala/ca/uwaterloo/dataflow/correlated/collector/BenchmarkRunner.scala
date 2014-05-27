@@ -20,6 +20,6 @@ object BenchmarkRunner {
   
   private[this] def run(testName: String) {
     println(testName + " benchmark:\n")
-    TestUtil.getCcsForPointerAnalysisCallGraph(testName).printInfo()
+    TestUtil.getCcStats(testName).printInfo()
   }
 }

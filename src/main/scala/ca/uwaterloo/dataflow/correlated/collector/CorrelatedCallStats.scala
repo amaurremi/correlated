@@ -6,7 +6,7 @@ import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
 /**
  * Data structure that contains information about the program with respect to correlated calls
  */
-case class CorrelatedCalls(
+case class CorrelatedCallStats(
 
   /*
    * All call graph nodes
@@ -123,13 +123,13 @@ case class CorrelatedCalls(
     )
 }
 
-object CorrelatedCalls {
+object CorrelatedCallStats {
 
-  val empty = CorrelatedCalls()
+  val empty = CorrelatedCallStats()
 
   /**
    * Creates a CorrelatedCalls object for a given call graph.
    */
-  def apply(cg: CallGraph): CorrelatedCalls =
+  def apply(cg: CallGraph): CorrelatedCallStats =
     CorrelatedCallsWriter(cg).written
 }

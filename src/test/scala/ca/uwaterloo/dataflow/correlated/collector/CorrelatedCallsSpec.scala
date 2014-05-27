@@ -14,7 +14,7 @@ class CorrelatedCallsSpec extends FunSpec {
     //       RC stands for Recursive Component
 
     it("has zero-stats for programs with an empty main method") {
-      val ccs = getCcsForPointerAnalysisCallGraph("Nothing")
+      val ccs = getCcStats("Nothing")
       assert(ccs.ccReceiverNum == 0, "cc receivers")
       assert(ccs.ccSiteNum == 0, "cc sites")
       assert(ccs.dispatchCallSiteNum == 0, "dispatch sites")
@@ -32,20 +32,20 @@ class CorrelatedCallsSpec extends FunSpec {
     }
 
     it("returns no CCs for programs where each receiver has at most one invocation, excluding private and static calls") {
-      val ccs = getCcsForPointerAnalysisCallGraph("NoCcs")
+      val ccs = getCcStats("NoCcs")
       assert(ccs.ccReceiverNum == 0, "cc receivers")
       assert(ccs.ccSiteNum == 0, "cc sites")
     }
 
     it("detects CCs, including invocations on 'this'") {
-      val ccs = getCcsForPointerAnalysisCallGraph("CcsPresent")
+      val ccs = getCcStats("CcsPresent")
       assert(ccs.ccReceiverNum == 1, "cc receivers")
       assert(ccs.ccSiteNum == 3, "cc sites")
       assert(ccs.rcNum == 0, "rcs")
     }
 
     it("detects recursive and mutually recursive methods") {
-      val ccs = getCcsForPointerAnalysisCallGraph("Rec")
+      val ccs = getCcStats("Rec")
       assert(ccs.rcNum == 2, "recursive components")
       assert(ccs.rcCcReceiverNum == 1, "cc receiver in recursive component")
     }

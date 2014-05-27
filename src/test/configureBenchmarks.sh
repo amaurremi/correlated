@@ -24,8 +24,8 @@ function createConfigFile() {
     contents="
     wala {\n
       jre-lib-path = \"$jrepath\"\n
-      dependencies.jar += \"$testpathSrc\"\n
-      dependencies.jar += \"$testpathDep\"\n
+      dependencies.jar += \"$testpathSrc.jar\"\n
+      dependencies.jar += \"$testpathDep-deps.jar\"\n
       entry {\n
        class = \"Ldacapo/$testname/Main\"\n
        method = \"main([Ljava/lang/String;)V\"\n
