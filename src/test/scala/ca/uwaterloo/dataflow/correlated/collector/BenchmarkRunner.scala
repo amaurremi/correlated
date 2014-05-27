@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow.correlated.collector.benchmark
+package ca.uwaterloo.dataflow.correlated.collector
 
 import ca.uwaterloo.dataflow.correlated.collector.util.TestUtil
 

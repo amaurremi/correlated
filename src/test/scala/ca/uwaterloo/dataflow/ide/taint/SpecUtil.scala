@@ -1,4 +1,4 @@
-package ca.uwaterloo.dataflow
+package ca.uwaterloo.dataflow.ide.taint
 
 import java.io.File
 import scala.sys.process._

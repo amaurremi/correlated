@@ -10,7 +10,7 @@ object TestUtil {
 
   private val resourcePath = "correlated/"
 
-  def getCcsForPointerAnalysisCallGraph(testName: String = "application"): CorrelatedCalls = {
+  def getCcsForPointerAnalysisCallGraph(testName: String): CorrelatedCalls = {
     implicit val config =
       ConfigFactory.load(
         resourcePath + testName,

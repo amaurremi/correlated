@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage:
-# configureTest <JRE rt.jar path> <instance> <test name>
+# configureTest <JRE rt.jar path> <test name>
 
 ### Replace the `jrepath' value with your path to the rt.jar file
 jrepath="C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar"
@@ -51,4 +51,3 @@ echo -n $testname...
 createJar $testname > /dev/null 2>&1
 createConfigFile $testname
 echo "[DONE]"
-cd "$root"

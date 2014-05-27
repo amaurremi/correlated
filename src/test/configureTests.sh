@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage:
-# configureTests <JRE rt.jar path>
+# configureTests
 
 ### Replace the `jrepath' value with your path to the rt.jar file
 jrepath="C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar"
@@ -49,9 +49,8 @@ for test in `ls -d $testroot/inputPrograms/*/` ; do
     testname=`basename $test`
     echo -n `basename $test`...
     testParent=`dirname $test`
-    cd scala
     createJar $testParent $testname > /dev/null 2>&1
     createConfigFile $testname
+    cd scala
     echo "[DONE]"
 done
-cd "$root"
