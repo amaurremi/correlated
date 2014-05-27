@@ -27,7 +27,7 @@ Thus, our analysis code is in the `ca.uwaterloo.dataflow` package, whereas the W
     - `sbt`, if you prefer using another IDE. From the SBT shell, you'll need to type `compile` to compile the project, and `test` to run the tests.
 
 ### Testing
-The analysis consumes input Java programs in the form of JAR files. The source code of the input programs is located in the `<analysis>/inputPrograms` subfolder of the `src/test/scala/ca/uwaterloo` directory.
+The analysis consumes input Java programs in the form of JAR files. The source code of the input programs is located in the `src/test/scala/ca/uwaterloo/taint/inputPrograms` directory.
 Additionally, each test program needs a configuration file in the `src/test/resources` directory.
 
 To create or update a configuration and Jar file for a test, you will need to execute the `configureTests` or `configureSingleTest` script.
@@ -36,9 +36,8 @@ The first script will configure all tests, and the latter script will configure 
 1. In both files `configureTests` and `configureSingleTest`, replace the value of the `jrepath` variable with the path to the `rt.jar` file.
 The `rt.jar` file contains Java's bootstrap classes and is usually located in Java's `jre/lib` directory. On a Mac, the path might look like `/usr/lib/jvm/java-6-openjdk/jre/lib/rt.jar`.
 2. To configure all tests, navigate to the `src/test` subdirectory of the project and run `./configureTests`.
-3. To configure a single test, navigate to the `src/test` subdirectory of the project and run `./configureSingleTest <analysis> <test name>`.
-   - Currently, the `analysis` parameter can be either `cp` for constant propagation, or `taint` for taint analysis.
-   - For example, to configure the test `ca.uwaterloo.dataflow.ide.taint.inputPrograms.FunctionCall.FunctionCall.java`, run
+3. To configure a single test, navigate to the `src/test` subdirectory of the project and run `./configureSingleTest <test name>`.
+   For example, to configure the test `ca.uwaterloo.dataflow.ide.taint.inputPrograms.FunctionCall.FunctionCall.java`, run
 ```
-./configureSingleTest taint FunctionCall
+./configureSingleTest FunctionCall
 ```
