@@ -1,19 +1,20 @@
 package edu.illinois.wala.ipa.callgraph
 
-import java.io.File
-import java.util.jar.JarFile
+import AnalysisScope._
 import com.ibm.wala.classLoader.BinaryDirectoryTreeModule
 import com.ibm.wala.classLoader.JarFileModule
+import com.ibm.wala.classLoader.Language
+import com.ibm.wala.classLoader.Module
+import com.ibm.wala.types.ClassLoaderReference
 import com.ibm.wala.util.config.FileOfClasses
 import com.ibm.wala.util.io.FileProvider
-import scala.collection._
 import com.ibm.wala.util.strings.Atom
-import java.util.Collections
-import com.ibm.wala.classLoader.Language
-import AnalysisScope._
 import java.io.ByteArrayInputStream
-import com.ibm.wala.types.ClassLoaderReference
-import com.ibm.wala.classLoader.Module
+import java.io.File
+import java.util.Collections
+import java.util.jar.JarFile
+import scala.collection._
+
 //import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
 
 object AnalysisScope {

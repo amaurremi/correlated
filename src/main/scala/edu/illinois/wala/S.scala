@@ -1,14 +1,13 @@
 package edu.illinois.wala
-import com.ibm.wala.ipa.cfg.BasicBlockInContext
-import edu.illinois.wala.Facade._
-import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
-import com.ibm.wala.classLoader.ShrikeBTMethod
-import edu.illinois.wala.ssa.V
-import edu.illinois.wala.ipa.callgraph.propagation.P
-import edu.illinois.wala.classLoader.CodeLocation
-import edu.illinois.wala.ssa.IRNo
 
 import Facade._
+import com.ibm.wala.ipa.cfg.BasicBlockInContext
+import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import edu.illinois.wala.classLoader.CodeLocation
+import edu.illinois.wala.ipa.callgraph.propagation.P
+import edu.illinois.wala.ssa.IRNo
+import edu.illinois.wala.ssa.V
+
 
 object S {
   def unapply(b: BasicBlockInContext[IExplodedBasicBlock]): Option[(N, I)] = {

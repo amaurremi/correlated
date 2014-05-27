@@ -1,10 +1,9 @@
 package edu.illinois.wala.classLoader
 
-import edu.illinois.wala.Facade._
-import com.ibm.wala.classLoader.ShrikeBTMethod
-import edu.illinois.wala.ssa.IRNo
-import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode
 import com.ibm.wala.classLoader.NewSiteReference
+import com.ibm.wala.classLoader.ShrikeBTMethod
+import edu.illinois.wala.Facade._
+import edu.illinois.wala.ssa.IRNo
 
 object M {
   def unapply(m: M): Option[(C, String)] = {

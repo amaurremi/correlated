@@ -4,8 +4,8 @@ import com.ibm.wala.classLoader.{IMethod, IClass}
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
-import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.ssa._
+import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import scala.collection.JavaConverters._
 import scala.collection.breakOut
 

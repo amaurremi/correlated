@@ -1,16 +1,16 @@
 package edu.illinois.wala.ipa.callgraph
 
-import com.typesafe.config.ConfigFactory
+import com.ibm.wala.classLoader.ClassLoaderFactoryImpl
+import com.ibm.wala.ipa.callgraph.Entrypoint
+import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint
 import com.ibm.wala.ipa.cha.ClassHierarchy
-import com.ibm.wala.types.TypeReference
 import com.ibm.wala.types.MethodReference
 import com.ibm.wala.types.TypeName
-import com.ibm.wala.ipa.callgraph.impl.{Util, DefaultEntrypoint}
-import com.ibm.wala.ipa.callgraph.Entrypoint
-import scala.collection.JavaConversions._
+import com.ibm.wala.types.TypeReference
 import com.typesafe.config.Config
-import com.ibm.wala.classLoader.ClassLoaderFactoryImpl
+import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigList
+import scala.collection.JavaConversions._
 
 class AnalysisOptions(scope: AnalysisScope, entrypoints: java.lang.Iterable[Entrypoint], val cha: ClassHierarchy, val isSourceAnalysis: Boolean)
   extends com.ibm.wala.ipa.callgraph.AnalysisOptions(scope, entrypoints) {

@@ -1,11 +1,11 @@
 package edu.illinois.wala.util
 
-import com.ibm.wala.util.Predicate
-import com.ibm.wala.util.intset.IntSetAction
-import com.ibm.wala.util.intset.IntSet
-import com.ibm.wala.util.intset.SparseIntSet
-import com.ibm.wala.util.collections.Filter
 import collection.JavaConverters._
+import com.ibm.wala.util.Predicate
+import com.ibm.wala.util.collections.Filter
+import com.ibm.wala.util.intset.IntSet
+import com.ibm.wala.util.intset.IntSetAction
+import com.ibm.wala.util.intset.SparseIntSet
 
 trait Wrapper {
   implicit def makePredicateFromFunction[T](f: Function1[T, Boolean]) = new Predicate[T] {
@@ -24,7 +24,9 @@ trait Wrapper {
   implicit def intsetSet(s: IntSet) = new WrappedIntSet(s)
 
   import com.ibm.wala.util.graph.Graph
+
   implicit class RichGraph[T](g: Graph[T]) {
+
     import com.ibm.wala.util.graph._
     import impl.GraphInverter
     import traverse.DFS

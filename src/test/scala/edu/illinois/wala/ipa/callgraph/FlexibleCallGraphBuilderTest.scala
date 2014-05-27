@@ -1,8 +1,8 @@
 package edu.illinois.wala.ipa.callgraph
 
-import org.junit.Test
 import com.typesafe.config.ConfigFactory
 import org.junit.Assert
+import org.junit.Test
 
 class FlexibleCallGraphBuilderTest {
   @Test def testRegexEntrypoints() {
