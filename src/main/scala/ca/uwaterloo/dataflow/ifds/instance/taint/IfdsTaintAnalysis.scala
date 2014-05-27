@@ -125,7 +125,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val d1 = ideN1.d
       val n1 = ideN1.n.node
       ideN1.d match {
-        case Variable(m, vn) if m == n1.getMethod =>
+        case Variable(m, vn) => // we don't need to check that m == n1.getMethod, because local variables are removed at the end-return edge.
           val facts: Seq[Variable] = phiInstructions(n1) flatMap {
             phiInstr =>
               0 to phiInstr.getNumberOfUses - 1 find {
