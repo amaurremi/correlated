@@ -6,8 +6,8 @@
 ### Replace the `jrepath' value with your path to the rt.jar file
 jrepath="C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar"
 
-testroot=ca/uwaterloo/dataflow/ide
-testdirs="$testroot/cp $testroot/taint"
+testroot=ca/uwaterloo/dataflow/ide/taint
+testParent=$testroot/inputPrograms
 
 root=`pwd`
 if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
@@ -15,29 +15,27 @@ if [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
 fi
 
 function createJar() {
-    testname=$2
-    testpath=$1/$testname
-    testparent=$1
+    testname=$1
+    testpath=$testParent/$testname
     rm -rf $testpath/*.class
     rm -rf $testpath/*.jar
     javac -g $testpath/*.java
-    jar cvf "$testpath/$testname.jar" $testpath/*.class $testparent/*.class
+    jar cvf "$testpath/$testname.jar" $testpath/*.class $testParent/*.class
     cd "$root"
 }
 
 function createConfigFile() {
-    testdir=$1
-    testname=$2
-    dir="resources/ca/uwaterloo/dataflow/ide/$testdir"
+    testname=$1
+    dir="resources/ca/uwaterloo/dataflow/ide/taint"
     mkdir -p $dir
     cd $dir
-    testpath="$root/scala/ca/uwaterloo/dataflow/ide/$testdir/inputPrograms/$testname/$testname.jar"
+    testpath="$root/scala/ca/uwaterloo/dataflow/ide/taint/inputPrograms/$testname/$testname.jar"
     contents="
     wala {\n
       jre-lib-path = \"$jrepath\"\n
       dependencies.jar += \"$testpath\"\n
       entry {\n
-       class = \"Lca/uwaterloo/dataflow/ide/$testdir/inputPrograms/$testname/$testname\"\n
+       class = \"Lca/uwaterloo/dataflow/ide/taint/inputPrograms/$testname/$testname\"\n
        method = \"main([Ljava/lang/String;)V\"\n
       }\n
     }\n
@@ -46,14 +44,11 @@ function createConfigFile() {
     cd "$root"
 }
 
-analysis=$1
-testname=$2
-testParent=$testroot/$analysis/inputPrograms
+testname=$1
 test=$testParent/$testname
 cd scala
-testname=`basename $test`
-echo -n `basename $test`...
-createJar $testParent $testname > /dev/null 2>&1
-createConfigFile $analysis $testname
+echo -n $testname...
+createJar $testname > /dev/null 2>&1
+createConfigFile $testname
 echo "[DONE]"
 cd "$root"

@@ -13,7 +13,7 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
     new CcTaintAnalysisSpecBuilder(test).assertSecretValues()
   }
 
-  describe("IfdsTaintAnalysis") {
+  describe("IFDS and correlated-calls taint analyses") {
 
     describe("general") {
       it("propagates secret values intra-procedurally") {
