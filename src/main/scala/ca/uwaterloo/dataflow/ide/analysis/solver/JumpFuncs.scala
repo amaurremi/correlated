@@ -36,13 +36,13 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    * Maps (c, sp, d1) to EdgeFn(d4, f)
    * [21]
    */
-  private[this] val forwardExitD4s = new HashSetMultiMap[(NodeOrPhi, XNode), Fact]
+  private[this] val forwardExitD4s = new HashSetMultiMap[(NodeType, XNode), Fact]
 
   /**
    * Maps (sq, c, d4) to (d3, jumpFn) if JumpFn(sq, d3 -> c, d4) != Top
    * [28]
    */
-  private[this] val forwardExitD3s = new HashSetMultiMap[(NodeOrPhi, XNode), (Fact, IdeFunction)]
+  private[this] val forwardExitD3s = new HashSetMultiMap[(NodeType, XNode), (Fact, IdeFunction)]
 
   def computeJumpFuncs: Map[XEdge, IdeFunction] = {
     initialize()
@@ -125,7 +125,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     e: XEdge,
     f: IdeFunction
   )(
-    c: NodeOrPhi,
+    c: NodeType,
     d4: Fact,
     rn: XNode,
     fPrime: IdeFunction
@@ -144,7 +144,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    * To get d4 values in line [21], we need to remember all tuples (c, d4, sp) when we encounter them
    * in the call-processing procedure.
    */
-  private[this] def forwardExitFromCall(e: XEdge, f: IdeFunction, sq: NodeOrPhi, d: Fact) {
+  private[this] def forwardExitFromCall(e: XEdge, f: IdeFunction, sq: NodeType, d: Fact) {
     val n = e.target
     forwardExitD4s.put((n.n, XNode(sq, d)), n.d)
     if (n.isExitNode) forwardExitNode(e, f)
@@ -169,11 +169,13 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     }
   }
 
-  private[this] def otherSuccEdgesWithPhi: IdeOtherEdgeFn = {
-    case node@XNode(NormalNode(n), _) =>
-      otherSuccEdges(node)
-    case node@XNode(PhiNode(n), _) =>
-      otherSuccEdgesPhi(node)
+  private[this] def otherSuccEdgesWithPhi: IdeOtherEdgeFn =
+    node =>
+      node.n match {
+        case NormalNode(n) =>
+          otherSuccEdges(node)
+        case PhiNode(n) =>
+          otherSuccEdgesPhi(node)
   }
 
   /**

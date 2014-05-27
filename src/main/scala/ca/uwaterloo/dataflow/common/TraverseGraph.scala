@@ -4,7 +4,7 @@ import scala.collection.JavaConverters._
 
 trait TraverseGraph { this: ExplodedGraphTypes =>
 
-  def followingNodes(n: NodeOrPhi): Seq[NodeOrPhi] =
+  def followingNodes(n: NodeType): Seq[NodeType] =
     n match {
       case PhiNode(node)    =>
         Seq(NormalNode(node))
@@ -20,13 +20,13 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   /**
    * Given a call node n, returns the start nodes of n's target procedures.
    */
-  def targetStartNodes(n: NodeOrPhi): Iterator[NodeOrPhi] =
+  def targetStartNodes(n: NodeType): Iterator[NodeType] =
     (supergraph getCalledNodes n.node).asScala map PhiNode
 
   /**
    * Return-site nodes that correspond to call node n
    */
-  def returnNodes(n: NodeOrPhi): Iterator[NodeOrPhi] =
+  def returnNodes(n: NodeType): Iterator[NodeType] =
     targetStartNodes(n) flatMap { s =>
       supergraph.getReturnSites(n.node, enclProc(s.node)).asScala map PhiNode // todo don't create phi if there's no phi instr
     }
@@ -34,7 +34,7 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   /**
    * Returns the start node of the argument's enclosing procedure.
    */
-  lazy val startNodes: Node=> Seq[NodeOrPhi] = { // todo: in general, not sure to which scala collections WALA's collections should be converted
+  lazy val startNodes: Node=> Seq[NodeType] = { // todo: in general, not sure to which scala collections WALA's collections should be converted
     n =>
       val nodes = supergraph getEntriesForProcedure enclProc(n)
       nodes.view.toSeq map PhiNode // todo if no phi node, make it normal node
@@ -44,7 +44,7 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
    * Given the exit node of procedure p, returns all pairs (c, r), where c calls p with corresponding
    * return-site node r.
    */
-  def callReturnPairs(exit: NodeOrPhi): Seq[(NormalNode, NodeOrPhi)] = { // todo is this correct?
+  def callReturnPairs(exit: NodeType): Seq[(NormalNode, NodeType)] = {
     for {
       r <- followingNodes(exit)
       rn = r.node
@@ -56,21 +56,21 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   /**
    * All intra-procedural nodes from the start of a procedure.
    */
-  def allNodesInProc(node: NodeOrPhi): Seq[NodeOrPhi] =
+  def allNodesInProc(node: NodeType): Seq[NodeType] =
     for {
       s <- startNodes(node.node)
       n <- nodesInProc(s, enclProc(node.node))
     } yield n
 
   private[this] def nodesInProc(
-    startNode: NodeOrPhi,
+    startNode: NodeType,
     proc: Procedure,
-    acc: Set[NodeOrPhi] = Set.empty
-  ): Set[NodeOrPhi] =
+    acc: Set[NodeType] = Set.empty
+  ): Set[NodeType] =
     if (enclProc(startNode.node) != proc)
       acc
     else followingNodes(startNode).toSet flatMap {
-      (next: NodeOrPhi) =>
+      (next: NodeType) =>
         if (acc contains next)
           acc + startNode
         else

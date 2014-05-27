@@ -52,7 +52,7 @@ trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
   /**
    * Get all instructions following instruction in node `n` in its procedure.
    */
-  def followingInstructions(n: NodeOrPhi): Seq[SSAInstruction] =
+  def followingInstructions(n: NodeType): Seq[SSAInstruction] =
     followingNodes(n) map { _.node.getLastInstruction }
 
   /**
@@ -80,9 +80,9 @@ trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
   def getValNumFromParameterNum(n: Node, argNum: Int): ValueNumber =
     enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
-  def getCallInstr(exit: NodeOrPhi, ret: NodeOrPhi): SSAInvokeInstruction = {
+  def getCallInstr(exit: NodeType, ret: NodeType): SSAInvokeInstruction = {
     val callNodes = callReturnPairs(exit).toSeq collect {
-      case (c: NodeOrPhi, r: NodeOrPhi) if r == ret => c
+      case (c: NodeType, r: NodeType) if r == ret => c
     }
     assert(callNodes.size == 1)
     callNodes.head.node.getLastInstruction match {

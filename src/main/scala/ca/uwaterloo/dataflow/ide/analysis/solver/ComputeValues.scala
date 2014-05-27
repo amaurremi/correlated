@@ -56,7 +56,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     }
   }
 
-  private[this] def getJumpFnTargetFacts(ideNode1: XNode, node2: NodeOrPhi, jumpFn: JumpFn): Set[FactFunPair] =
+  private[this] def getJumpFnTargetFacts(ideNode1: XNode, node2: NodeType, jumpFn: JumpFn): Set[FactFunPair] =
     (jumpFn collect {
       case (XEdge(source, XNode(n, d)), f)
         if source == ideNode1 && n == node2 =>

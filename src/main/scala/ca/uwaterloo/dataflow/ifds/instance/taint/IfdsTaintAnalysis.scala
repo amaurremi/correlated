@@ -26,7 +26,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   override val callGraph: CallGraph = builder.cg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
-  override val entryPoints: Seq[NodeOrPhi] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure map PhiNode
+  override val entryPoints: Seq[NodeType] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure map PhiNode
   override val pointerAnalysis: PointerAnalysis =
     builder match {
       case b: FlexibleCallGraphBuilder =>
@@ -136,15 +136,18 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val n1 = ideN1.n.node
       ideN1.d match {
         case Variable(m, vn) if m == n1.getMethod =>
-          (n1.iteratePhis().asScala flatMap {
-            phiInstr =>
+          val facts: Iterator[Set[VariableFact]] = n1.iteratePhis().asScala map {
+            phiInstr: SSAPhiInstruction =>
               0 to phiInstr.getNumberOfUses - 1 find {
                 phiInstr.getUse(_) == vn
               } match {
-                case Some(_) => Set(d1, Variable(m, phiInstr.getDef))
-                case None    => Set(d1)
+                case Some(_) =>
+                  Set(Variable(m, phiInstr.getDef))
+                case None =>
+                  Set.empty[VariableFact]
               }
-          }).toSet
+          }
+          facts.flatten.toSet + d1
         case _                                    =>
           Set(d1)
       }
@@ -253,6 +256,6 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   private[this] val methodToReturnVars = new HashSetMultiMap[IMethod, Variable]
 
-  private[this] def isFactReturned(d: Variable, n: NodeOrPhi, retVal: ValueNumber): Boolean =
+  private[this] def isFactReturned(d: Variable, n: NodeType, retVal: ValueNumber): Boolean =
     d.elem == retVal && d.method == n.node.getMethod
 }

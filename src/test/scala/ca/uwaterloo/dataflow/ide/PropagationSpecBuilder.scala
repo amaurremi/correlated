@@ -19,7 +19,7 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
       case node@XNode(n, v: Variable) if v.method == iMethod && n.node.getMethod == iMethod && n.node.getLastInstruction != null =>
         (v, n)
     }
-    val variableNodeProduct: Set[(Variable, NodeOrPhi)] =
+    val variableNodeProduct: Set[(Variable, NodeType)] =
       for {
         (v, n) <- variablesInMethod
         node   <- allNodesInProc(n)
