@@ -143,7 +143,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       }
     }
 
-  override def ifdsCallReturnEdges: IfdsEdgeFn =  // todo should we remove fields similar to how it's done in the IFDS paper?
+  override def ifdsCallReturnEdges: IfdsEdgeFn =
     (ideN1, _) => {
       val d1 = ideN1.d
       val default = Set(d1)
