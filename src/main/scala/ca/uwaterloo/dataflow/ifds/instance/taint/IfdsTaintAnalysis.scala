@@ -199,8 +199,8 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             defaultResult + Variable(callerMethod, valNum)
           } else if (isConcatConstructor(targetMethod) && d1 == Λ){
             val valNum = initValNum(targetMethod, callInstr)
-            val phis = getPhis(n1, valNum, callerMethod, getAllArgs = true)
-            defaultResult ++ phis // todo move
+            val phis = getPhis(n1, valNum, callerMethod)
+            defaultResult ++ phis
           } else if (exclude(n1, callInstr))
             Set.empty
           else
@@ -233,14 +233,12 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   /**
    * Returns the Variables corresponding to a phi instruction.
-   * @param getAllArgs If false, returns only the variable corresponding to the whole phi variable. Otherwise
-   *                   returns also the arguments of the phi intsruciton.
    */
-  private[this] def getPhis(node: Node, valNum: ValueNumber, method: IMethod, getAllArgs: Boolean): Set[Fact] =
+  private[this] def getPhis(node: Node, valNum: ValueNumber, method: IMethod): Set[Fact] =
     (phiInstructions(node) collect {
       case phiInstr if phiInstr.getUse(0) == valNum || phiInstr.getUse(1) == valNum =>
         val phi = Variable(method, phiInstr.getDef)
-        val args = if (getAllArgs) Set(Variable(method, phiInstr.getUse(0)), Variable(method, phiInstr.getUse(1))) else Set.empty[Variable]
+        val args = Set(Variable(method, phiInstr.getUse(0)), Variable(method, phiInstr.getUse(1)))
         args + phi
     }).flatten.toSet[Fact]
 
