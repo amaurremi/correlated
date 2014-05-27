@@ -224,7 +224,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
     val vn = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
     lazy val operationType = getOperationType(callInstr.getDeclaredTarget, node.getNode, vn)
     lazy val ops: Set[SecretOperation] = Set(ConcatenatesStrings, NonSecretLibraryCall, SecretLibraryCall)
-    invokedOnSecretClass(callInstr) || // todo is this enough to check that we're invoking a library call?
+    invokedOnSecretClass(callInstr) ||
       operationType.isDefined && (ops contains operationType.get)
   }
   
