@@ -2,15 +2,21 @@ package ca.uwaterloo.dataflow.common
 
 import scala.collection.JavaConverters._
 
-trait TraverseGraph { this: ExplodedGraphTypes =>
+trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
 
   def followingNodes(n: NodeType): Seq[NodeType] =
     n match {
       case PhiNode(node)    =>
         Seq(NormalNode(node))
       case NormalNode(node) =>
-        (supergraph getSuccNodes node).asScala.toSeq map PhiNode // todo optimize (don't return phi node if there's no phi instruction)
+        (supergraph getSuccNodes node).asScala.toSeq map createNodeType
     }
+  
+  def createNodeType(node: Node): NodeType =
+    if (phiInstructions(node).isEmpty)
+      NormalNode(node)
+    else
+      PhiNode(node)
 
   /**
    * Returns the enclosing procedure of a given node.
@@ -21,14 +27,14 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
    * Given a call node n, returns the start nodes of n's target procedures.
    */
   def targetStartNodes(n: NodeType): Iterator[NodeType] =
-    (supergraph getCalledNodes n.node).asScala map PhiNode
+    (supergraph getCalledNodes n.node).asScala map createNodeType
 
   /**
    * Return-site nodes that correspond to call node n
    */
   def returnNodes(n: NodeType): Iterator[NodeType] =
     targetStartNodes(n) flatMap { s =>
-      supergraph.getReturnSites(n.node, enclProc(s.node)).asScala map PhiNode // todo don't create phi if there's no phi instr
+      supergraph.getReturnSites(n.node, enclProc(s.node)).asScala map createNodeType
     }
 
   /**
@@ -37,7 +43,7 @@ trait TraverseGraph { this: ExplodedGraphTypes =>
   lazy val startNodes: Node=> Seq[NodeType] = { // todo: in general, not sure to which scala collections WALA's collections should be converted
     n =>
       val nodes = supergraph getEntriesForProcedure enclProc(n)
-      nodes.view.toSeq map PhiNode // todo if no phi node, make it normal node
+      nodes.view.toSeq map createNodeType
   }
 
   /**

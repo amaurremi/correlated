@@ -9,10 +9,13 @@ import com.ibm.wala.ssa._
 import scala.collection.JavaConverters._
 import scala.collection.breakOut
 
-trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
+trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphTypes =>
 
-  override type Node      = BasicBlockInContext[IExplodedBasicBlock]
-  override type Procedure = CGNode
+  override type Node           = BasicBlockInContext[IExplodedBasicBlock]
+  override type Procedure      = CGNode
+  override type PhiInstruction = SSAPhiInstruction
+
+  override def phiInstructions(node: Node) = node.iteratePhis().asScala.toSeq
 
   def firstParameter(instr: SSAInvokeInstruction): Int =
     if (instr.isStatic) 0 else 1
@@ -148,9 +151,4 @@ trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
           }
       }
     }
-
-  def phiInstructions(node: Node): Set[SSAPhiInstruction] =
-    (enclProc(node).getIR.iteratePhis().asScala collect {
-      case i: SSAPhiInstruction => i
-    }).toSet
 }

@@ -26,7 +26,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   override val callGraph: CallGraph = builder.cg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
-  override val entryPoints: Seq[NodeType] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure map PhiNode
+  override val entryPoints: Seq[NodeType] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure map createNodeType
   override val pointerAnalysis: PointerAnalysis =
     builder match {
       case b: FlexibleCallGraphBuilder =>
@@ -54,16 +54,6 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
             case _                                            =>
               defaultResult
           }
-        /*case _: SSAGotoInstruction                                                 =>
-          // if we have a conditional branch, look at phis.
-          // todo this is wrong. it's not clear to me where we should be looking at phis.
-          d1 match {
-            case Variable(`method`, v) =>
-              val phi: Option[Fact] = getPhis(n1, v, method, getAllArgs = false).headOption
-              defaultResult ++ phi.toSet
-            case _                     =>
-              defaultResult
-          }*/
         // Arrays
         case storeInstr: SSAArrayStoreInstruction
           if factSameAsVar(d1, method, storeInstr.getValue)                         =>
@@ -136,18 +126,18 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val n1 = ideN1.n.node
       ideN1.d match {
         case Variable(m, vn) if m == n1.getMethod =>
-          val facts: Iterator[Set[VariableFact]] = n1.iteratePhis().asScala map {
-            phiInstr: SSAPhiInstruction =>
+          val facts: Seq[Variable] = phiInstructions(n1) flatMap {
+            phiInstr =>
               0 to phiInstr.getNumberOfUses - 1 find {
                 phiInstr.getUse(_) == vn
               } match {
                 case Some(_) =>
                   Set(Variable(m, phiInstr.getDef))
                 case None =>
-                  Set.empty[VariableFact]
+                  Set.empty[Variable]
               }
           }
-          facts.flatten.toSet + d1
+          facts.toSet + d1
         case _                                    =>
           Set(d1)
       }
