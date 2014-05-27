@@ -9,8 +9,9 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
   }
 
   private[this] def assertSecretsFor(test: String) {
-    new TaintAnalysisSpecBuilder(test).assertSecretValues()
-    new CcTaintAnalysisSpecBuilder(test).assertSecretValues()
+    val dir = "ca/uwaterloo/dataflow/ide/taint/"
+    new TaintAnalysisSpecBuilder(dir + test).assertSecretValues()
+    new CcTaintAnalysisSpecBuilder(dir + test).assertSecretValues()
   }
 
   describe("IFDS and correlated-calls taint analyses") {

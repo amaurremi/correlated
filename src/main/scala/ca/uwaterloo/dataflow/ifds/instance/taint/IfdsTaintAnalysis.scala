@@ -17,7 +17,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   private[this] val config =
     ConfigFactory.load(
-      "ca/uwaterloo/dataflow/ide/taint/" + fileName,
+      fileName,
       ConfigParseOptions.defaults.setAllowMissing(false),
       ConfigResolveOptions.defaults
     )
