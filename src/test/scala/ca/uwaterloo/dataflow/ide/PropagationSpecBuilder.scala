@@ -16,25 +16,25 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
   def variable(name: String, method: String): SpecVariableFact = {
     val iMethod = getMethod(method)
     val variablesInMethod = solvedResult.keySet collect {
-      case node@XNode(n, v: Variable) if v.method == iMethod && n.getMethod == iMethod && n.getLastInstruction != null =>
+      case node@XNode(n, v: Variable) if v.method == iMethod && n.node.getMethod == iMethod && n.node.getLastInstruction != null =>
         (v, n)
     }
-    val variableNodeProduct: Set[(Variable, Node)] =
+    val variableNodeProduct: Set[(Variable, NodeOrPhi)] =
       for {
         (v, n) <- variablesInMethod
         node   <- allNodesInProc(n)
-        if node.getLastInstruction != null
+        if node.node.getLastInstruction != null
       } yield (v, node)
     variableNodeProduct collectFirst {
-      case (v@Variable(_, elem), n) if containedInLocalNames(name, n, getValNum(elem, XNode(n, Λ))) =>
+      case (v@Variable(_, elem), n) if containedInLocalNames(name, n.node, getValNum(elem, XNode(n, Λ))) =>
         SpecVariable(v)
     } getOrElse NoVariable
   }
 
   private[this] def getMethod(name: String): IMethod =
     (solvedResult.keySet collectFirst {
-      case XNode(n, _) if n.getMethod.getName.toString == name =>
-        n.getMethod
+      case XNode(n, _) if n.node.getMethod.getName.toString == name =>
+        n.node.getMethod
     }).get
 
   private[this] def containedInLocalNames(name: String, n: Node, valNum: ValueNumber): Boolean =
@@ -65,7 +65,7 @@ trait PropagationSpecBuilder extends Assertions with VariableFacts with IdeProbl
 
     private[this] def mainReturnsAtFact: XNode = {
       (entryPoints flatMap allNodesInProc collectFirst {
-        case node if node.getLastInstruction.isInstanceOf[SSAReturnInstruction] =>
+        case node if node.node.getLastInstruction.isInstanceOf[SSAReturnInstruction] =>
           XNode(node, variable)
       }).get
     }

@@ -42,8 +42,8 @@ trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
     node.d match {
       case Variable(method, elem)           =>
         val valNum = getValNum(elem, node)
-        val ir: IR = enclProc(node.n).getIR
-        firstParameter(node.n) to node.n.getMethod.getNumberOfParameters - 1 find {
+        val ir: IR = enclProc(node.n.node).getIR
+        firstParameter(node.n.node) to node.n.node.getMethod.getNumberOfParameters - 1 find {
            ir.getParameter(_) == valNum
         }
       case ArrayElement | Field(_) | Lambda => None // todo fields???
@@ -52,8 +52,8 @@ trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
   /**
    * Get all instructions following instruction in node `n` in its procedure.
    */
-  def followingInstructions(n: Node): Iterator[SSAInstruction] =
-    followingNodes(n) map { _.getLastInstruction }
+  def followingInstructions(n: NodeOrPhi): Seq[SSAInstruction] =
+    followingNodes(n) map { _.node.getLastInstruction }
 
   /**
    * Does the value with the given value number correspond to a method call?
@@ -80,12 +80,12 @@ trait WalaInstructions { this: VariableFacts with ExplodedGraphTypes =>
   def getValNumFromParameterNum(n: Node, argNum: Int): ValueNumber =
     enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
-  def getCallInstr(exit: Node, ret: Node): SSAInvokeInstruction = {
+  def getCallInstr(exit: NodeOrPhi, ret: NodeOrPhi): SSAInvokeInstruction = {
     val callNodes = callReturnPairs(exit).toSeq collect {
-      case (c: Node, r: Node) if r == ret => c
+      case (c: NodeOrPhi, r: NodeOrPhi) if r == ret => c
     }
     assert(callNodes.size == 1)
-    callNodes.head.getLastInstruction match {
+    callNodes.head.node.getLastInstruction match {
       case callInstr: SSAInvokeInstruction =>
         callInstr
     }

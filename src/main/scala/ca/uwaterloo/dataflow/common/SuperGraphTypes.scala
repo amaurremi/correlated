@@ -6,6 +6,10 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis
 
 trait SuperGraphTypes {
 
+  sealed abstract class NodeOrPhi(val node: Node)
+  case class NormalNode(override val node: Node) extends NodeOrPhi(node)
+  case class PhiNode(override val node: Node) extends NodeOrPhi(node)
+
   /**
    * Type of a node in the WALA supergraph
    */
@@ -34,5 +38,5 @@ trait SuperGraphTypes {
   /**
    * The main method nodes that should be the entry points for the instance
    */
-  val entryPoints: Seq[Node]
+  val entryPoints: Seq[NodeOrPhi]
 }

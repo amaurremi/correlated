@@ -26,7 +26,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   override val callGraph: CallGraph = builder.cg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
-  override val entryPoints: Seq[Node] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure
+  override val entryPoints: Seq[NodeOrPhi] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure map PhiNode
   override val pointerAnalysis: PointerAnalysis =
     builder match {
       case b: FlexibleCallGraphBuilder =>
@@ -43,8 +43,8 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       val n1            = ideN1.n
       val d1            = ideN1.d
       val defaultResult = Set(d1)
-      val method        = n1.getMethod
-      n1.getLastInstruction match {
+      val method        = n1.node.getMethod
+      n1.node.getLastInstruction match {
         case returnInstr: SSAReturnInstruction if hasRetValue(returnInstr)          =>
           d1 match {
             // we are returning a secret value, because an existing (i.e. secret) fact d1 is returned
@@ -69,7 +69,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           if factSameAsVar(d1, method, storeInstr.getValue)                         =>
             defaultResult + ArrayElement
         case loadInstr: SSAArrayLoadInstruction if d1 == ArrayElement               =>
-          val inference = getTypeInference(enclProc(n1))
+          val inference = getTypeInference(enclProc(n1.node))
           if (isSecretArrayElementType(inference.getType(loadInstr.getDef).getTypeReference))
             defaultResult + Variable(method, loadInstr.getDef)
           else
@@ -77,7 +77,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
         //  Fields
         case putInstr: SSAPutInstruction
           if factSameAsVar(d1, method, putInstr.getVal) ||
-             isConcatClass(getTypeInference(enclProc(n1)).getType(putInstr.getVal)) =>
+             isConcatClass(getTypeInference(enclProc(n1.node)).getType(putInstr.getVal)) =>
             defaultResult + Field(getIField(method.getClassHierarchy, putInstr.getDeclaredField))
         case getInstr: SSAGetInstruction                                            =>
           d1 match {
@@ -114,15 +114,15 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       ideN1.d match {
         case v@Variable(method, vn)
           if getParameterNumber(ideN1).isDefined &&
-             isConcatClass(getTypeInference(enclProc(ideN1.n)).getType(vn)) =>
+             isConcatClass(getTypeInference(enclProc(ideN1.n.node)).getType(vn)) =>
           // We passed a StringBuilder/StringBuffer as a parameter to the enclosing method;
           // the current fact ideN1.d corresponds to this parameter. We need to make sure
           // that the StringBuilder/buffer in the calling method becomes secret.
             val callInstr = getCallInstr(ideN1.n, n2)
-            Set(Variable(n2.getMethod, getValNumFromParameterNum(callInstr, getParameterNumber(ideN1).get)))
-        case Variable(method, _) if method == ideN1.n.getMethod             =>
+            Set(Variable(n2.node.getMethod, getValNumFromParameterNum(callInstr, getParameterNumber(ideN1).get)))
+        case Variable(method, _) if method == ideN1.n.node.getMethod             =>
           Set.empty
-        case _                                                              =>
+        case _                                                                   =>
           Set(ideN1.d)
       }
 
@@ -133,7 +133,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   override def ifdsOtherSuccEdgesPhi: IfdsOtherEdgeFn =
     ideN1 => {
       val d1 = ideN1.d
-      val n1 = ideN1.n
+      val n1 = ideN1.n.node
       ideN1.d match {
         case Variable(m, vn) if m == n1.getMethod =>
           (n1.iteratePhis().asScala flatMap {
@@ -154,7 +154,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
     (ideN1, _) => {
       val d1 = ideN1.d
       val default = Set(d1)
-      val n1 = ideN1.n
+      val n1 = ideN1.n.node
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction => // todo this method is hard to reason about and needs refactoring.
           val method = n1.getMethod
@@ -194,27 +194,26 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   override def ifdsCallStartEdges: IfdsEdgeFn =
     (ideN1, n2) => {
-      val n1            = ideN1.n
+      val n1            = ideN1.n.node
       val d1            = ideN1.d
-      val targetMethod  = n2.getMethod
+      val targetMethod  = n2.node.getMethod
       val callerMethod  = n1.getMethod
       val defaultResult = Set(d1)
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction =>
           if (isSecret(targetMethod) && d1 == Λ) {
             val valNum = callValNum(callInstr).get
-            val phis = getPhis(n1, valNum, callerMethod, getAllArgs = false)
-            defaultResult + Variable(callerMethod, valNum) ++ phis
+            defaultResult + Variable(callerMethod, valNum)
           } else if (isConcatConstructor(targetMethod) && d1 == Λ){
             val valNum = initValNum(targetMethod, callInstr)
             val phis = getPhis(n1, valNum, callerMethod, getAllArgs = true)
-            defaultResult ++ phis
+            defaultResult ++ phis // todo move
           } else if (exclude(n1, callInstr))
             Set.empty
           else
             getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
               case Some(argNum)                                       =>
-                val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2, argNum))
+                val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2.node, argNum))
                 Set(substituteFact)
               case None if d1 == Λ && callValNum(callInstr).isDefined =>
                 methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get))
@@ -254,6 +253,6 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   private[this] val methodToReturnVars = new HashSetMultiMap[IMethod, Variable]
 
-  private[this] def isFactReturned(d: Variable, n: Node, retVal: ValueNumber): Boolean =
-    d.elem == retVal && d.method == n.getMethod
+  private[this] def isFactReturned(d: Variable, n: NodeOrPhi, retVal: ValueNumber): Boolean =
+    d.elem == retVal && d.method == n.node.getMethod
 }

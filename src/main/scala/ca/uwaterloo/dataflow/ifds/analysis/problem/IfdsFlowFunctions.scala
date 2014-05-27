@@ -4,7 +4,7 @@ import ca.uwaterloo.dataflow.common.ExplodedGraphTypes
 
 trait IfdsFlowFunctions extends ExplodedGraphTypes {
 
-  type IfdsEdgeFn = (XNode, Node) => Set[Fact]
+  type IfdsEdgeFn = (XNode, NodeOrPhi) => Set[Fact]
 
   type IfdsOtherEdgeFn = XNode => Set[Fact]
 

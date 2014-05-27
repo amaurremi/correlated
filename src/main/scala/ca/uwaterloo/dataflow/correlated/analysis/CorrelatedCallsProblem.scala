@@ -12,13 +12,13 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
 
   override def otherSuccEdges: IdeOtherEdgeFn  =
     ideN1 =>
-      ideN1.n.getLastInstruction match {
+      ideN1.n.node.getLastInstruction match {
         case returnInstr: SSAReturnInstruction =>
           val d2s = ifdsOtherSuccEdges(ideN1)
           // setting local variables to bottom
           val localReceivers = ccReceivers filter {
             case Receiver(vn, method) =>
-              method == ideN1.n.getMethod &&   // considering only local variables
+              method == ideN1.n.node.getMethod &&   // considering only local variables
                 returnInstr.getResult != vn && // not setting to bottom the return value
                 (method.isStatic || vn != 1)   // excluding this
             case _                    =>
@@ -46,9 +46,9 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
     (ideN1, n2) => {
       val n1 = ideN1.n
       val d2s = ifdsCallReturnEdges(ideN1, n2)
-      val edgeFn = n1.getLastInstruction match {
+      val edgeFn = n1.node.getLastInstruction match {
         case invokeInstr: SSAInvokeInstruction if !invokeInstr.isStatic =>
-          getCcReceiver(invokeInstr.getReceiver, n1.getMethod) map {
+          getCcReceiver(invokeInstr.getReceiver, n1.node.getMethod) map {
             rec =>
               CorrelatedFunction(Map(
                 rec -> composedTypesTop
@@ -70,18 +70,18 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
       val d2s = ifdsCallStartEdges(ideN1, n2)
       val localsInTargetToBottomMap: ComposedTypeMultiMap = (ccReceivers collect {
         case r@Receiver(vn, method)
-          if method == n2.getMethod && (method.isStatic || vn != 1) =>
+          if method == n2.node.getMethod && (method.isStatic || vn != 1) =>
             r -> composedTypesBottom
       }).toMap
-      if (n2.getMethod.isStatic)
+      if (n2.node.getMethod.isStatic)
         d2s map { FactFunPair(_, CorrelatedFunction(localsInTargetToBottomMap)) }
       else {
-        val n1 = ideN1.n
+        val n1 = ideN1.n.node
         val edgeFn = n1.getLastInstruction match {
           case invokeInstr: SSAInvokeInstruction =>
             getCcReceiver(invokeInstr.getReceiver, n1.getMethod) match {
               case Some(rec) =>
-                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, n1, n2)), TypesTop))
+                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, n1, n2.node)), TypesTop))
                 CorrelatedFunction(matchStaticTypes ++ localsInTargetToBottomMap)
               case None =>
                 CorrelatedFunction(localsInTargetToBottomMap)

@@ -36,13 +36,13 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    * Maps (c, sp, d1) to EdgeFn(d4, f)
    * [21]
    */
-  private[this] val forwardExitD4s = new HashSetMultiMap[(Node, XNode), Fact]
+  private[this] val forwardExitD4s = new HashSetMultiMap[(NodeOrPhi, XNode), Fact]
 
   /**
    * Maps (sq, c, d4) to (d3, jumpFn) if JumpFn(sq, d3 -> c, d4) != Top
    * [28]
    */
-  private[this] val forwardExitD3s = new HashSetMultiMap[(Node, XNode), (Fact, IdeFunction)]
+  private[this] val forwardExitD3s = new HashSetMultiMap[(NodeOrPhi, XNode), (Fact, IdeFunction)]
 
   def computeJumpFuncs: Map[XEdge, IdeFunction] = {
     initialize()
@@ -52,12 +52,17 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
       val e = pathWorklist.dequeue()
       val f = jumpFn(e)
       val n = e.target
-      if (n.isCallNode)
-        forwardCallNode(e, f)
-      if (n.isExitNode)
-        forwardExitNode(e, f)
-      if (!n.isCallNode && !n.isExitNode)
-        forwardAnyNode(e, f)
+      n.n match {
+        case PhiNode(pn) =>
+          forwardAnyNode(e, f)
+        case NormalNode(nn) =>
+          if (n.isCallNode)
+            forwardCallNode(e, f)
+          if (n.isExitNode)
+            forwardExitNode(e, f)
+          if (!n.isCallNode && !n.isExitNode)
+            forwardAnyNode(e, f)
+      }
     }
     jumpFn.toMap
   }
@@ -120,13 +125,13 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     e: XEdge,
     f: IdeFunction
   )(
-    c: Node,
+    c: NodeOrPhi,
     d4: Fact,
     rn: XNode,
     fPrime: IdeFunction
   ) {
     for {
-      sq <- startNodes(c)
+      sq <- startNodes(c.node)
       (d3, f3) <- forwardExitD3s.get(sq, XNode(c, d4)).asScala
       if f3 != λTop
     } {
@@ -139,7 +144,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    * To get d4 values in line [21], we need to remember all tuples (c, d4, sp) when we encounter them
    * in the call-processing procedure.
    */
-  private[this] def forwardExitFromCall(e: XEdge, f: IdeFunction, sq: Node, d: Fact) {
+  private[this] def forwardExitFromCall(e: XEdge, f: IdeFunction, sq: NodeOrPhi, d: Fact) {
     val n = e.target
     forwardExitD4s.put((n.n, XNode(sq, d)), n.d)
     if (n.isExitNode) forwardExitNode(e, f)
@@ -158,10 +163,17 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     val n = e.target
     for {
       m                       <- followingNodes(n.n).toSeq
-      FactFunPair(d3, edgeFn) <- otherSuccEdges(n)
+      FactFunPair(d3, edgeFn) <- otherSuccEdgesWithPhi(n)
     } {
       propagate(e, f)(XEdge(e.source, XNode(m, d3)), edgeFn ◦ f)
     }
+  }
+
+  private[this] def otherSuccEdgesWithPhi: IdeOtherEdgeFn = {
+    case node@XNode(NormalNode(n), _) =>
+      otherSuccEdges(node)
+    case node@XNode(PhiNode(n), _) =>
+      otherSuccEdgesPhi(node)
   }
 
   /**

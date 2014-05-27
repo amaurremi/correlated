@@ -31,9 +31,9 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
         (node, node.getLastInstruction.asInstanceOf[SSAInvokeInstruction])
     } foreach {
       case (node, invokeInstr) =>
-        targetStartNodes(node) foreach {
+        targetStartNodes(NormalNode(node)) foreach {
           startNode =>
-            assertionMap.get(Method(startNode.getMethod)) foreach {
+            assertionMap.get(Method(startNode.node.getMethod)) foreach {
               assertResult(_)(getResultAtCallNode(node, invokeInstr))
             }
         }
