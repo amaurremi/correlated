@@ -1,10 +1,10 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
-import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.analysis.typeInference.TypeAbstraction
-import com.ibm.wala.types.{MethodReference, TypeReference}
+import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.CGNode
+import com.ibm.wala.types.{MethodReference, TypeReference}
 
 trait SecretInput extends SecretDefinition {
 
