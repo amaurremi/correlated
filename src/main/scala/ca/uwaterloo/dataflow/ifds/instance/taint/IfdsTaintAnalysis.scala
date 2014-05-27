@@ -235,7 +235,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
    * Returns the Variables corresponding to a phi instruction.
    */
   private[this] def getPhis(node: Node, valNum: ValueNumber, method: IMethod): Set[Fact] =
-    (phiInstructions(node) collect {
+    (enclProc(node).getIR.iteratePhis.asScala collect {
       case phiInstr if phiInstr.getUse(0) == valNum || phiInstr.getUse(1) == valNum =>
         val phi = Variable(method, phiInstr.getDef)
         val args = Set(Variable(method, phiInstr.getUse(0)), Variable(method, phiInstr.getUse(1)))
