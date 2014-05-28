@@ -24,7 +24,7 @@ trait SecretDefinition extends VariableFacts {
 
   def isSecret(method: IMethod): Boolean
 
-  def secretType: String
+  def secretTypes: Set[String]
 
   def isConcatClass(typeRef: TypeAbstraction): Boolean
 

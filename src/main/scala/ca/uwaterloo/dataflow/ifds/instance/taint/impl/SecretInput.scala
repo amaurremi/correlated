@@ -14,7 +14,7 @@ trait SecretInput extends SecretDefinition {
 
   override def isConcatClass(typeRef: TypeAbstraction): Boolean = ???
 
-  override def secretType: String = ???
+  override def secretTypes: Set[String] = ???
 
   override def isSecret(method: IMethod): Boolean = ???
 }

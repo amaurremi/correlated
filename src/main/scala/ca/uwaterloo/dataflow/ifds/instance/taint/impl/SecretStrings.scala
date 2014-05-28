@@ -16,14 +16,14 @@ trait SecretStrings extends SecretDefinition {
     whiteList: Set[String],
     returnSecretArray: Set[String],
     arrayElemTypes: Set[String],
-    secretMethod: Method,
-    appendMethod: AppendMethod,
+    secretMethods: Set[Method],
+    appendMethods: Set[AppendMethod],
     libraryOptions: LibraryOptions
   )
 
   private[this] case class AppendMethod(
     methodName: String,
-    classes: Set[String]
+    klass: String
   )
 
   private[this] def toSet[T](list: java.util.List[T]): Set[T] = list.asScala.toSet[T] 
@@ -35,14 +35,22 @@ trait SecretStrings extends SecretDefinition {
     val whiteList = toSet(operationConf getStringList "whiteList")
     val returnSecretArray = toSet(operationConf getStringList "secretArrays")
     val superTypes = toSet(config getStringList "secretTypes.types")
-    val methodConfig = config getConfig "secretMethod"
-    val name = methodConfig getString "name"
-    val tpe = methodConfig getString "type"
-    val params = methodConfig getInt "params"
-    val static = methodConfig getBoolean "static"
-    val appendConfig = config getConfig "appendMethod"
-    val appendMethodName = appendConfig getString "name"
-    val appendClasses = toSet(appendConfig getStringList "classes")
+    val secretMethods = toSet(config getConfigList "secretMethods") map {
+      conf =>
+        Method(
+          conf getString "name",
+          conf getInt "params",
+          conf getBoolean "static",
+          conf getString "type"
+        )
+    }
+    val appendMethods = toSet(config getConfigList "appendMethods") map {
+      conf =>
+        AppendMethod(
+          conf getString "name",
+          conf getString "class"
+        )
+    }
     val libConfig = config getConfig "library"
     val exclPref = toSet(libConfig getStringList "excludePrefixes")
     val defSecret = toSet(libConfig getStringList "defaultSecretTypes")
@@ -51,19 +59,20 @@ trait SecretStrings extends SecretDefinition {
       whiteList, 
       returnSecretArray, 
       superTypes, 
-      Method(name, params, static, tpe), 
-      AppendMethod(appendMethodName, appendClasses),
+      secretMethods,
+      appendMethods,
       LibraryOptions(exclPref, defSecret, libWhiteList)
     )
   }
 
   override def isSecret(method: IMethod) =
-    Method(method) == stringConfig.secretMethod
+    stringConfig.secretMethods contains Method(method)
 
-  override def secretType: String = stringConfig.secretMethod.retType
+  override def secretTypes: Set[String] = stringConfig.secretMethods map { _.retType }
 
   override def isConcatClass(typeAbs: TypeAbstraction): Boolean =
-    typeAbs == TypeAbstraction.TOP || (stringConfig.appendMethod.classes contains typeName(typeAbs.getTypeReference))
+    typeAbs == TypeAbstraction.TOP ||
+      (stringConfig.appendMethods exists { _.klass == typeName(typeAbs.getTypeReference) })
 
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeName(typeRef)
@@ -74,9 +83,9 @@ trait SecretStrings extends SecretDefinition {
   override def getOperationType(op: MethodReference, node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation] = {
     val methodName = op.getName.toString
     val className = op.getDeclaringClass.getName.toString
-    val isConcatClass = stringConfig.appendMethod.classes contains className
-    val isAppendMethodName = stringConfig.appendMethod.methodName == methodName
-    val isStringClass = className == secretType
+    val isConcatClass = stringConfig.appendMethods exists { _.klass == className }
+    val isAppendMethodName = stringConfig.appendMethods exists { _.methodName == methodName }
+    val isStringClass = className == secretTypes
     val secretArrayMethodName = stringConfig.returnSecretArray contains methodName
     val libOptions = stringConfig.libraryOptions
     val isLibCall = libOptions.excludePrefixes exists { className.startsWith }
