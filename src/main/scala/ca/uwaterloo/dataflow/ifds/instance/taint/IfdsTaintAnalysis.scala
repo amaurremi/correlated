@@ -229,7 +229,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   }
   
   private[this] def invokedOnSecretClass(callInstr: SSAInvokeInstruction): Boolean =
-    callInstr.getDeclaredTarget.getDeclaringClass.getName.toString == secretTypes
+    secretTypes contains callInstr.getDeclaredTarget.getDeclaringClass.getName.toString
 
   /**
    * Returns the Variables corresponding to a phi instruction.

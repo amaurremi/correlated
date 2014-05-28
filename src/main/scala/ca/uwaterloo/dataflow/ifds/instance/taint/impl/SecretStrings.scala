@@ -85,7 +85,7 @@ trait SecretStrings extends SecretDefinition {
     val className = op.getDeclaringClass.getName.toString
     val isConcatClass = stringConfig.appendMethods exists { _.klass == className }
     val isAppendMethodName = stringConfig.appendMethods exists { _.methodName == methodName }
-    val isStringClass = className == secretTypes
+    val isStringClass = secretTypes contains className
     val secretArrayMethodName = stringConfig.returnSecretArray contains methodName
     val libOptions = stringConfig.libraryOptions
     val isLibCall = libOptions.excludePrefixes exists { className.startsWith }
