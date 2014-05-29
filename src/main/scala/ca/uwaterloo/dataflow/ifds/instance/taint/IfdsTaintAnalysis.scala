@@ -158,7 +158,10 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
               defaultPlusVar
             case Some(ReturnsStaticSecretOrPreservesSecret)
               if callInstr.isStatic && d1 == Λ       =>
-              defaultPlusVar
+                defaultPlusVar
+            case Some(SecretIfSecretArgument)
+              if hasSecretArgument(d1, method, callInstr)    =>
+                defaultPlusVar
             case Some(opType) if !callInstr.isStatic =>
               val receiver = callInstr.getReceiver
               val factEqReceiver = factSameAsVar(d1, method, receiver)
@@ -176,7 +179,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
                 case _                                                         =>
                   default
               }
-            case _                                    =>
+            case _                                   =>
               default
           }
       }
@@ -184,6 +187,12 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   private[this] def isSecondArgument(d1: Fact, method: IMethod, callInstr: SSAInvokeInstruction): Boolean =
     callInstr.getNumberOfUses >= 2 && factSameAsVar(d1, method, callInstr.getUse(1))
+  
+  private[this] def hasSecretArgument(d: Fact, method: IMethod, callInstr: SSAInvokeInstruction): Boolean =
+    firstParameter(callInstr) to callInstr.getNumberOfParameters - 1 exists {
+      argNum =>
+        factSameAsVar(d, method, getValNumFromParameterNum(callInstr, argNum))
+    }
 
   override def ifdsCallStartEdges: IfdsEdgeFn =
     (ideN1, n2) => {

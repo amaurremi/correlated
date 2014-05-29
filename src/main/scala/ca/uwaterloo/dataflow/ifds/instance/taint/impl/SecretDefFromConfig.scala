@@ -72,22 +72,26 @@ trait SecretDefFromConfig extends SecretDefinition {
     val libConfig = config getConfig "library"
     val exclPref = toSet(libConfig getStringList "excludePrefixes")
     val defSecret = toSet(libConfig getStringList "defaultSecretTypes")
-    val libWhiteList = toSet(libConfig getConfigList "whiteList") map {
-      conf =>
-        MethodNameAndClass(
-          conf getString "name",
-          conf getString "class"
-        )
-    }
+    val libWhiteList = parseConfList(libConfig, "whiteList")
+    val secretIfArgument = parseConfList(libConfig, "secretIfSecretArgument")
     SecretConfig(
       whiteList, 
       returnSecretArray, 
       superTypes, 
       secretMethods,
       appendMethods,
-      LibraryOptions(exclPref, defSecret, libWhiteList)
+      LibraryOptions(exclPref, defSecret, libWhiteList, secretIfArgument)
     )
   }
+
+  private[this] def parseConfList(config: Config, list: String): Set[MethodNameAndClass] =
+    toSet(config getConfigList list) map {
+      conf =>
+        MethodNameAndClass(
+          conf getString "name",
+          conf getString "class"
+        )
+    }
 
   override def secretTypes: Set[String] = stringConfig.secretMethods map { _.method.retType }
 
@@ -126,6 +130,10 @@ trait SecretDefFromConfig extends SecretDefinition {
       m =>
         m.methodName == methodName && isSubType(op.getDeclaringClass, m.klass, node.getClassHierarchy)
     })
+    val isInSecretIfSecretArgList = isDefaultSecret && (libOptions.secretIfArgument exists {
+      m =>
+        m.methodName == methodName && isSubType(op.getDeclaringClass, m.klass, node.getClassHierarchy)
+    })
     val stringTypeConsideredSecret = secretTypes contains "Ljava/lang/String"
 
     if (secretArrayMethodName && hasSecretReturnType) // todo refactor this terrible conditional
@@ -136,6 +144,8 @@ trait SecretDefFromConfig extends SecretDefinition {
       Some(StringConcatConstructor)
     else if (methodName == "toString" && isConcatClass && stringTypeConsideredSecret)
       Some(ReturnsStaticSecretOrPreservesSecret)
+    else if (isLibCall && isInSecretIfSecretArgList)
+      Some(SecretIfSecretArgument)
     else if (isLibCall && isDefaultSecret && !isWhiteListedLib && !isInvokedOnSecretType)
       Some(SecretLibraryCall)
     else if (isLibCall && (!isDefaultSecret || isDefaultSecret && isWhiteListedLib))

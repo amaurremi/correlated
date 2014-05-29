@@ -8,11 +8,15 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
     //    SpecUtil.rebuild("ide/taint", "taint")
   }
 
-  private[this] def assertSecretsFor(test: String) {
+  private[this] def assertSecretsFor(test: String, primitive: Boolean = false) {
     val dir = "ca/uwaterloo/dataflow/ide/taint/"
     val path = dir + test
-    new TaintAnalysisSpecBuilder(path).assertSecretValues()
-    new CcTaintAnalysisSpecBuilder(path).assertSecretValues()
+    if (primitive)
+      new TaintAnalysisPrimitiveSpecBuilder(path).assertSecretValues()
+    else {
+      new TaintAnalysisSpecBuilder(path).assertSecretValues()
+      new CcTaintAnalysisSpecBuilder(path).assertSecretValues()
+    }
   }
 
   describe("IFDS and correlated-calls taint analyses") {
@@ -524,6 +528,12 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
       it("correlated calls 10") {
         assertSecretsFor("Correlated10")
       }
+    }
+  }
+
+  describe("Taint analysis with primitive types") {
+    it("propagates secret ints, chars, and Strings") {
+      assertSecretsFor("Primitive", primitive = true)
     }
   }
 }

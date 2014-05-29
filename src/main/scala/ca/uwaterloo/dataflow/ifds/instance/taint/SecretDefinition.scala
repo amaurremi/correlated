@@ -15,11 +15,13 @@ trait SecretDefinition extends VariableFacts {
   case object StringConcatConstructor extends SecretOperation
   case object NonSecretLibraryCall extends SecretOperation
   case object SecretLibraryCall extends SecretOperation
+  case object SecretIfSecretArgument extends SecretOperation
 
   case class LibraryOptions(
     excludePrefixes: Set[String],
     defaultSecretTypes: Set[String],
-    whiteList: Set[MethodNameAndClass]
+    whiteList: Set[MethodNameAndClass],
+    secretIfArgument: Set[MethodNameAndClass]
   )
 
   protected case class MethodNameAndClass(
