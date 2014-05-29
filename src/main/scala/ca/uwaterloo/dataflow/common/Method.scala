@@ -14,7 +14,7 @@ object Method {
   def apply(method: IMethod): Method =
     Method(
       method.getName.toString,
-      method.getNumberOfParameters,
+      if (method.isStatic) method.getNumberOfParameters else method.getNumberOfParameters - 1,
       method.isStatic,
       method.getReturnType.getName.toString
     )

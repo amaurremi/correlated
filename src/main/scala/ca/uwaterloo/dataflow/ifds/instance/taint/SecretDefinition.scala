@@ -9,7 +9,7 @@ import com.ibm.wala.types.{MethodReference, TypeReference}
 trait SecretDefinition extends VariableFacts {
 
   sealed trait SecretOperation
-  case object ReturnsSecretValue extends SecretOperation
+  case object PreservesSecretValue extends SecretOperation
   case object ReturnsSecretArray extends SecretOperation
   case object ConcatenatesStrings extends SecretOperation
   case object StringConcatConstructor extends SecretOperation
@@ -19,7 +19,12 @@ trait SecretDefinition extends VariableFacts {
   case class LibraryOptions(
     excludePrefixes: Set[String],
     defaultSecretTypes: Set[String],
-    whiteList: Set[String]
+    whiteList: Set[MethodNameAndClass]
+  )
+
+  protected case class MethodNameAndClass(
+    methodName: String,
+    klass: String
   )
 
   def isSecret(method: IMethod): Boolean

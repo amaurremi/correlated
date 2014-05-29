@@ -3,8 +3,9 @@ package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 import ca.uwaterloo.dataflow.common._
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
 import com.ibm.wala.analysis.typeInference.TypeAbstraction
-import com.ibm.wala.classLoader.{IMethod, IClass}
+import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.CGNode
+import com.ibm.wala.ipa.cha.IClassHierarchy
 import com.ibm.wala.types.{MethodReference, TypeReference}
 import com.typesafe.config.{Config, ConfigFactory}
 import java.io.File
@@ -21,21 +22,15 @@ trait SecretDefFromConfig extends SecretDefinition {
     returnSecretArray: Set[String],
     arrayElemTypes: Set[String],
     secretMethods: Set[SecretMethod],
-    appendMethods: Set[AppendMethod],
+    appendMethods: Set[MethodNameAndClass],
     libraryOptions: LibraryOptions
-  )
-
-  protected case class AppendMethod(
-    methodName: String,
-    klass: String
   )
 
   private[this] def toSet[T](list: java.util.List[T]): Set[T] = list.asScala.toSet[T]
 
-  private[this] def isSubType(c: IClass, of: String): Boolean = {
-    val reference = c.getReference
-    val name = typeName(reference)
-    lazy val amongSubtypes = c.getClassHierarchy.computeSubClasses(reference).asScala exists {
+  private[this] def isSubType(c: TypeReference, of: String, cha: IClassHierarchy): Boolean = {
+    val name = typeName(c)
+    lazy val amongSubtypes = cha.computeSubClasses(c).asScala exists {
       s =>
         typeName(s.getReference) == name
     }
@@ -45,7 +40,7 @@ trait SecretDefFromConfig extends SecretDefinition {
   override def isSecret(method: IMethod) =
     stringConfig.secretMethods exists {
       sm =>
-        sm.method == Method(method) && isSubType(method.getDeclaringClass, sm.enclClass)
+        sm.method == Method(method) && isSubType(method.getDeclaringClass.getReference, sm.enclClass, method.getClassHierarchy)
     }
 
   lazy val stringConfig: SecretConfig = {
@@ -68,7 +63,7 @@ trait SecretDefFromConfig extends SecretDefinition {
     }
     val appendMethods = toSet(config getConfigList "appendMethods") map {
       conf =>
-        AppendMethod(
+        MethodNameAndClass(
           conf getString "name",
           conf getString "class"
         )
@@ -76,7 +71,13 @@ trait SecretDefFromConfig extends SecretDefinition {
     val libConfig = config getConfig "library"
     val exclPref = toSet(libConfig getStringList "excludePrefixes")
     val defSecret = toSet(libConfig getStringList "defaultSecretTypes")
-    val libWhiteList = toSet(libConfig getStringList "whiteList")
+    val libWhiteList = toSet(libConfig getConfigList "whiteList") map {
+      conf =>
+        MethodNameAndClass(
+          conf getString "name",
+          conf getString "class"
+        )
+    }
     SecretConfig(
       whiteList, 
       returnSecretArray, 
@@ -90,8 +91,10 @@ trait SecretDefFromConfig extends SecretDefinition {
   override def secretTypes: Set[String] = stringConfig.secretMethods map { _.method.retType }
 
   override def isConcatClass(typeAbs: TypeAbstraction): Boolean =
-    typeAbs == TypeAbstraction.TOP ||
-      (stringConfig.appendMethods exists { _.klass == typeName(typeAbs.getTypeReference) })
+    typeAbs != TypeAbstraction.TOP &&
+      (stringConfig.appendMethods exists {
+        _.klass == typeName(typeAbs.getTypeReference)
+      })
 
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeName(typeRef)
@@ -101,14 +104,14 @@ trait SecretDefFromConfig extends SecretDefinition {
 
   override def getOperationType(op: MethodReference, node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation] = {
     val methodName = op.getName.toString
-    val className = op.getDeclaringClass.getName.toString
-    val isConcatClass = stringConfig.appendMethods exists { _.klass == className }
+    val declaringClassName = op.getDeclaringClass.getName.toString
+    val isConcatClass = stringConfig.appendMethods exists { _.klass == declaringClassName }
     val isAppendMethodName = stringConfig.appendMethods exists { _.methodName == methodName }
-    val isStringClass = secretTypes contains className
     val secretArrayMethodName = stringConfig.returnSecretArray contains methodName
     val libOptions = stringConfig.libraryOptions
-    val isLibCall = libOptions.excludePrefixes exists { className.startsWith }
+    val isLibCall = libOptions.excludePrefixes exists { declaringClassName.startsWith }
     val retType = op.getReturnType.getName.toString
+    val isSecretType = secretTypes contains retType
     val types = vn match {
       case Some(n) =>
         getTypes(node, n) map { _.getName.toString }
@@ -116,26 +119,27 @@ trait SecretDefFromConfig extends SecretDefinition {
         Set.empty[String]
     }
     val isDefaultSecret = (libOptions.defaultSecretTypes intersect (types + retType)).nonEmpty
-    val isWhiteListedLib = isDefaultSecret && (libOptions.whiteList contains getFullName(className, methodName))
+    val isWhiteListedLib = isDefaultSecret && (libOptions.whiteList exists {
+      m =>
+        m.methodName == methodName && isSubType(op.getDeclaringClass, m.klass, node.getClassHierarchy)
+    })
+    val stringTypeConsideredSecret = secretTypes contains "Ljava/lang/String"
 
-    if (secretArrayMethodName && isStringClass) // todo refactor this terrible conditional
+    if (secretArrayMethodName && isSecretType) // todo refactor this terrible conditional
       Some(ReturnsSecretArray)
     else if (isAppendMethodName && isConcatClass)
       Some(ConcatenatesStrings)
     else if (isConcatClass && op.isInit)
-      Some (StringConcatConstructor)
-    else if (methodName == "toString" && isConcatClass)
-      Some(ReturnsSecretValue)
-    else if (isLibCall && isDefaultSecret && !isWhiteListedLib && !isStringClass)
+      Some(StringConcatConstructor)
+    else if (methodName == "toString" && isConcatClass && stringTypeConsideredSecret)
+      Some(PreservesSecretValue)
+    else if (isLibCall && isDefaultSecret && !isWhiteListedLib && !isSecretType)
       Some(SecretLibraryCall)
     else if (isLibCall && (!isDefaultSecret || isDefaultSecret && isWhiteListedLib))
-        Some(NonSecretLibraryCall)
-    else if ((stringConfig.whiteList contains methodName) && isStringClass || !isStringClass)
+      Some(NonSecretLibraryCall)
+    else if ((stringConfig.whiteList contains methodName) && isSecretType || !isSecretType)
       None
     else
-      Some(ReturnsSecretValue)
+      Some(PreservesSecretValue)
   }
-
-  private[this] def getFullName(className: String, methodName: String) =
-    className + "/" + methodName
 }

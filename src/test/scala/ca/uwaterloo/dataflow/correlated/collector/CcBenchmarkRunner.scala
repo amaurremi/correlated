@@ -5,7 +5,7 @@ import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.correlated.collector.util.TestUtil
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
-import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretInput}
+import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{SecretInputPrimitiveTypes, CcReceivers, SecretInput}
 
 object CcBenchmarkRunner extends TestUtil {
 
@@ -13,33 +13,44 @@ object CcBenchmarkRunner extends TestUtil {
     val runner =
       (name: String) => {
         val dir = "ca/uwaterloo/dataflow/benchmarks/dacapo/"
-        printResultSize(new NormalTaintAnalysisRunner(dir + name))
-        printResultSize(new CcTaintAnalysisRunner(dir + name))
+        new NormalTaintAnalysisRunner(dir, name).printResultSize()
+        new CcTaintAnalysisRunner(dir, name).printResultSize()
       }
     runBenchmarks(runner)
   }
 
-  private[this] def printResultSize(analysis: AbstractTaintAnalysisRunner) {
-    val result = analysis.ifdsResult
-    println("Normal IFDS result size: " + result.size)
-  }
-
   abstract class AbstractTaintAnalysisRunner(
+    dirName: String,
     fileName: String
-  ) extends IfdsTaintAnalysis(fileName)
+  ) extends IfdsTaintAnalysis(dirName + fileName)
   with VariableFacts
   with AbstractIdeToIfds
-  with SecretInput
+  with SecretInputPrimitiveTypes {
+
+    def printResultSize()
+  }
 
   class NormalTaintAnalysisRunner(
+    dirName: String,
     fileName: String
-  ) extends AbstractTaintAnalysisRunner(fileName)
+  ) extends AbstractTaintAnalysisRunner(dirName, fileName)
     with IdeFromIfdsBuilder
-    with IdeToIfds
+    with IdeToIfds {
+
+    override def printResultSize() {
+      printf("%s IFDS result: %d\n", fileName, ifdsResult.size)
+    }
+  }
 
   class CcTaintAnalysisRunner(
+    dirName: String,
     fileName: String
-  ) extends AbstractTaintAnalysisRunner(fileName)
+  ) extends AbstractTaintAnalysisRunner(dirName, fileName)
     with CorrelatedCallsToIfds
-    with CcReceivers
+    with CcReceivers {
+
+    override def printResultSize() {
+      printf("%s CC result: %d\n", fileName, ifdsResult.size)
+    }
+  }
 }
