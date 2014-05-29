@@ -111,13 +111,15 @@ trait SecretDefFromConfig extends SecretDefinition {
     val libOptions = stringConfig.libraryOptions
     val isLibCall = libOptions.excludePrefixes exists { declaringClassName.startsWith }
     val retType = op.getReturnType.getName.toString
-    val isSecretType = secretTypes contains retType
+    val hasSecretReturnType = secretTypes contains retType
+    val isInvokedOnSecretType = secretTypes contains declaringClassName
     val types = vn match {
       case Some(n) =>
         getTypes(node, n) map { _.getName.toString }
       case None    =>
         Set.empty[String]
     }
+    // Is the return type (or its subtype) considered secret by default, if it's returned from a library?
     val isDefaultSecret = (libOptions.defaultSecretTypes intersect (types + retType)).nonEmpty
     val isWhiteListedLib = isDefaultSecret && (libOptions.whiteList exists {
       m =>
@@ -125,7 +127,7 @@ trait SecretDefFromConfig extends SecretDefinition {
     })
     val stringTypeConsideredSecret = secretTypes contains "Ljava/lang/String"
 
-    if (secretArrayMethodName && isSecretType) // todo refactor this terrible conditional
+    if (secretArrayMethodName && hasSecretReturnType) // todo refactor this terrible conditional
       Some(ReturnsSecretArray)
     else if (isAppendMethodName && isConcatClass)
       Some(ConcatenatesStrings)
@@ -133,11 +135,11 @@ trait SecretDefFromConfig extends SecretDefinition {
       Some(StringConcatConstructor)
     else if (methodName == "toString" && isConcatClass && stringTypeConsideredSecret)
       Some(PreservesSecretValue)
-    else if (isLibCall && isDefaultSecret && !isWhiteListedLib && !isSecretType)
+    else if (isLibCall && isDefaultSecret && !isWhiteListedLib)
       Some(SecretLibraryCall)
     else if (isLibCall && (!isDefaultSecret || isDefaultSecret && isWhiteListedLib))
       Some(NonSecretLibraryCall)
-    else if ((stringConfig.whiteList contains methodName) && isSecretType || !isSecretType)
+    else if ((stringConfig.whiteList contains methodName) && isInvokedOnSecretType || !isInvokedOnSecretType)
       None
     else
       Some(PreservesSecretValue)
