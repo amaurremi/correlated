@@ -40,7 +40,8 @@ trait SecretDefFromConfig extends SecretDefinition {
   override def isSecret(method: IMethod) =
     stringConfig.secretMethods exists {
       sm =>
-        sm.method == Method(method) && isSubType(method.getDeclaringClass.getReference, sm.enclClass, method.getClassHierarchy)
+        (sm.method equalsUpToParamNum Method(method)) &&
+          isSubType(method.getDeclaringClass.getReference, sm.enclClass, method.getClassHierarchy)
     }
 
   lazy val stringConfig: SecretConfig = {
@@ -54,7 +55,7 @@ trait SecretDefFromConfig extends SecretDefinition {
         SecretMethod(
           Method(
             conf getString "name",
-            conf getInt "params",
+            -1,
             conf getBoolean "static",
             conf getString "type"
           ),

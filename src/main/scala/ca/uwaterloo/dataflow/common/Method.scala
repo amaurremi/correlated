@@ -7,7 +7,16 @@ case class Method(
   parameterNum: Int,
   isStatic: Boolean,
   retType: String
-)
+) {
+
+  def equalsUpToParamNum(any: Any): Boolean =
+    any match {
+      case Method(n, _, s, r) =>
+        n == name && s == isStatic && r == retType
+      case _                  =>
+        false
+    }
+}
 
 object Method {
 
