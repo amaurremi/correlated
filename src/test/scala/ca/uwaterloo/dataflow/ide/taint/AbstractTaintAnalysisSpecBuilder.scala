@@ -4,7 +4,7 @@ import ca.uwaterloo.dataflow.common.{Method, AbstractIdeToIfds, VariableFacts}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
-import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{SecretInputPrimitiveTypes, CcReceivers, SecretStrings}
+import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretStrings}
 import com.ibm.wala.classLoader.IField
 import com.ibm.wala.ssa.{DefUse, SSAFieldAccessInstruction, SSAArrayLoadInstruction, SSAInvokeInstruction}
 import org.scalatest.Assertions
@@ -91,12 +91,4 @@ class CcTaintAnalysisSpecBuilder(
 
   override val assertionMap: Map[Method, Boolean] =
     Map(secret -> true, notSecret -> false, secretStandardNotSecretCc -> false)
-}
-
-class TaintAnalysisPrimitiveSpecBuilder(
-  fileName: String
-) extends AbstractTaintAnalysisSpecBuilder(fileName) with IdeFromIfdsBuilder with IdeToIfds with SecretInputPrimitiveTypes {
-
-  override val assertionMap: Map[Method, Boolean] =
-    Map(secret -> true, notSecret -> false, secretStandardNotSecretCc -> true)
 }

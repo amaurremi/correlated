@@ -5,7 +5,7 @@ import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.correlated.collector.util.TestUtil
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
-import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{SecretInputPrimitiveTypes, CcReceivers, SecretInput}
+import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretInput}
 
 object CcBenchmarkRunner extends TestUtil {
 
@@ -25,7 +25,7 @@ object CcBenchmarkRunner extends TestUtil {
   ) extends IfdsTaintAnalysis(dirName + fileName)
   with VariableFacts
   with AbstractIdeToIfds
-  with SecretInputPrimitiveTypes {
+  with SecretInput {
 
     def printResultSize()
   }
