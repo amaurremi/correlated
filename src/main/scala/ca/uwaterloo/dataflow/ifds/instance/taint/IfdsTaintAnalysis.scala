@@ -156,11 +156,14 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
           getOperationType(callInstr.getDeclaredTarget, n1.getNode, value) match {
             case Some(SecretLibraryCall)             =>
               defaultPlusVar
+            case Some(ReturnsStaticSecretOrPreservesSecret)
+              if callInstr.isStatic && d1 == Λ       =>
+              defaultPlusVar
             case Some(opType) if !callInstr.isStatic =>
               val receiver = callInstr.getReceiver
               val factEqReceiver = factSameAsVar(d1, method, receiver)
               opType match {
-                case PreservesSecretValue if factEqReceiver                      =>
+                case ReturnsStaticSecretOrPreservesSecret if factEqReceiver                      =>
                   defaultPlusVar
                 case ReturnsSecretArray if factEqReceiver                      =>
                   default + ArrayElement

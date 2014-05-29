@@ -134,14 +134,14 @@ trait SecretDefFromConfig extends SecretDefinition {
     else if (isConcatClass && op.isInit)
       Some(StringConcatConstructor)
     else if (methodName == "toString" && isConcatClass && stringTypeConsideredSecret)
-      Some(PreservesSecretValue)
-    else if (isLibCall && isDefaultSecret && !isWhiteListedLib)
+      Some(ReturnsStaticSecretOrPreservesSecret)
+    else if (isLibCall && isDefaultSecret && !isWhiteListedLib && !isInvokedOnSecretType)
       Some(SecretLibraryCall)
     else if (isLibCall && (!isDefaultSecret || isDefaultSecret && isWhiteListedLib))
       Some(NonSecretLibraryCall)
     else if ((stringConfig.whiteList contains methodName) && isInvokedOnSecretType || !isInvokedOnSecretType)
       None
     else
-      Some(PreservesSecretValue)
+      Some(ReturnsStaticSecretOrPreservesSecret)
   }
 }

@@ -9,7 +9,7 @@ import com.ibm.wala.types.{MethodReference, TypeReference}
 trait SecretDefinition extends VariableFacts {
 
   sealed trait SecretOperation
-  case object PreservesSecretValue extends SecretOperation
+  case object ReturnsStaticSecretOrPreservesSecret extends SecretOperation
   case object ReturnsSecretArray extends SecretOperation
   case object ConcatenatesStrings extends SecretOperation
   case object StringConcatConstructor extends SecretOperation
