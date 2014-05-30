@@ -20,6 +20,7 @@ Thus, our analysis code is in the `ca.uwaterloo.dataflow` package, whereas the W
 1. Install the WALA library into your local [Maven](http://maven.apache.org/) repository, as described in the [first](https://github.com/cos/WALAFacade#steps) step of the WALAFacade installation instructions.
 
 2. Build the project with [SBT](http://www.scala-sbt.org/): 
+  - Checkout the Correlated Calls project and navigate into its directory.
   - [Install](http://www.scala-sbt.org/release/docs/Getting-Started/Setup) SBT on your machine.
   - Navigate into the checked out Correlated Calls project directory from the command line.
     - `sbt gen-idea`, if you'd like to use [IntelliJ IDEA](http://www.jetbrains.com/idea/),
