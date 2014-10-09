@@ -43,8 +43,8 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
     }
 
   override def callReturnEdges: IdeEdgeFn =
-    ideN =>
-      ifdsOtherSuccEdgesPhi(ideN) flatMap idFactFunPairSet
+    (ideN1, n2) =>
+      ifdsCallReturnEdges(ideN1, n2) flatMap idFactFunPairSet
 
   override def callStartEdges: IdeEdgeFn =
     (ideN1, n2) => {
