@@ -43,27 +43,8 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
     }
 
   override def callReturnEdges: IdeEdgeFn =
-    (ideN1, n2) => {
-      val n1 = ideN1.n
-      val d2s = ifdsCallReturnEdges(ideN1, n2)
-      val edgeFn = n1.node.getLastInstruction match {
-        case invokeInstr: SSAInvokeInstruction if !invokeInstr.isStatic =>
-          getCcReceiver(invokeInstr.getReceiver, n1.node.getMethod) map {
-            rec =>
-              CorrelatedFunction(Map(
-                rec -> composedTypesTop
-            ))
-          }
-        case _                                                          =>
-          None
-      }
-      edgeFn match {
-        case Some(f) =>
-          d2s map { FactFunPair(_, f) }
-        case None    =>
-          d2s flatMap idFactFunPairSet
-      }
-    }
+    ideN =>
+      ifdsOtherSuccEdgesPhi(ideN) flatMap idFactFunPairSet
 
   override def callStartEdges: IdeEdgeFn =
     (ideN1, n2) => {
