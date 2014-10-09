@@ -33,16 +33,19 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
   override def endReturnEdges: IdeEdgeFn =
     (ideN1, n2) => {
       val d2s = ifdsEndReturnEdges(ideN1, n2)
-      if (ideN1.n.node.getMethod.isStatic)
+      val n1: NodeType = ideN1.n
+      val node1: Node = n1.node
+      val exitingMethod: IMethod = node1.getMethod
+      if (exitingMethod.isStatic)
         d2s flatMap idFactFunPairSet
       else {
         // on end-return edge, just as on call-start edge, map calling receiver to its static types
-        val callNode = getCallNode(ideN1.n, n2)
-        val edgeFn = callNode.getLastInstruction match {
+        val callInstr = getCallInstr(n1, n2)
+        val edgeFn = callInstr match {
           case invokeInstr: SSAInvokeInstruction =>
             getCcReceiver(invokeInstr.getReceiver, n2.node.getMethod) match {
               case Some(rec) =>
-                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, callNode, ideN1.n.node)), TypesTop))
+                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, getCallNode(n1, n2), node1)), TypesTop))
                 CorrelatedFunction(matchStaticTypes)
               case None =>
                 Id
