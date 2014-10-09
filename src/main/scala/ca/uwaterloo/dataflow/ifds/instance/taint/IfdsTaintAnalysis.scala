@@ -6,11 +6,12 @@ import com.ibm.wala.analysis.typeInference.{PointType, TypeInference}
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis
+import com.ibm.wala.ipa.callgraph.propagation.{InstanceKey, PointerAnalysis}
 import com.ibm.wala.ssa._
 import com.ibm.wala.util.collections.HashSetMultiMap
-import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
+import com.typesafe.config.{ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
+
 import scala.collection.JavaConverters._
 
 abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts with SecretDefinition {
@@ -27,7 +28,7 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
   override val callGraph: CallGraph = builder.cg
   override val supergraph: ISupergraph[Node, Procedure] = ICFGSupergraph.make(callGraph, builder._cache)
   override val entryPoints: Seq[NodeType] = callGraph.getEntrypointNodes.asScala.toSeq flatMap supergraph.getEntriesForProcedure map createNodeType
-  override val pointerAnalysis: PointerAnalysis =
+  override val pointerAnalysis: PointerAnalysis[InstanceKey] =
     builder match {
       case b: FlexibleCallGraphBuilder =>
         b.getPointerAnalysis

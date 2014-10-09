@@ -1,5 +1,7 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint.impl
 
+import java.io.File
+
 import ca.uwaterloo.dataflow.common._
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
 import com.ibm.wala.analysis.typeInference.TypeAbstraction
@@ -8,7 +10,7 @@ import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cha.IClassHierarchy
 import com.ibm.wala.types.{MethodReference, TypeReference}
 import com.typesafe.config.{Config, ConfigFactory}
-import java.io.File
+
 import scala.collection.JavaConverters._
 
 trait SecretDefFromConfig extends SecretDefinition {

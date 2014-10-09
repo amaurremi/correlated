@@ -1,11 +1,12 @@
 package ca.uwaterloo.dataflow.common
 
-import com.ibm.wala.classLoader.{IMethod, IClass}
+import com.ibm.wala.classLoader.{IClass, IMethod}
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+
 import scala.collection.JavaConverters._
 import scala.collection.breakOut
 
@@ -83,12 +84,17 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
   def getValNumFromParameterNum(n: Node, argNum: Int): ValueNumber =
     enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
-  def getCallInstr(exit: NodeType, ret: NodeType): SSAInvokeInstruction = {
+  def getCallNode(exit: NodeType, ret: NodeType): Node = {
     val callNodes = callReturnPairs(exit).toSeq collect {
       case (c: NodeType, r: NodeType) if r == ret => c
     }
     assert(callNodes.size == 1)
-    callNodes.head.node.getLastInstruction match {
+    callNodes.head.node
+  }
+
+
+  def getCallInstr(exit: NodeType, ret: NodeType): SSAInvokeInstruction = {
+    getCallNode(exit, ret).getLastInstruction match {
       case callInstr: SSAInvokeInstruction =>
         callInstr
     }

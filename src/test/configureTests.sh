@@ -4,7 +4,7 @@
 # configureTests
 
 ### Replace the `jrepath' value with your path to the rt.jar file
-jrepath="C:/Program Files (x86)/Java/jdk1.6.0_45/jre/lib/rt.jar"
+jrepath="/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"
 
 testroot=ca/uwaterloo/dataflow/ide/taint
 

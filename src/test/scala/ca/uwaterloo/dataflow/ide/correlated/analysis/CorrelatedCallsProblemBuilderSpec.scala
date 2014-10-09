@@ -2,11 +2,11 @@ package ca.uwaterloo.dataflow.ide.correlated.analysis
 
 import ca.uwaterloo.dataflow.common.{VariableFacts, WalaInstructions}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsProblemBuilder
-import ca.uwaterloo.dataflow.correlated.collector.{ReceiverI, Receiver}
+import ca.uwaterloo.dataflow.correlated.collector.{Receiver, ReceiverI}
 import com.ibm.wala.classLoader.{IClass, IMethod}
 import com.ibm.wala.dataflow.IFDS.ISupergraph
 import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis
+import com.ibm.wala.ipa.callgraph.propagation.{InstanceKey, PointerAnalysis}
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
@@ -31,7 +31,7 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       override def callStartEdges: IdeEdgeFn = notNeeded
       override lazy val callGraph: CallGraph = notNeeded
 
-      override val pointerAnalysis: PointerAnalysis = mock[PointerAnalysis]
+      override val pointerAnalysis: PointerAnalysis[InstanceKey] = mock[PointerAnalysis[InstanceKey]]
 
       lazy val method1 = mock[IMethod]
       lazy val method2 = mock[IMethod]

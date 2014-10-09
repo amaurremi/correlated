@@ -33,8 +33,8 @@ Additionally, each test program needs a configuration file in the `src/test/reso
 To create or update a configuration and Jar file for a test, you will need to execute the `configureTests` or `configureSingleTest` script.
 The first script will configure all tests, and the latter script will configure one specified test.
 
-1. In both files `configureTests` and `configureSingleTest`, replace the value of the `jrepath` variable with the path to the `rt.jar` file.
-The `rt.jar` file contains Java's bootstrap classes and is usually located in Java's `jre/lib` directory. On a Mac, the path might look like `/usr/lib/jvm/java-6-openjdk/jre/lib/rt.jar`.
+1. In both files `configureTests` and `configureSingleTest`, replace the value of the `jrepath` variable with the path to the `rt.jar` (or classes.jar on OS X) file.
+The `rt.jar` file contains Java's bootstrap classes and is usually located in Java's `jre/lib` directory. On a Mac, the path might look like `/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar`.
 2. To configure all tests, navigate to the `src/test` subdirectory of the project and run `./configureTests`.
 3. To configure a single test, navigate to the `src/test` subdirectory of the project and run `./configureSingleTest <test name>`.
    For example, to configure the test `ca.uwaterloo.dataflow.ide.taint.inputPrograms.FunctionCall.FunctionCall.java`, run
