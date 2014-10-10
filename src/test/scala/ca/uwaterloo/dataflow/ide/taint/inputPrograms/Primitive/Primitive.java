@@ -10,7 +10,7 @@ public class Primitive {
     public static void main(String[] args) {
         try {
             int r = new FileInputStream("file").read();
-            SecretAssertions.secret(r);
+            SecretAssertions.notSecret(r);
             int c = new FileInputStream("file").available();
             SecretAssertions.notSecret(c);
         } catch (IOException e) {
