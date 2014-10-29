@@ -6,6 +6,8 @@ organization := "University of Waterloo"
 
 scalaVersion := "2.10.0"
 
+mainClass in (Compile, run) := Some("ca.uwaterloo.dataflow.correlated.collector.CcBenchmarkRunner")
+
 resolvers += "Local Maven Repository" at "file:///"+Path.userHome.absolutePath+"/.m2/repository"
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource

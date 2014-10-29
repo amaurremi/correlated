@@ -55,6 +55,7 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
       r <- followingNodes(exit)
       rn = r.node
       if supergraph isReturn rn
+      if !(supergraph isExit rn) // because for some reason that sometimes happens in WALA
       c <- supergraph.getCallSites(rn, enclProc(exit.node)).asScala
     } yield NormalNode(c) -> r
   }

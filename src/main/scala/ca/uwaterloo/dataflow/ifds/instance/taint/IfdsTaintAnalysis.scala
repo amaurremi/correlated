@@ -152,7 +152,8 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction => // todo this method is hard to reason about and needs refactoring.
           val method = n1.getMethod
-          lazy val defaultPlusVar = default + Variable(method, callValNum(callInstr).get)
+          val valNum = callValNum(callInstr)
+          lazy val defaultPlusVar = if (valNum.isDefined) default + Variable(method, valNum.get) else default
           val value = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
           getOperationType(callInstr.getDeclaredTarget, n1.getNode, value) match {
             case Some(SecretLibraryCall)             =>
@@ -229,11 +230,14 @@ abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with Vari
 
   private[this] def isConcatConstructor(method: IMethod): Boolean =
     method.isInit && isConcatClass(new PointType(method.getDeclaringClass))
-  
+
+  /**
+   * Should the call instruction be excluded from the analysis?
+   */
   private[this] def exclude(node: Node, callInstr: SSAInvokeInstruction): Boolean = {
     val vn = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
-    lazy val operationType = getOperationType(callInstr.getDeclaredTarget, node.getNode, vn)
-    lazy val ops: Set[SecretOperation] = Set(ConcatenatesStrings, NonSecretLibraryCall, SecretLibraryCall)
+    def operationType = getOperationType(callInstr.getDeclaredTarget, node.getNode, vn)
+    def ops: Set[SecretOperation] = Set(ConcatenatesStrings, NonSecretLibraryCall, SecretLibraryCall)
     invokedOnSecretClass(callInstr) ||
       operationType.isDefined && (ops contains operationType.get)
   }
