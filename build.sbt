@@ -6,6 +6,8 @@ organization := "University of Waterloo"
 
 scalaVersion := "2.10.0"
 
+scalacOptions += "-target:jvm-1.7"
+
 mainClass in (Compile, run) := Some("ca.uwaterloo.dataflow.correlated.collector.CcBenchmarkRunner")
 
 resolvers += "Local Maven Repository" at "file:///"+Path.userHome.absolutePath+"/.m2/repository"
