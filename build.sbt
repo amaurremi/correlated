@@ -4,9 +4,7 @@ version := "0.1"
 
 organization := "University of Waterloo"
 
-scalaVersion := "2.10.0"
-
-scalacOptions += "-target:jvm-1.7"
+scalaVersion := "2.10.3"
 
 mainClass in (Compile, run) := Some("ca.uwaterloo.dataflow.correlated.collector.CcBenchmarkRunner")
 
