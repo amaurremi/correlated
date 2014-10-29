@@ -5,7 +5,7 @@ import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFact
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import java.io.File
 
-trait TestUtil {
+trait RunUtil {
 
   def getCcStats(testName: String): CorrelatedCallStats = {
     val resourcePath = "ca/uwaterloo/dataflow/benchmarks/dacapo/"

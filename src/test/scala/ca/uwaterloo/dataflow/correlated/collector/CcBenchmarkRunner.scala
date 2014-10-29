@@ -2,12 +2,13 @@ package ca.uwaterloo.dataflow.correlated.collector
 
 import ca.uwaterloo.dataflow.common.{AbstractIdeToIfds, VariableFacts}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
-import ca.uwaterloo.dataflow.correlated.collector.util.TestUtil
+import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
 import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretInput}
+import org.scalatest.FunSpec
 
-object CcBenchmarkRunner extends TestUtil {
+object CcBenchmarkRunner extends FunSpec with RunUtil {
 
   def main(args: Array[String]) {
     val runner =

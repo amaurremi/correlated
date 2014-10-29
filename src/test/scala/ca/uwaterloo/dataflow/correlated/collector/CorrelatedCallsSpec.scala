@@ -1,12 +1,12 @@
 package ca.uwaterloo.dataflow.correlated.collector
 
-import ca.uwaterloo.dataflow.correlated.collector.util.TestUtil
+import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class CorrelatedCallsSpec extends FunSpec with TestUtil {
+class CorrelatedCallsSpec extends FunSpec with RunUtil {
 
   describe("CorrelatedCalls") {
 

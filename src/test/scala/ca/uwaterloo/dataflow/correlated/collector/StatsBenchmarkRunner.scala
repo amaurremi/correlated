@@ -1,11 +1,14 @@
 package ca.uwaterloo.dataflow.correlated.collector
 
-import ca.uwaterloo.dataflow.correlated.collector.util.TestUtil
+import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
+import org.scalatest.FunSpec
 
-object StatsBenchmarkRunner extends TestUtil {
+object StatsBenchmarkRunner extends FunSpec with RunUtil {
 
-  def main(args: Array[String]) {
-    val runner = (name: String) => getCcStats(name).printInfo()
-    runBenchmarks(runner)
+  describe("StatsBenchmarkRunner") {
+    it("computes stats for benchmarks") {
+      val runner = (name: String) => getCcStats(name).printInfo()
+      runBenchmarks(runner)
+    }
   }
 }
