@@ -3,7 +3,6 @@ package ca.uwaterloo.dataflow.ide.analysis.solver
 import ca.uwaterloo.dataflow.common.TraverseGraph
 import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 import com.ibm.wala.util.collections.HashSetMultiMap
-import scala.collection.JavaConverters._
 import scala.collection.{breakOut, mutable}
 
 // p. 147 of Sagiv, Reps, Horwitz, "Precise interprocedural dataflow instance
@@ -155,8 +154,10 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    * them here, we store them in the forwardExitD3s map.
    */
   private[this] def forwardExitFromPropagate(e: XEdge, f2: IdeFunction, oldE: XEdge, oldF: IdeFunction) {
-    forwardExitD3s.put((e.source.n, e.target), (e.source.d, f2))
-    if (oldE.target.isExitNode) forwardExitNode(oldE, oldF)
+    if (f2 != Top && e.target.isCallNode) {
+      forwardExitD3s.put((e.source.n, e.target), (e.source.d, f2))
+//      if (oldE.target.isExitNode) forwardExitNode(oldE, oldF)
+    }
   }
 
   private[this] def forwardAnyNode(e: XEdge, f: IdeFunction) {
@@ -187,7 +188,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
     val f2 = f ⊓ jf
     if (f2 != jf) {
       jumpFn += e -> f2
-      if (f2 != λTop) forwardExitFromPropagate(e, f2, oldE, oldF)
+      forwardExitFromPropagate(e, f2, oldE, oldF)
       pathWorklist enqueue e
     }
   }
