@@ -26,6 +26,7 @@ trait RunUtil {
 //    benchmarkDir.listFiles foreach {
 //      file =>
 //        val name = file.getName
+//        printf("Running &s benchmark...\n", name)
 //        runner(name.substring(0, name.lastIndexOf('.')))
 //    }
     runner("antlr")

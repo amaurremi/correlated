@@ -51,14 +51,13 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
    * return-site node r.
    */
   def callReturnPairs(exit: NodeType): Seq[(NormalNode, NodeType)] =
-    if (!(supergraph isReturn exit.node)) // because for some reason that sometimes happens in WALA
-      for {
-        r <- followingNodes(exit)
-        rn = r.node
-        if supergraph isReturn rn
-        c <- supergraph.getCallSites(rn, enclProc(exit.node)).asScala
-      } yield NormalNode(c) -> r
-    else Seq.empty[(NormalNode, NodeType)]
+    for {
+      r <- followingNodes(exit)
+      rn = r.node
+      if supergraph isReturn rn
+      if !(supergraph isExit rn) // because for some reason that sometimes happens in WALA
+      c <- supergraph.getCallSites(rn, enclProc(exit.node)).asScala
+    } yield NormalNode(c) -> r
 
   /**
    * All intra-procedural nodes from the start of a procedure.

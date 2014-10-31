@@ -92,7 +92,6 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
     callNodes.head.node
   }
 
-
   def getCallInstr(exit: NodeType, ret: NodeType): SSAInvokeInstruction = {
     getCallNode(exit, ret).getLastInstruction match {
       case callInstr: SSAInvokeInstruction =>
