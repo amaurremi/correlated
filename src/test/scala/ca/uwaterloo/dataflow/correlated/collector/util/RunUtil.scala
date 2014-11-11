@@ -7,8 +7,7 @@ import java.io.File
 
 trait RunUtil {
 
-  def getCcStats(testName: String): CorrelatedCallStats = {
-    val resourcePath = "ca/uwaterloo/dataflow/benchmarks/dacapo/"
+  def getCcStats(testName: String, resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/"): CorrelatedCallStats = {
     val config =
       ConfigFactory.load(
         resourcePath + testName,

@@ -28,7 +28,7 @@ trait ComputeValues { this: IdeProblem with TraverseGraph =>
     // Phase II(i)
     initialize()
     // [4-17]
-    while (!nodeWorklist.isEmpty) {
+    while (nodeWorklist.nonEmpty) {
       val node = nodeWorklist.dequeue()
       if (node.isStartNode)
         computeStartNode(node, jumpFunc)
