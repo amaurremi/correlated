@@ -1,14 +1,8 @@
-bin/
-.cache
-.DS_Store
 target/
-/.classpath
-/.project
-src/test/scala/ca/uwaterloo/dataflow/correlated/stats/inputPrograms/*/*.jar
-src/test/scala/ca/uwaterloo/dataflow/ide/cp/inputPrograms/*/*.jar
 src/test/scala/ca/uwaterloo/dataflow/ide/taint/inputPrograms/*/*.jar
 *.class
 src/test/resources/ca/uwaterloo/dataflow/ide/taint/*.conf
 src/test/resources/ca/uwaterloo/dataflow/benchmarks/dacapo/*.conf
 .idea/
 .idea_modules
+projectFilesBackup
