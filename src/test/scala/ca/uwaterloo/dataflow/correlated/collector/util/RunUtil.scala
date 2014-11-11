@@ -21,14 +21,13 @@ trait RunUtil {
   }
 
   def runBenchmarks(runner: String => Unit) {
-//    val dir = System.getProperty("user.dir")
-//    val benchmarkDir = new File(dir, "src/test/scala/ca/uwaterloo/dataflow/benchmarks/dacapo/sources")
-//    benchmarkDir.listFiles foreach {
-//      file =>
-//        val name = file.getName
-//        printf("Running &s benchmark...\n", name)
-//        runner(name.substring(0, name.lastIndexOf('.')))
-//    }
-    runner("antlr")
+    val dir = System.getProperty("user.dir")
+    val benchmarkDir = new File(dir, "src/test/scala/ca/uwaterloo/dataflow/benchmarks/dacapo/sources")
+    benchmarkDir.listFiles foreach {
+      file =>
+        val name = file.getName
+        printf("Running &s benchmark...\n", name)
+        runner(name.substring(0, name.lastIndexOf('.')))
+    }
   }
 }
