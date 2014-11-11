@@ -25,7 +25,7 @@ trait RunUtil {
     val benchmarkDir = new File(dir, "src/test/scala/ca/uwaterloo/dataflow/benchmarks/dacapo/sources")
     benchmarkDir.listFiles foreach {
       file =>
-        val name: String = file.getName
+        val name = file.getName
         if (name endsWith "jar") {
           println(s"Running $name benchmark...\n")
           runner(name.substring(0, name.lastIndexOf('.')))

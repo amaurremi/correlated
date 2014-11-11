@@ -58,7 +58,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
         case NormalNode(nn) =>
           if (n.isCallNode)
             forwardCallNode(e, f)
-          if (n.isExitNode && !(entryPoints exists { ep => enclProc(ep.node) == enclProc(n.n.node) }))
+          if (n.isExitNode)
             forwardExitNode(e, f)
           if (!n.isCallNode && !n.isExitNode)
             forwardAnyNode(e, f)
