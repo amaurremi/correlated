@@ -1,5 +1,7 @@
 package ca.uwaterloo.dataflow.common
 
+import com.ibm.wala.util.graph.traverse.DFS
+import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 
 trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
@@ -40,7 +42,7 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
   /**
    * Returns the start node of the argument's enclosing procedure.
    */
-  lazy val startNodes: Node=> Seq[NodeType] = { // todo: in general, not sure to which scala collections WALA's collections should be converted
+  lazy val startNodes: Node => Seq[NodeType] = { // todo: in general, not sure to which scala collections WALA's collections should be converted
     n =>
       val nodes = supergraph getEntriesForProcedure enclProc(n)
       nodes.view.toSeq map createNodeType
@@ -55,45 +57,26 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
       r <- followingNodes(exit)
       rn = r.node
       if supergraph isReturn rn
-      if !(supergraph isExit rn) // because for some reason that sometimes happens in WALA
+//      if !(supergraph isExit rn) // because for some reason that sometimes happens in WALA
       c <- supergraph.getCallSites(rn, enclProc(exit.node)).asScala
+      if (supergraph getSuccNodes c).asScala contains rn
     } yield NormalNode(c) -> r
-
-  /**
-   * All intra-procedural nodes from the start of a procedure.
-   */
-  def allNodesInProc(node: NodeType): Seq[NodeType] =
-    for {
-      s <- startNodes(node.node)
-      n <- nodesInProc(s, enclProc(node.node))
-    } yield n
-
-  private[this] def nodesInProc(
-    startNode: NodeType,
-    proc: Procedure,
-    acc: Set[NodeType] = Set.empty
-  ): Set[NodeType] =
-    if (enclProc(startNode.node) != proc)
-      acc
-    else followingNodes(startNode).toSet flatMap {
-      (next: NodeType) =>
-        if (acc contains next)
-          acc + startNode
-        else
-          nodesInProc(next, proc, acc + startNode)
-    }
 
   /**
    * All call nodes inside of a given procedure
    */
   lazy val callNodesInProc: Procedure => Seq[NormalNode] =
-    p =>
-      for {
-        s <- supergraph getEntriesForProcedure p
-        n <- nodesInProc(NormalNode(s), p)
-        node = n.node
-        if supergraph isCall node
-      } yield NormalNode(node)
+    p => {
+      val nodesInProc = DFS.getReachableNodes(
+        supergraph,
+        (supergraph getEntriesForProcedure p).toSeq
+      ).toSeq
+      val callNodes = nodesInProc filter {
+        nip =>
+          enclProc(nip) == p && (supergraph isCall nip)
+      }
+      callNodes map NormalNode.apply
+    }
 
   def traverseSupergraph = supergraph.iterator.asScala
 }

@@ -147,7 +147,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
   private[this] def forwardExitFromCall(e: XEdge, f: IdeFunction, sq: NodeType, d: Fact) {
     val n = e.target
     forwardExitD4s.put((n.n, XNode(sq, d)), n.d)
-    if (n.isExitNode) forwardExitNode(e, f)
+//    if (n.isExitNode) forwardExitNode(e, f)
   }
 
   /**
@@ -156,7 +156,6 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    */
   private[this] def forwardExitFromPropagate(e: XEdge, f2: IdeFunction, oldE: XEdge, oldF: IdeFunction) {
     forwardExitD3s.put((e.source.n, e.target), (e.source.d, f2))
-    if (oldE.target.isExitNode) forwardExitNode(oldE, oldF)
   }
 
   private[this] def forwardAnyNode(e: XEdge, f: IdeFunction) {

@@ -85,10 +85,10 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
     enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
   def getCallNode(exit: NodeType, ret: NodeType): Node = {
-    val callNodes = callReturnPairs(exit).toSeq collect {
+    val callNodes = callReturnPairs(exit) collect {
       case (c: NodeType, r: NodeType) if r == ret => c
     }
-    assert(callNodes.size == 1)
+//    assert(callNodes.size == 1) todo: sometimes there are more than one call node. is that a problem?
     callNodes.head.node
   }
 

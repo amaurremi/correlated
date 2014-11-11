@@ -27,7 +27,7 @@ function createConfigFile() {
       dependencies.jar += \"$testpathSrc.jar\"\n
       dependencies.jar += \"$testpathDep-deps.jar\"\n
       entry {\n
-       class = \"Ldacapo/$testname/Main\"\n
+       class = \"Ldacapo/$testname/Main2\"\n
        method = \"main([Ljava/lang/String;)V\"\n
       }\n
     }\n
