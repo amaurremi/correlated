@@ -7,20 +7,30 @@ class StatsSpec extends FunSpec {
 
   describe("Compute polymorphic calls") {
 
+    val path = "ca/uwaterloo/dataflow/correlated/collector/"
+
     it("doesn't have polymorphic calls") {
-      val file = "ca/uwaterloo/dataflow/correlated/collector/inputPrograms/Poly1/Poly1.jar"
-      val conf = "ca/uwaterloo/dataflow/correlated/collector/Poly1.conf"
-      val stats = getCcStats("Poly1", "ca/uwaterloo/dataflow/correlated/collector/")
+      val stats = getCcStats("Poly1", path)
       assertResult(2)(stats.dispatchCallSiteNum)
       assertResult(0)(stats.polymorphicCallSiteNum)
     }
 
     it("has one polymorphic call") {
-      val file = "ca/uwaterloo/dataflow/correlated/collector/inputPrograms/Poly2/Poly2.jar"
-      val conf = "ca/uwaterloo/dataflow/correlated/collector/Poly2.conf"
-      val stats = getCcStats("Poly2", "ca/uwaterloo/dataflow/correlated/collector/")
+      val stats = getCcStats("Poly2", path)
       assertResult(2)(stats.dispatchCallSiteNum)
       assertResult(1)(stats.polymorphicCallSiteNum)
+    }
+
+    it("has 2 polymorphic calls") {
+      val stats = getCcStats("Poly3", path)
+      assertResult(2)(stats.dispatchCallSiteNum)
+      assertResult(2)(stats.polymorphicCallSiteNum)
+    }
+
+    it("has 3 polymorphic calls") {
+      val stats = getCcStats("Poly4", path)
+      assertResult(3)(stats.dispatchCallSiteNum)
+      assertResult(3)(stats.polymorphicCallSiteNum)
     }
   }
 }
