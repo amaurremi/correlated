@@ -11,21 +11,17 @@ public class Poly2 {
 
 abstract class PolyParent {
 
-    abstract void foo();
+    void foo() {}
 
     void bar() {}
 }
 
 class PolyChild1 extends PolyParent {
 
-    void foo() {
-        System.out.println("1");
-    }
+    void foo() {}
 }
 
 class PolyChild2 extends PolyParent {
 
-    void foo() {
-        System.out.println("2");
-    }
+    void foo() {}
 }

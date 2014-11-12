@@ -18,7 +18,7 @@ class StatsSpec extends FunSpec {
     it("has one polymorphic call") {
       val file = "ca/uwaterloo/dataflow/correlated/collector/inputPrograms/Poly2/Poly2.jar"
       val conf = "ca/uwaterloo/dataflow/correlated/collector/Poly2.conf"
-      val stats = getCcStats("Poly1", "ca/uwaterloo/dataflow/correlated/collector/")
+      val stats = getCcStats("Poly2", "ca/uwaterloo/dataflow/correlated/collector/")
       assertResult(2)(stats.dispatchCallSiteNum)
       assertResult(1)(stats.polymorphicCallSiteNum)
     }
