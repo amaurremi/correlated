@@ -19,8 +19,8 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
           val localReceivers = ccReceivers filter {
             case Receiver(vn, method) =>
               method == ideN1.n.node.getMethod &&   // considering only local variables
-                returnInstr.getResult != vn && // not setting to bottom the return value
-                (method.isStatic || vn != 1)   // excluding this
+                returnInstr.getResult != vn &&      // not setting to bottom the return value
+                (method.isStatic || vn != 1)        // excluding this
             case _                    =>
               false
           }
