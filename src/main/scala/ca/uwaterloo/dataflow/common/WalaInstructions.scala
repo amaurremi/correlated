@@ -84,20 +84,19 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
   def getValNumFromParameterNum(n: Node, argNum: Int): ValueNumber =
     enclProc(n).getIR.getSymbolTable.getParameter(argNum)
 
-  def getCallNode(exit: NodeType, ret: NodeType): Node = {
-    val callNodes = callReturnPairs(exit) collect {
-      case (c: NodeType, r: NodeType) if r == ret => c
+  def getCallNodes(exit: NodeType, ret: NodeType): Seq[Node] = {
+    callReturnPairs(exit) collect {
+      case (c: NodeType, r: NodeType) if r == ret => c.node
     }
-//    assert(callNodes.size == 1) todo: sometimes there are more than one call node. is that a problem?
-    callNodes.head.node
   }
 
-  def getCallInstr(exit: NodeType, ret: NodeType): SSAInvokeInstruction = {
-    getCallNode(exit, ret).getLastInstruction match {
-      case callInstr: SSAInvokeInstruction =>
-        callInstr
+  def getCallInstructions(exit: NodeType, ret: NodeType): Seq[SSAInvokeInstruction] =
+    getCallNodes(exit, ret) map {
+      _.getLastInstruction match {
+        case callInstr: SSAInvokeInstruction =>
+          callInstr
+        }
     }
-  }
 
   /**
    * Get the value number for the ith parameter.

@@ -40,19 +40,20 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
         d2s flatMap idFactFunPairSet
       else {
         // on end-return edge, just as on call-start edge, map calling receiver to its static types
-        val callInstr = getCallInstr(n1, n2)
-        val edgeFn = callInstr match {
+        val callInstructions = getCallInstructions(n1, n2).toSet
+        val edgeFns = callInstructions collect {
           case invokeInstr: SSAInvokeInstruction =>
             getCcReceiver(invokeInstr.getReceiver, n2.node.getMethod) match {
               case Some(rec) =>
-                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, getCallNode(n1, n2), node1)), TypesTop))
+                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, getCallNodes(n1, n2), node1)), TypesTop))
                 CorrelatedFunction(matchStaticTypes)
               case None =>
                 Id
             }
         }
+        assert(edgeFns.size == 1) // todo this must be a wrong assumption
         d2s map {
-          FactFunPair(_, edgeFn)
+          FactFunPair(_, edgeFns.head)
         }
       }
     }
@@ -85,7 +86,7 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
           case invokeInstr: SSAInvokeInstruction =>
             getCcReceiver(invokeInstr.getReceiver, n1.getMethod) match {
               case Some(rec) =>
-                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, n1, n2.node)), TypesTop))
+                val matchStaticTypes = Map(rec -> ComposedTypes(SetType(staticTypes(invokeInstr, Seq(n1), n2.node)), TypesTop))
                 CorrelatedFunction(matchStaticTypes ++ localsInTargetToBottomMap)
               case None =>
                 CorrelatedFunction(localsInTargetToBottomMap)
@@ -102,8 +103,11 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
     ideN =>
       ifdsOtherSuccEdgesPhi(ideN) flatMap idFactFunPairSet
 
-  private[this] def staticTypes(callInstr: SSAInvokeInstruction, sourceNode: Node, targetNode: Node): Set[IClass] = {
+  private[this] def staticTypes(callInstr: SSAInvokeInstruction, sourceNodes: Seq[Node], targetNode: Node): Set[IClass] = {
     val enclosingClass = enclProc(targetNode).getMethod.getDeclaringClass
-    getDeclaringClasses(callInstr, sourceNode)(enclosingClass) + enclosingClass
+    (sourceNodes.toSet flatMap {
+      sn: Node =>
+        getDeclaringClasses(callInstr, sn)(enclosingClass)
+    }) + enclosingClass
   }
 }
