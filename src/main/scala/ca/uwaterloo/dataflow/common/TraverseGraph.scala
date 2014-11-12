@@ -1,5 +1,6 @@
 package ca.uwaterloo.dataflow.common
 
+import com.ibm.wala.util.collections.Filter
 import com.ibm.wala.util.graph.traverse.DFS
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -57,7 +58,6 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
       r <- followingNodes(exit)
       rn = r.node
       if supergraph isReturn rn
-//      if !(supergraph isExit rn) // because for some reason that sometimes happens in WALA
       c <- supergraph.getCallSites(rn, enclProc(exit.node)).asScala
       if (supergraph getSuccNodes c).asScala contains rn
     } yield NormalNode(c) -> r
@@ -69,13 +69,15 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
     p => {
       val nodesInProc = DFS.getReachableNodes(
         supergraph,
-        (supergraph getEntriesForProcedure p).toSeq
+        (supergraph getEntriesForProcedure p).toSeq,
+        new Filter[Node]() {
+          override def accepts(n: Node): Boolean = enclProc(n) == p
+        }
       ).toSeq
-      val callNodes = nodesInProc filter {
-        nip =>
-          enclProc(nip) == p && (supergraph isCall nip)
+      nodesInProc collect {
+        case nip if supergraph isCall nip =>
+          NormalNode(nip)
       }
-      callNodes map NormalNode.apply
     }
 
   def traverseSupergraph = supergraph.iterator.asScala

@@ -9,9 +9,9 @@ public class Poly2 {
     }
 }
 
-class PolyParent {
+abstract class PolyParent {
 
-    void foo() {}
+    abstract void foo();
 
     void bar() {}
 }
