@@ -1,8 +1,7 @@
 target/
-src/test/scala/ca/uwaterloo/dataflow/ide/taint/inputPrograms/*/*.jar
+src/test/scala/ca/uwaterloo/dataflow/*/*/inputPrograms/*/*.jar
 *.class
-src/test/resources/ca/uwaterloo/dataflow/ide/taint/*.conf
-src/test/resources/ca/uwaterloo/dataflow/benchmarks/dacapo/*.conf
+src/test/resources/ca/uwaterloo/dataflow/*/*/*.conf
 .idea/
 .idea_modules
 projectFilesBackup
