@@ -39,10 +39,16 @@ class StatsSpec extends FunSpec {
       assertResult(10, "polymorphic call sites")(stats.polymorphicCallSiteNum)
     }
 
-    it("Poly6: has 5 polymorphic calls") {
+    it("Poly6: has 6 polymorphic calls") {
       val stats = getCcStats("Poly6", path)
       assertResult(6, "dispatch call sites")(stats.dispatchCallSiteNum)
       assertResult(6, "polymorphic call sites")(stats.polymorphicCallSiteNum)
+    }
+
+    it("Poly7: has 7 polymorphic calls") {
+      val stats = getCcStats("Poly7", path)
+      assertResult(7, "dispatch call sites")(stats.dispatchCallSiteNum)
+      assertResult(7, "polymorphic call sites")(stats.polymorphicCallSiteNum)
     }
   }
 }
