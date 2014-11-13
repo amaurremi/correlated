@@ -17,6 +17,7 @@ trait RunUtil {
     val pa = FlexibleCallGraphBuilder()(config)
 
     CorrelatedCallStats(pa.cg)
+//    CorrelatedCallStats(pa.cgRta) // enable in order to compute analysis using RTA call graph construction
   }
 
   def runBenchmarks(runner: String => Unit) {

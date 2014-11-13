@@ -18,6 +18,8 @@ trait AbstractCallGraphBuilder {
   // public
   def heap: HeapGraph
   def cg: CallGraph
+
+  def cgRta: CallGraph
   
   // just helpers
   lazy val defaultInterpreter = new DefaultSSAInterpreter(_options, _cache)

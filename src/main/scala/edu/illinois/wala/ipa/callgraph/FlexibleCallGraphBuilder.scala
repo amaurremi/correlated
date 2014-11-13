@@ -2,10 +2,12 @@ package edu.illinois.wala.ipa.callgraph
 
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph._
+import com.ibm.wala.ipa.callgraph.impl.Util.makeRTABuilder
 import com.ibm.wala.ipa.callgraph.propagation._
 import com.ibm.wala.ipa.callgraph.propagation.cfa.DefaultPointerKeyFactory
 import com.ibm.wala.ipa.cha.ClassHierarchy
 import com.ibm.wala.ssa.{DefaultIRFactory, IRFactory}
+import com.ibm.wala.util.NullProgressMonitor
 import com.typesafe.config.{Config, ConfigFactory}
 
 object FlexibleCallGraphBuilder {
@@ -46,6 +48,8 @@ class FlexibleCallGraphBuilder(
 
   val cg = makeCallGraph(options)
   val cache = _cache
+
+  val cgRta = makeRTABuilder(options, cache, cha, options.getAnalysisScope).makeCallGraph(options, new NullProgressMonitor)
 
   implicit val implicitCha = cha
 }

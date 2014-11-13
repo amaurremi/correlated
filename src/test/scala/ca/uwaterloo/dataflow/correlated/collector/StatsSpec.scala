@@ -5,9 +5,9 @@ import org.scalatest.FunSpec
 
 class StatsSpec extends FunSpec {
 
-  describe("Compute polymorphic calls") {
+  val path = "ca/uwaterloo/dataflow/correlated/collector/"
 
-    val path = "ca/uwaterloo/dataflow/correlated/collector/"
+  describe("Compute polymorphic calls") {
 
     it("Poly1: doesn't have polymorphic calls") {
       val stats = getCcStats("Poly1", path)
@@ -49,6 +49,20 @@ class StatsSpec extends FunSpec {
       val stats = getCcStats("Poly7", path)
       assertResult(7, "dispatch call sites")(stats.dispatchCallSiteNum)
       assertResult(7, "polymorphic call sites")(stats.polymorphicCallSiteNum)
+    }
+
+    it("Poly8: has 1 polymorphic call (parameter passing)") {
+      val stats = getCcStats("Poly8", path)
+      assertResult(1, "dispatch call sites")(stats.dispatchCallSiteNum)
+      assertResult(1, "polymorphic call sites")(stats.polymorphicCallSiteNum)
+    }
+  }
+
+  describe("Precision of polymorphic call detection") {
+    it("Poly9") {
+      val stats = getCcStats("Poly9", path)
+      assertResult(2, "dispatch call sites")(stats.dispatchCallSiteNum)
+      assertResult(0, "polymorphic call sites")(stats.polymorphicCallSiteNum)
     }
   }
 }
