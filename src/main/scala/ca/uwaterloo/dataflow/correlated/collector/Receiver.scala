@@ -2,7 +2,6 @@ package ca.uwaterloo.dataflow.correlated.collector
 
 import com.ibm.wala.classLoader.{IMethod, CallSiteReference}
 import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
-import scala.collection.JavaConversions._
 
 sealed trait ReceiverI
 
