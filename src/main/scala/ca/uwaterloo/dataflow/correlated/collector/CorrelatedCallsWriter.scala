@@ -71,8 +71,8 @@ object CorrelatedCallsWriter {
     import Scalaz._
 
     Receiver(cg, cgNode, callSite) match {
-      case Some(receiver) =>
-        val receiverToCallSite = Map(receiver -> Set(callSite))
+      case Some(receivers) =>
+        val receiverToCallSite = (receivers map { (_, Set(callSite))}).toMap
         for {
           _ <- CorrelatedCallStats(
             polymorphicCallSites = Set(callSite)
