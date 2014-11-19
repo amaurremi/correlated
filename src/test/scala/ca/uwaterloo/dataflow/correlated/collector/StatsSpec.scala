@@ -65,4 +65,12 @@ class StatsSpec extends FunSpec {
       assertResult(0, "polymorphic call sites")(stats.polymorphicCallSiteNum)
     }
   }
+
+  describe("What happens with library calls") {
+    it("Poly10") {
+      val stats = getCcStats("Poly10", path)
+//      assertResult(0, "dispatch call sites")(stats.dispatchCallSiteNum)
+      assertResult((0, "polymorphic call sites"))(stats.polymorphicCallSiteNum)
+    }
+  }
 }
