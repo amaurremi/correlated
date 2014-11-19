@@ -9,19 +9,14 @@ trait RunUtil {
 
   def getCcStats(
     testName: String,
-    resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/"
-  ): CorrelatedCallStats =
-    CorrelatedCallStats(createPA(testName, resourcePath).cg)
-//    CorrelatedCallStats(pa.cgRta) // enable in order to compute analysis using RTA call graph construction
-
-
-  def getAppCcStats(
-    testName: String,
-    resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/"
-  ): CorrelatedCallStats =
-//    AppCorrelatedCallStats(createPA(testName, resourcePath).cg)
-  // enable in order to compute analysis using RTA call graph construction:
-    AppCorrelatedCallStats(createPA(testName, resourcePath).cgRta)
+    resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/",
+    rta: Boolean = false,
+    onlyApp: Boolean = false
+  ): CorrelatedCallStats = {
+    val pa = createPA(testName, resourcePath)
+    val cg = if (rta) pa.cgRta else pa.cg
+    if (onlyApp) AppCorrelatedCallStats(cg) else CorrelatedCallStats(cg)
+  }
 
   private[this] def createPA(
     testName: String,
