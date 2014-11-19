@@ -1,12 +1,11 @@
 package ca.uwaterloo.dataflow.correlated.collector
 
-import com.ibm.wala.classLoader.CallSiteReference
-import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
+import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
 
 /**
  * Data structure that contains information about the program with respect to correlated calls
  */
-case class CorrelatedCallStats(
+final case class CorrelatedCallStats(
 
   /*
    * All call graph nodes
@@ -19,11 +18,11 @@ case class CorrelatedCallStats(
    * that node has a self-loop.
    */
 
-  rcs: List[Set[CGNode]] = List.empty,
+  rcs: List[Set[CGNode]] = List.empty[Set[CGNode]],
   /*
    * Receivers of correlated calls that are contained in a recursive component
    */
-  rcCcReceivers: Set[Receiver] = Set.empty,
+  rcCcReceivers: Set[Receiver] = Set.empty[Receiver],
 
   /*
    * Maps a receiver to a set of call sites that are invoked on that receiver
@@ -33,69 +32,69 @@ case class CorrelatedCallStats(
   /*
    * All call sites that are reachable in the call graph
    */
-  totalCallSites: Set[CallSiteReference] = Set.empty,
+  totalCallSites: Set[CallSite] = Set.empty[CallSite],
 
   /**
    * Call sites that have more than one target
    */
-  polymorphicCallSites: Set[CallSiteReference] = Set.empty
+  polymorphicCallSites: Set[CallSite] = Set.empty[CallSite]
 ) {
 
   /**
    * Total number of call graph nodes
    */
-  lazy val cgNodeNum = cgNodes.size
+  def cgNodeNum = cgNodes.size
 
   /**
    * All correlated call sites
    */
-  lazy val ccSites: Set[CallSiteReference] =
+  lazy val ccSites: Set[CallSite] =
     receiverToCallSites.values.flatten.toSet
 
   /**
    * Total amount of dispatch call sites
    */
-  lazy val dispatchCallSites: Set[CallSiteReference] =
-    totalCallSites filter { _.isDispatch }
+  lazy val dispatchCallSites: Set[CallSite] =
+    totalCallSites filter { _._1.isDispatch }
 
-  lazy val polymorphicCallSiteNum: Int =
+  def polymorphicCallSiteNum: Int =
     polymorphicCallSites.size
 
   /**
    * Amount of correlated call receivers
    */
-  lazy val ccReceiverNum: Int = receiverToCallSites.size
+  def ccReceiverNum: Int = receiverToCallSites.size
 
   /**
    * Total number of call sites
    */
-  lazy val totalCallSiteNum = totalCallSites.size
+  def totalCallSiteNum = totalCallSites.size
 
   /**
    * Number of dispatch call sites
    */
-  lazy val dispatchCallSiteNum = dispatchCallSites.size
+  def dispatchCallSiteNum = dispatchCallSites.size
 
   /**
    * Number of correlated call sites
    */
-  lazy val ccSiteNum = ccSites.size
+  def ccSiteNum = ccSites.size
 
   /**
    * Number of recursive components
    * @see CorrelatedCalls.rcs
    */
-  lazy val rcNum = rcs.size
+  def rcNum = rcs.size
 
   /**
    * Number of nodes in recursive components
    */
-  lazy val rcNodeNum = rcs.flatten.size
+  def rcNodeNum = rcs.flatten.size
 
   /**
    * Number of correlated call receivers in recursive components
    */
-  lazy val rcCcReceiverNum = rcCcReceivers.size
+  def rcCcReceiverNum = rcCcReceivers.size
 
   /**
    * Prints out the information related to correlated calls.
@@ -121,6 +120,16 @@ case class CorrelatedCallStats(
       rcNodeNum,                                          // 8
       rcCcReceiverNum                                     // 9
     )
+
+  def printCommaSeparated() {
+    println(List(
+      totalCallSiteNum,
+      dispatchCallSiteNum,
+      polymorphicCallSiteNum,
+      ccSiteNum, ccReceiverNum,
+      rcCcReceiverNum
+    ).mkString(","))
+  }
 }
 
 object CorrelatedCallStats {

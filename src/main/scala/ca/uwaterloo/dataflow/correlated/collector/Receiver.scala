@@ -1,7 +1,7 @@
 package ca.uwaterloo.dataflow.correlated.collector
 
-import com.ibm.wala.classLoader.{IMethod, CallSiteReference}
-import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
+import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.ipa.callgraph.CallGraph
 
 sealed trait ReceiverI
 
@@ -20,7 +20,8 @@ object Receiver {
   /**
    * Returns a receiver for a call site if the call site is polymorphic
    */
-  def apply(cg: CallGraph, cgNode: CGNode, callSiteRef: CallSiteReference): Option[Set[Receiver]] =
+  def apply(cg: CallGraph, callSite: CallSite): Option[Set[Receiver]] = {
+    val (callSiteRef, cgNode) = callSite
     if (callSiteRef.isDispatch && cg.getNumberOfTargets(cgNode, callSiteRef) > 1) {
       val calls = cgNode.getIR.getCalls(callSiteRef).toSet
       Some(
@@ -29,4 +30,5 @@ object Receiver {
             Receiver(call.getReceiver, cgNode.getMethod)
         })
     } else None
+  }
 }

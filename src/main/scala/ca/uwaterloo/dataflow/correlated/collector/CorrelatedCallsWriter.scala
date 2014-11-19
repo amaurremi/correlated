@@ -1,14 +1,14 @@
 package ca.uwaterloo.dataflow.correlated.collector
 
-import ca.uwaterloo.dataflow.correlated.collector.util.{MultiMap, CallGraphUtil, Converter}
-import com.ibm.wala.classLoader.CallSiteReference
-import com.ibm.wala.ipa.callgraph.{CallGraph, CGNode}
+import ca.uwaterloo.dataflow.correlated.collector.util.{CallGraphUtil, Converter, MultiMap}
+import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
 import com.ibm.wala.util.graph.traverse.DFS
-import scalaz.{Scalaz, Applicative, Semigroup, Writer}
+
+import scalaz.{Applicative, Scalaz, Semigroup, Writer}
 
 object CorrelatedCallsWriter {
 
-  import Converter._
+  import ca.uwaterloo.dataflow.correlated.collector.util.Converter._
 
   /**
    * Traverses the call graph writing relevant information to CorrelatedCalls
@@ -16,8 +16,9 @@ object CorrelatedCallsWriter {
   def apply(
     cg: CallGraph
   ): CorrelatedCallWriter[_] = {
-    import CallGraphUtil.getRcs
-    import Scalaz._
+    import ca.uwaterloo.dataflow.correlated.collector.util.CallGraphUtil.getRcs
+
+import scalaz.Scalaz._
 
     val cgNodes = toScalaList(DFS.getReachableNodes(cg).iterator)
     val rcs = getRcs(cg)
@@ -39,9 +40,9 @@ object CorrelatedCallsWriter {
   )(
     cgNode: CGNode
   ): CorrelatedCallWriter[CGNode] = {
-    import Scalaz._
+    import scalaz.Scalaz._
 
-    val callSites = toScalaIterator(cgNode.iterateCallSites()).toList
+    val callSites = toScalaIterator(cgNode.iterateCallSites()).toList map { (_, cgNode) }
     for {
       maps  <- callSites.traverse[CorrelatedCallWriter, ReceiverToCallSites](callSiteWriter(cg, cgNode, rcs))
       ccMap  = getCcMap(maps)
@@ -66,11 +67,11 @@ object CorrelatedCallsWriter {
     cgNode: CGNode,
     rcs: Set[CGNode]
   )(
-    callSite: CallSiteReference
+    callSite: CallSite
   ): CorrelatedCallWriter[ReceiverToCallSites] = {
-    import Scalaz._
+    import scalaz.Scalaz._
 
-    Receiver(cg, cgNode, callSite) match {
+    Receiver(cg, callSite) match {
       case Some(receivers) =>
         val receiverToCallSite = (receivers map { (_, Set(callSite))}).toMap
         for {

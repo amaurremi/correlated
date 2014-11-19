@@ -1,23 +1,37 @@
 package ca.uwaterloo.dataflow.correlated.collector.util
 
-import ca.uwaterloo.dataflow.correlated.collector.CorrelatedCallStats
+import ca.uwaterloo.dataflow.correlated.collector.{AppCorrelatedCallStats, CorrelatedCallStats}
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 import java.io.File
 
 trait RunUtil {
 
-  def getCcStats(testName: String, resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/"): CorrelatedCallStats = {
+  def getCcStats(
+    testName: String,
+    resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/"
+  ): CorrelatedCallStats =
+    CorrelatedCallStats(createPA(testName, resourcePath).cg)
+//    CorrelatedCallStats(pa.cgRta) // enable in order to compute analysis using RTA call graph construction
+
+
+  def getAppCcStats(
+    testName: String,
+    resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/"
+  ): CorrelatedCallStats =
+    AppCorrelatedCallStats(createPA(testName, resourcePath).cg)
+
+  private[this] def createPA(
+    testName: String,
+    resourcePath: String
+  ) = {
     val config =
       ConfigFactory.load(
         resourcePath + testName,
         ConfigParseOptions.defaults().setAllowMissing(false),
         ConfigResolveOptions.defaults()
       )
-    val pa = FlexibleCallGraphBuilder()(config)
-
-    CorrelatedCallStats(pa.cg)
-//    CorrelatedCallStats(pa.cgRta) // enable in order to compute analysis using RTA call graph construction
+    FlexibleCallGraphBuilder()(config)
   }
 
   def runBenchmarks(runner: String => Unit, dir: String) {

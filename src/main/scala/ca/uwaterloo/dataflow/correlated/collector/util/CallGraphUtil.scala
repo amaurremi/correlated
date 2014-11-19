@@ -1,12 +1,13 @@
 package ca.uwaterloo.dataflow.correlated.collector.util
 
-import Converter._
+import java.io.File
+
+import ca.uwaterloo.dataflow.correlated.collector.util.Converter._
 import com.ibm.wala.ipa.callgraph._
 import com.ibm.wala.ipa.callgraph.impl.Util.{makeMainEntrypoints, makeZeroCFABuilder}
 import com.ibm.wala.ipa.cha.ClassHierarchy
 import com.ibm.wala.util.config.AnalysisScopeReader
 import com.ibm.wala.util.graph.traverse.SCCIterator
-import java.io.File
 
 object CallGraphUtil {
 
