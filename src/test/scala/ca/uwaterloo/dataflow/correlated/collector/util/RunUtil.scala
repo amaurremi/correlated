@@ -20,9 +20,9 @@ trait RunUtil {
 //    CorrelatedCallStats(pa.cgRta) // enable in order to compute analysis using RTA call graph construction
   }
 
-  def runBenchmarks(runner: String => Unit) {
-    val dir = System.getProperty("user.dir")
-    val benchmarkDir = new File(dir, "src/test/scala/ca/uwaterloo/dataflow/benchmarks/dacapo/sources")
+  def runBenchmarks(runner: String => Unit, dir: String) {
+    val userDir = System.getProperty("user.dir")
+    val benchmarkDir = new File(userDir, dir)
     benchmarkDir.listFiles foreach {
       file =>
         val name = file.getName

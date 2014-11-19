@@ -57,10 +57,14 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
     for {
       r <- followingNodes(exit)
       rn = r.node
-      if supergraph isReturn rn
-      c <- supergraph.getCallSites(rn, enclProc(exit.node)).asScala
+//      if supergraph isReturn rn
+      c <- getCallSites(rn, enclProc(exit.node))
       if (supergraph getSuccNodes c).asScala contains rn
     } yield NormalNode(c) -> r
+
+  lazy val getCallSites: (Node, Procedure) => Iterator[Node] =
+    (node, proc) =>
+      supergraph.getCallSites(node, proc).asScala
 
   /**
    * All call nodes inside of a given procedure

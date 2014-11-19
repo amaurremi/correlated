@@ -17,13 +17,13 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
         new NormalTaintAnalysisRunner(dir, name).printResultSize()
         new CcTaintAnalysisRunner(dir, name).printResultSize()
       }
-    runBenchmarks(runner)
+    runBenchmarks(runner, "src/test/scala/ca/uwaterloo/dataflow/benchmarks/dacapo/sources")
   }
 
   abstract class AbstractTaintAnalysisRunner(
     dirName: String,
     fileName: String
-  ) extends IfdsTaintAnalysis(dirName + fileName)
+  ) extends IfdsTaintAnalysis(dirName + (if (dirName endsWith "/") "" else "/") + fileName)
   with VariableFacts
   with AbstractIdeToIfds
   with SecretInput {
