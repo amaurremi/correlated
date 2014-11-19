@@ -13,7 +13,7 @@ object CallGraphUtil {
 
   def buildZeroCfaCg(appJar: String, exclusionFile: Option[File]): CallGraph = {
     val scope: AnalysisScope =
-      AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar, exclusionFile getOrElse null)
+      AnalysisScopeReader.makeJavaBinaryAnalysisScope(appJar, exclusionFile.orNull)
     val cha = ClassHierarchy.make(scope)
     val entryPoints = makeMainEntrypoints(scope, cha)
     val options: AnalysisOptions = new AnalysisOptions(scope, entryPoints)

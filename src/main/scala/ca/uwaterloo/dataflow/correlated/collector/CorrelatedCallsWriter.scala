@@ -1,10 +1,10 @@
 package ca.uwaterloo.dataflow.correlated.collector
 
-import ca.uwaterloo.dataflow.correlated.collector.util.{CallGraphUtil, Converter, MultiMap}
+import ca.uwaterloo.dataflow.correlated.collector.util.MultiMap
 import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
 import com.ibm.wala.util.graph.traverse.DFS
 
-import scalaz.{Applicative, Scalaz, Semigroup, Writer}
+import scalaz.{Applicative, Semigroup, Writer}
 
 object CorrelatedCallsWriter {
 
@@ -44,7 +44,7 @@ import scalaz.Scalaz._
 
     val callSites = toScalaIterator(cgNode.iterateCallSites()).toList map { (_, cgNode) }
     for {
-      maps  <- callSites.traverse[CorrelatedCallWriter, ReceiverToCallSites](callSiteWriter(cg, cgNode, rcs))
+      maps  <- callSites.traverse[CorrelatedCallWriter, ReceiverToCallSites](callSiteWriter(cg, rcs))
       ccMap  = getCcMap(maps)
       _     <- CorrelatedCallStats(
         totalCallSites      = callSites.toSet,
@@ -64,7 +64,6 @@ import scalaz.Scalaz._
 
   private[this] def callSiteWriter(
     cg: CallGraph,
-    cgNode: CGNode,
     rcs: Set[CGNode]
   )(
     callSite: CallSite
