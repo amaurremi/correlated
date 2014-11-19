@@ -19,7 +19,9 @@ trait RunUtil {
     testName: String,
     resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/"
   ): CorrelatedCallStats =
-    AppCorrelatedCallStats(createPA(testName, resourcePath).cg)
+//    AppCorrelatedCallStats(createPA(testName, resourcePath).cg)
+  // enable in order to compute analysis using RTA call graph construction:
+    AppCorrelatedCallStats(createPA(testName, resourcePath).cgRta)
 
   private[this] def createPA(
     testName: String,
