@@ -19,6 +19,7 @@ final case class CorrelatedCallStats(
    */
 
   rcs: List[Set[CGNode]] = List.empty[Set[CGNode]],
+
   /*
    * Receivers of correlated calls that are contained in a recursive component
    */
