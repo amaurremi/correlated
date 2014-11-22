@@ -38,7 +38,12 @@ final case class CorrelatedCallStats(
   /**
    * Call sites that have more than one target
    */
-  polymorphicCallSites: Set[CallSite] = Set.empty[CallSite]
+  polymorphicCallSites: Set[CallSite] = Set.empty[CallSite],
+
+  /**
+   * Call sites that have only one target
+   */
+  monomorphicCallSites: Set[CallSite] = Set.empty[CallSite]
 ) {
 
   /**
@@ -60,6 +65,9 @@ final case class CorrelatedCallStats(
 
   def polymorphicCallSiteNum: Int =
     polymorphicCallSites.size
+
+  def monomorphicCallSiteNum: Int =
+    monomorphicCallSites.size
 
   /**
    * Amount of correlated call receivers
@@ -110,7 +118,8 @@ final case class CorrelatedCallStats(
       "%7d CC receivers\n\n" +                            // 6
       "%7d recursive components (RCs)\n" +                // 7
       "%7d nodes in RCs\n" +                              // 8
-      "%7d CC receivers in nodes in RCs\n\n",             // 9
+      "%7d CC receivers in nodes in RCs\n\n" +            // 9
+      "%7d monomorphic call sites\n",                     // 10
       cgNodeNum,                                          // 1
       totalCallSiteNum,                                   // 2
       dispatchCallSiteNum,                                // 3
@@ -119,7 +128,8 @@ final case class CorrelatedCallStats(
       ccReceiverNum,                                      // 6
       rcNum,                                              // 7
       rcNodeNum,                                          // 8
-      rcCcReceiverNum                                     // 9
+      rcCcReceiverNum,                                    // 9
+      monomorphicCallSiteNum                              // 10
     )
 
   def printCommaSeparated() {

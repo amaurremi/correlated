@@ -22,7 +22,7 @@ object Receiver {
    */
   def apply(cg: CallGraph, callSite: CallSite): Option[Set[Receiver]] = {
     val (callSiteRef, cgNode) = callSite
-    if (callSiteRef.isDispatch && cg.getNumberOfTargets(cgNode, callSiteRef) > 1) {
+    if (/*callSiteRef.isDispatch && */cg.getNumberOfTargets(cgNode, callSiteRef) > 1) {
       val calls = cgNode.getIR.getCalls(callSiteRef).toSet
       Some(
         calls map {

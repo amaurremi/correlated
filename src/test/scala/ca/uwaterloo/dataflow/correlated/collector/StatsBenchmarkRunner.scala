@@ -4,18 +4,24 @@ import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
 
 object StatsBenchmarkRunner extends App with RunUtil {
 
-  runNonJava()
+  runSpecJvm()
 
   def runDacapo() {
-    run("ca/uwaterloo/dataflow/benchmarks/dacapo")
+    run("dacapo")
   }
 
   def runNonJava() {
-    run("ca/uwaterloo/dataflow/benchmarks/nonJava")
+    run("nonJava")
   }
 
-  def run(path: String) {
-    val runner = (name: String) => getCcStats(name, path, rta = false, onlyApp = false).printCommaSeparated()
-    runBenchmarks(runner, path)
+  def runSpecJvm() {
+    run("specjvm")
+  }
+
+  def run(bmCollectionName: String) {
+    val runner =
+      (bmCollectionName: String, bmName: String) =>
+        getCcStats(bmCollectionName, bmName, rta = false, onlyApp = false).printCommaSeparated()
+    runBenchmarks(runner, bmCollectionName)
   }
 }

@@ -34,5 +34,11 @@ function createConfigFile() {
     cd "$root"
 }
 
-createConfigFile binarytrees "binarytrees\$py"
-echo "[DONE]"
+createConfigFile binarytrees_jython "binarytrees\$py"
+createConfigFile binarytrees_closure "binarytrees/core"
+createConfigFile fasta_groovy "fasta"
+createConfigFile knucleotide_jruby "knucleotide"
+createConfigFile mandelbrot_ocaml "pack/ocamljavaMain"
+createConfigFile amandelbrot_scala "mandelbrot"
+createConfigFile nbody_scala "nbody"
+

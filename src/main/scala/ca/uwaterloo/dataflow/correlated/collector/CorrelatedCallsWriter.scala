@@ -79,7 +79,11 @@ import scalaz.Scalaz._
           ).tell
         } yield receiverToCallSite
       case None           =>
-        applicative point Map.empty
+        for {
+          _ <- CorrelatedCallStats(
+            monomorphicCallSites = Set(callSite)
+          ).tell
+        } yield Map.empty[Receiver, Set[CallSite]]
     }
   }
 
@@ -95,7 +99,8 @@ import scalaz.Scalaz._
         f1.rcCcReceivers ++ f2.rcCcReceivers,
         MultiMap.mergeMultiMaps(f1.receiverToCallSites, f2.receiverToCallSites),
         f1.totalCallSites ++ f2.totalCallSites,
-        f1.polymorphicCallSites ++ f2.polymorphicCallSites
+        f1.polymorphicCallSites ++ f2.polymorphicCallSites,
+        f1.monomorphicCallSites ++ f2.monomorphicCallSites
       )
   }
 

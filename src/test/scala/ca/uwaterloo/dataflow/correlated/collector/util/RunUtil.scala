@@ -8,39 +8,45 @@ import java.io.File
 trait RunUtil {
 
   def getCcStats(
-    testName: String,
-    resourcePath: String,
+    bmCollectionName: String,
+    bmName: String,
     rta: Boolean = false,
     onlyApp: Boolean = false
   ): CorrelatedCallStats = {
-    val pa = createPA(testName, resourcePath)
+    val pa = createPA(configPath(bmCollectionName, bmName))
     val cg = if (rta) pa.cgRta else pa.cg
     if (onlyApp) AppCorrelatedCallStats(cg) else CorrelatedCallStats(cg)
   }
 
   private[this] def createPA(
-    testName: String,
-    resourcePath: String
+    configPath: String
   ) = {
     val config =
       ConfigFactory.load(
-        resourcePath + (if (resourcePath endsWith "/") testName else "/" + testName),
+        configPath,
         ConfigParseOptions.defaults().setAllowMissing(false),
         ConfigResolveOptions.defaults()
       )
     FlexibleCallGraphBuilder()(config)
   }
 
-  def runBenchmarks(runner: String => Unit, dir: String) {
-    val userDir = System.getProperty("user.dir")
-    val benchmarkDir = new File(userDir, "src/test/scala/" + dir)
-    benchmarkDir.listFiles foreach {
+  /**
+   * runner(bmCollectionName: String, bmName: String)
+   */
+  def runBenchmarks(runner: (String, String) => Unit, bmCollectionName: String) {
+    new File(bmPath(bmCollectionName)).listFiles foreach {
       file =>
         val name = file.getName
         if (name endsWith "jar") {
           println(s"Running $name benchmark...\n")
-          runner(name.substring(0, name.lastIndexOf('.')))
+          runner(bmCollectionName, name.substring(0, name.lastIndexOf('.')))
         }
     }
   }
+
+  def bmPath(bmCollectionName: String) =
+    System.getProperty("user.dir") + "/src/test/scala/ca/uwaterloo/dataflow/benchmarks/" + bmCollectionName
+
+  def configPath(bmCollectionName: String, bmName: String) =
+    "ca/uwaterloo/dataflow/benchmarks/" + bmCollectionName + "/" + bmName
 }

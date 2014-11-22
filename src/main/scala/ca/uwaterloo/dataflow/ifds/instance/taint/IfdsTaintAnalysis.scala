@@ -14,11 +14,11 @@ import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConverters._
 
-abstract class IfdsTaintAnalysis(fileName: String) extends IfdsProblem with VariableFacts with SecretDefinition {
+abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with VariableFacts with SecretDefinition {
 
   private[this] val config =
     ConfigFactory.load(
-      fileName,
+      configPath,
       ConfigParseOptions.defaults.setAllowMissing(false),
       ConfigResolveOptions.defaults
     )

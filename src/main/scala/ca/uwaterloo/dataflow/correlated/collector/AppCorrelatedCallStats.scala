@@ -37,6 +37,10 @@ object AppCorrelatedCallStats {
       polymorphicCallSites = allStats.polymorphicCallSites filter {
         case (_, cgNode) =>
           isAppMethod(cgNode.getMethod)
+      },
+      monomorphicCallSites = allStats.monomorphicCallSites filter {
+        case (_, cgNode) =>
+          isAppMethod(cgNode.getMethod)
       }
     )
   }

@@ -10,20 +10,31 @@ import org.scalatest.FunSpec
 
 object CcBenchmarkRunner extends FunSpec with RunUtil {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
+    runSpecJvm()
+  }
+
+  def runSpecJvm(): Unit = {
+    run("specjvm")
+  }
+
+  def runDacapo(): Unit = {
+    run("dacapo")
+  }
+
+  def run(bmCollectionName: String): Unit = {
     val runner =
-      (name: String) => {
-        val dir = "ca/uwaterloo/dataflow/benchmarks/dacapo/"
-        new NormalTaintAnalysisRunner(dir, name).printResultSize()
-        new CcTaintAnalysisRunner(dir, name).printResultSize()
+      (bmCollectionName: String, bmName: String) => {
+        val path: String = configPath(bmCollectionName, bmName)
+        new NormalTaintAnalysisRunner(path, bmName).printResultSize()
+        new CcTaintAnalysisRunner(path, bmName).printResultSize()
       }
-    runBenchmarks(runner, "src/test/scala/ca/uwaterloo/dataflow/benchmarks/dacapo/sources")
+    runBenchmarks(runner, bmCollectionName)
   }
 
   abstract class AbstractTaintAnalysisRunner(
-    dirName: String,
-    fileName: String
-  ) extends IfdsTaintAnalysis(dirName + (if (dirName endsWith "/") "" else "/") + fileName)
+    configPath: String
+  ) extends IfdsTaintAnalysis(configPath)
   with VariableFacts
   with AbstractIdeToIfds
   with SecretInput {
@@ -32,26 +43,26 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
   }
 
   class NormalTaintAnalysisRunner(
-    dirName: String,
-    fileName: String
-  ) extends AbstractTaintAnalysisRunner(dirName, fileName)
+    configPath: String,
+    bmName: String
+  ) extends AbstractTaintAnalysisRunner(configPath)
     with IdeFromIfdsBuilder
     with IdeToIfds {
 
     override def printResultSize() {
-      printf("%s IFDS result: %d\n", fileName, ifdsResult.size)
+      printf("%s IFDS result: %d\n", bmName, ifdsResult.size)
     }
   }
 
   class CcTaintAnalysisRunner(
-    dirName: String,
-    fileName: String
-  ) extends AbstractTaintAnalysisRunner(dirName, fileName)
+    configPath: String,
+    bmName: String
+  ) extends AbstractTaintAnalysisRunner(configPath)
     with CorrelatedCallsToIfds
     with CcReceivers {
 
     override def printResultSize() {
-      printf("%s CC result: %d\n", fileName, ifdsResult.size)
+      printf("%s CC result: %d\n", bmName, ifdsResult.size)
     }
   }
 }
