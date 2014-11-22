@@ -4,7 +4,7 @@
 # configureTest <JRE rt.jar path> <test name>
 
 ### Replace the `jrepath' value with your path to the rt.jar file
-jrepath="/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"
+jrepath="/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/rt.jar"
 
 testroot=ca/uwaterloo/dataflow/correlated/collector
 testParent=$testroot/inputPrograms

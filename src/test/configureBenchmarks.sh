@@ -4,7 +4,7 @@
 # ./configureBenchmarks
 
 ### Replace the `jrepath' value with your path to the rt.jar file
-jrepath="/System/Library/Frameworks/JavaVM.framework/Classes/classes.jar"
+jrepath="/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/rt.jar"
 
 testroot=scala/ca/uwaterloo/dataflow/benchmarks/dacapo
 
@@ -19,7 +19,7 @@ function createConfigFile() {
     mkdir -p $dir
     cd $dir
     testdir=$root/$testroot
-    testpathSrc=$testdir/sources/$testname
+    testpathSrc=$testdir/$testname
     testpathDep=$testdir/deps/$testname
     contents="
     wala {\n
@@ -36,7 +36,7 @@ function createConfigFile() {
     cd "$root"
 }
 
-for test in `ls -d $testroot/sources/*.jar` ; do
+for test in `ls -d $testroot/*.jar` ; do
     testname=`basename $test`
     testNameNoExtension="${testname%.*}"
     echo -n `basename $testNameNoExtension`...

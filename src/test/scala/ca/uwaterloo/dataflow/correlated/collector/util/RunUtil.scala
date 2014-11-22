@@ -9,7 +9,7 @@ trait RunUtil {
 
   def getCcStats(
     testName: String,
-    resourcePath: String = "ca/uwaterloo/dataflow/benchmarks/dacapo/",
+    resourcePath: String,
     rta: Boolean = false,
     onlyApp: Boolean = false
   ): CorrelatedCallStats = {
@@ -24,7 +24,7 @@ trait RunUtil {
   ) = {
     val config =
       ConfigFactory.load(
-        resourcePath + testName,
+        resourcePath + (if (resourcePath endsWith "/") testName else "/" + testName),
         ConfigParseOptions.defaults().setAllowMissing(false),
         ConfigResolveOptions.defaults()
       )
@@ -33,7 +33,7 @@ trait RunUtil {
 
   def runBenchmarks(runner: String => Unit, dir: String) {
     val userDir = System.getProperty("user.dir")
-    val benchmarkDir = new File(userDir, dir)
+    val benchmarkDir = new File(userDir, "src/test/scala/" + dir)
     benchmarkDir.listFiles foreach {
       file =>
         val name = file.getName

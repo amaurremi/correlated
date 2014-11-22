@@ -6,6 +6,7 @@ import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ipa.callgraph.ContextSelector
 import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector
 import com.ibm.wala.ipa.callgraph.impl.Util
+import com.ibm.wala.ipa.callgraph.propagation.InstanceKey
 import com.ibm.wala.ipa.callgraph.propagation.cfa.DefaultSSAInterpreter
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys
 import com.ibm.wala.ipa.cha.ClassHierarchy
@@ -16,7 +17,7 @@ trait AbstractCallGraphBuilder {
   def _cha: ClassHierarchy
 
   // public
-  def heap: HeapGraph
+  def heap: HeapGraph[InstanceKey]
   def cg: CallGraph
 
   def cgRta: CallGraph
