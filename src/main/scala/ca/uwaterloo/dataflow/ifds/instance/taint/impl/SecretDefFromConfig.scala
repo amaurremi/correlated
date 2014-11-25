@@ -25,7 +25,8 @@ trait SecretDefFromConfig extends SecretDefinition {
     arrayElemTypes: Set[String],
     secretMethods: Set[SecretMethod],
     appendMethods: Set[MethodNameAndClass],
-    libraryOptions: LibraryOptions
+    libraryOptions: LibraryOptions,
+    mainArgsSecret: Boolean
   )
 
   private[this] def toSet[T](list: java.util.List[T]): Set[T] = list.asScala.toSet[T]
@@ -76,13 +77,15 @@ trait SecretDefFromConfig extends SecretDefinition {
     val defSecret = toSet(libConfig getStringList "defaultSecretTypes")
     val libWhiteList = parseConfList(libConfig, "whiteList")
     val secretIfArgument = parseConfList(libConfig, "secretIfSecretArgument")
+    val mainArgsSecret = config getBoolean "mainArgsSecret"
     SecretConfig(
       whiteList, 
       returnSecretArray, 
       superTypes, 
       secretMethods,
       appendMethods,
-      LibraryOptions(exclPref, defSecret, libWhiteList, secretIfArgument)
+      LibraryOptions(exclPref, defSecret, libWhiteList, secretIfArgument),
+      mainArgsSecret
     )
   }
 
@@ -112,18 +115,26 @@ trait SecretDefFromConfig extends SecretDefinition {
   override def getOperationType(op: MethodReference, node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation] = {
     val methodName = op.getName.toString
     val declaringClassName = op.getDeclaringClass.getName.toString
-    val isConcatClass = stringConfig.appendMethods exists { _.klass == declaringClassName }
-    val isAppendMethodName = stringConfig.appendMethods exists { _.methodName == methodName }
+    val isConcatClass = stringConfig.appendMethods exists {
+      _.klass == declaringClassName
+    }
+    val isAppendMethodName = stringConfig.appendMethods exists {
+      _.methodName == methodName
+    }
     val secretArrayMethodName = stringConfig.returnSecretArray contains methodName
     val libOptions = stringConfig.libraryOptions
-    val isLibCall = libOptions.excludePrefixes exists { declaringClassName.startsWith }
+    val isLibCall = libOptions.excludePrefixes exists {
+      declaringClassName.startsWith
+    }
     val retType = op.getReturnType.getName.toString
     val hasSecretReturnType = secretTypes contains retType
     val isInvokedOnSecretType = secretTypes contains declaringClassName
     val types = vn match {
       case Some(n) =>
-        getTypes(node, n) map { _.getName.toString }
-      case None    =>
+        getTypes(node, n) map {
+          _.getName.toString
+        }
+      case None =>
         Set.empty[String]
     }
     // Is the return type (or its subtype) considered secret by default, if it's returned from a library?
@@ -157,4 +168,7 @@ trait SecretDefFromConfig extends SecretDefinition {
     else
       Some(ReturnsStaticSecretOrPreservesSecret)
   }
+
+  override def mainArgsSecret: Boolean =
+    stringConfig.mainArgsSecret
 }

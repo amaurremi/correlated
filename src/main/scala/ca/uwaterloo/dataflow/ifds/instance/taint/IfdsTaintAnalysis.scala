@@ -20,8 +20,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
     ConfigFactory.load(
       configPath,
       ConfigParseOptions.defaults.setAllowMissing(false),
-      ConfigResolveOptions.defaults
-    )
+      ConfigResolveOptions.defaults)
 
   val builder = FlexibleCallGraphBuilder()(config)
 
@@ -38,6 +37,13 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
 
   override type FactElem = ValueNumber
   override val O: Fact   = Λ
+
+  /**
+   * Do we consider the String[] args array of a main method to contain secret strings?
+   * This assumes that the entry points of a program contain a main(String[] args) method.
+   */
+  private[this] def isSecretMainArgsArray(arrayRef: ValueNumber, node: Node): Boolean =
+    mainArgsSecret && (entryPoints contains enclProc(node)) && arrayRef == 1
 
   override def ifdsOtherSuccEdges: IfdsOtherEdgeFn =
     ideN1 => {
@@ -65,6 +71,8 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
             defaultResult + Variable(method, loadInstr.getDef)
           else
             defaultResult
+        case loadInstr: SSAArrayLengthInstruction if isSecretMainArgsArray(loadInstr.getArrayRef, n1.node) =>
+          defaultResult + ArrayElement + Variable(method, loadInstr.getDef)
         //  Fields
         case putInstr: SSAPutInstruction
           if factSameAsVar(d1, method, putInstr.getVal) ||

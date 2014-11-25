@@ -38,4 +38,6 @@ trait SecretDefinition extends VariableFacts {
   def isSecretArrayElementType(typeRef: TypeReference): Boolean
 
   def getOperationType(op: MethodReference, node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation]
+
+  def mainArgsSecret: Boolean
 }
