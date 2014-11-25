@@ -181,7 +181,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
               val receiver = callInstr.getReceiver
               val factEqReceiver = factSameAsVar(d1, method, receiver)
               opType match {
-                case ReturnsStaticSecretOrPreservesSecret if factEqReceiver                      =>
+                case ReturnsStaticSecretOrPreservesSecret if factEqReceiver    =>
                   defaultPlusVar
                 case ReturnsSecretArray if factEqReceiver                      =>
                   default + ArrayElement
