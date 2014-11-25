@@ -60,7 +60,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
             // we are returning a secret value, because an existing (i.e. secret) fact d1 is returned
             case v@Variable(m, _)
               if isFactReturned(v, n1, returnInstr.getResult) =>
-                (methodToReturnVars get m).asScala.toSet + d1
+                (methodToReturnVars get m).asScala.toSet ++ (if (m == method) Set.empty[Fact] else defaultResult)
             case _                                            =>
               defaultResult
           }
@@ -215,7 +215,12 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
       val d1            = ideN1.d
       val targetMethod  = n2.node.getMethod
       val callerMethod  = n1.getMethod
-      val defaultResult = Set(d1)
+      val defaultResult = d1 match {
+        case Variable(`callerMethod`, _) =>
+          Set.empty[Fact]
+        case _                           =>
+          Set(d1)
+      }
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction =>
           if (isSecret(targetMethod) && d1 == Λ) {

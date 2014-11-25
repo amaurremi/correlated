@@ -7,6 +7,7 @@ public class FunctionCall {
     public static void main(String[] args) {
        String s = secret();
        f(s);
+       SecretAssertions.secret(s);
     }
 
     static String f(String s) {
