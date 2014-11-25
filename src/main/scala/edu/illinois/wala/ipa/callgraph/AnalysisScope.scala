@@ -1,18 +1,16 @@
 package edu.illinois.wala.ipa.callgraph
 
-import AnalysisScope._
-import com.ibm.wala.classLoader.BinaryDirectoryTreeModule
-import com.ibm.wala.classLoader.JarFileModule
-import com.ibm.wala.classLoader.Language
-import com.ibm.wala.classLoader.Module
+import java.io.{ByteArrayInputStream, File}
+import java.util.Collections
+import java.util.jar.JarFile
+
+import com.ibm.wala.classLoader.{BinaryDirectoryTreeModule, JarFileModule, Language, Module}
 import com.ibm.wala.types.ClassLoaderReference
 import com.ibm.wala.util.config.FileOfClasses
 import com.ibm.wala.util.io.FileProvider
 import com.ibm.wala.util.strings.Atom
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.util.Collections
-import java.util.jar.JarFile
+import edu.illinois.wala.ipa.callgraph.AnalysisScope._
+
 import scala.collection._
 
 //import com.ibm.wala.cast.java.ipa.callgraph.JavaSourceAnalysisScope
@@ -46,8 +44,8 @@ case class Dependency(file: String, nature: DependencyNature.DependencyNature, s
 class AnalysisScope(jreLibPath: String, exclusions: String, dependencies: Iterable[Dependency]) extends com.ibm.wala.ipa.callgraph.AnalysisScope(Collections.singleton(Language.JAVA)) {
   val UNDER_ECLIPSE = false
 
-  import AnalysisScope._
-  import DependencyNature._
+  import edu.illinois.wala.ipa.callgraph.AnalysisScope._
+  import edu.illinois.wala.ipa.callgraph.DependencyNature._
 
   def this(jreLibPath: String, exclusions: String) = this(jreLibPath, exclusions, Seq())
 

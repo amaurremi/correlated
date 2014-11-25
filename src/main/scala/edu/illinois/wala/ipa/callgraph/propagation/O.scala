@@ -1,11 +1,9 @@
 package edu.illinois.wala.ipa.callgraph.propagation
 
-import com.ibm.wala.ipa.callgraph.propagation.AllocationSiteInNode
-import com.ibm.wala.ipa.callgraph.propagation.InstanceKey
+import com.ibm.wala.ipa.callgraph.propagation.{AllocationSiteInNode, InstanceKey}
 import edu.illinois.wala.Facade._
 import edu.illinois.wala.S
-import edu.illinois.wala.classLoader.CodeLocation
-import edu.illinois.wala.classLoader.ProgramCounter
+import edu.illinois.wala.classLoader.{CodeLocation, ProgramCounter}
 
 object O {
 

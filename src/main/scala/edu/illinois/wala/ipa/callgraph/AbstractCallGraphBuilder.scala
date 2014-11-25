@@ -1,14 +1,10 @@
 package edu.illinois.wala.ipa.callgraph
 
 import com.ibm.wala.analysis.pointers.HeapGraph
-import com.ibm.wala.ipa.callgraph.AnalysisCache
-import com.ibm.wala.ipa.callgraph.CallGraph
-import com.ibm.wala.ipa.callgraph.ContextSelector
-import com.ibm.wala.ipa.callgraph.impl.ContextInsensitiveSelector
-import com.ibm.wala.ipa.callgraph.impl.Util
+import com.ibm.wala.ipa.callgraph.{AnalysisCache, CallGraph, ContextSelector}
+import com.ibm.wala.ipa.callgraph.impl.{ContextInsensitiveSelector, Util}
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey
-import com.ibm.wala.ipa.callgraph.propagation.cfa.DefaultSSAInterpreter
-import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys
+import com.ibm.wala.ipa.callgraph.propagation.cfa.{DefaultSSAInterpreter, ZeroXInstanceKeys}
 import com.ibm.wala.ipa.cha.ClassHierarchy
 
 trait AbstractCallGraphBuilder {
@@ -31,7 +27,7 @@ trait AbstractCallGraphBuilder {
 
   // Hooks
   def policy = {
-    import ZeroXInstanceKeys._
+    import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys._
     ALLOCATIONS }
   protected def cs: ContextSelector = new ContextInsensitiveSelector() // new DefaultContextSelector(_options, _cha)
   protected def contextInterpreter = defaultInterpreter // new DelegatingSSAContextInterpreter(defaultInterpreter, reflectionInterpreter)

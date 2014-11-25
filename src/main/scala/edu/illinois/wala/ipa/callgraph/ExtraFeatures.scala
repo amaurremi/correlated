@@ -2,6 +2,7 @@ package edu.illinois.wala.ipa.callgraph
 
 import edu.illinois.wala.Facade._
 import edu.illinois.wala.S
+
 import scala.collection.JavaConverters._
 import scala.collection._
 

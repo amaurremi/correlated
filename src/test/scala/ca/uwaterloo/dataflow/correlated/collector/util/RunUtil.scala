@@ -3,6 +3,7 @@ package ca.uwaterloo.dataflow.correlated.collector.util
 import ca.uwaterloo.dataflow.correlated.collector.{AppCorrelatedCallStats, CorrelatedCallStats}
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
+import edu.illinois.wala.ipa.callgraph.DynamicCallGraphBuilder
 import java.io.File
 
 trait RunUtil {
@@ -13,21 +14,26 @@ trait RunUtil {
     rta: Boolean = false,
     onlyApp: Boolean = false
   ): CorrelatedCallStats = {
-    val pa = createPA(configPath(bmCollectionName, bmName))
+    val pa = FlexibleCallGraphBuilder()(createConfig(configPath(bmCollectionName, bmName)))
     val cg = if (rta) pa.cgRta else pa.cg
     if (onlyApp) AppCorrelatedCallStats(cg) else CorrelatedCallStats(cg)
   }
 
-  private[this] def createPA(
-    configPath: String
-  ) = {
-    val config =
-      ConfigFactory.load(
-        configPath,
-        ConfigParseOptions.defaults().setAllowMissing(false),
-        ConfigResolveOptions.defaults()
-      )
-    FlexibleCallGraphBuilder()(config)
+  private[this] def createConfig(configPath: String) =
+    ConfigFactory.load(
+      configPath,
+      ConfigParseOptions.defaults().setAllowMissing(false),
+      ConfigResolveOptions.defaults()
+    )
+
+  def getDynamicCcStats(
+    bmCollectionName: String,
+    bmName: String,
+    args: Array[String]
+  ): CorrelatedCallStats = {
+    val cg = new DynamicCallGraphBuilder(createConfig(configPath(bmCollectionName, bmName)), args).cg
+    println(s"Computing correlated call stats for $bmName...")
+    CorrelatedCallStats(cg)
   }
 
   /**

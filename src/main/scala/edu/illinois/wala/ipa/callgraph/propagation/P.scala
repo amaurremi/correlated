@@ -1,13 +1,12 @@
 package edu.illinois.wala.ipa.callgraph.propagation
 
-import com.ibm.wala.ipa.callgraph.propagation.AbstractFieldPointerKey
-import com.ibm.wala.ipa.callgraph.propagation.ArrayContentsKey
-import com.ibm.wala.ipa.callgraph.propagation.InstanceFieldKey
+import com.ibm.wala.ipa.callgraph.propagation.{AbstractFieldPointerKey, ArrayContentsKey, InstanceFieldKey}
 import com.ibm.wala.ipa.modref.ArrayLengthKey
 import com.ibm.wala.ssa.SSAPutInstruction
 import edu.illinois.wala.Facade._
 import edu.illinois.wala.S
 import edu.illinois.wala.ssa.V
+
 import scala.collection.JavaConversions._
 
 object P {

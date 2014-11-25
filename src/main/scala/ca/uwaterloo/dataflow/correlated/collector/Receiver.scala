@@ -21,14 +21,16 @@ object Receiver {
    * Returns a receiver for a call site if the call site is polymorphic
    */
   def apply(cg: CallGraph, callSite: CallSite): Option[Set[Receiver]] = {
-    val (callSiteRef, cgNode) = callSite
-    if (/*callSiteRef.isDispatch && */cg.getNumberOfTargets(cgNode, callSiteRef) > 1) {
+    val CallSite(callSiteRef, cgNode) = callSite
+    if (cg.getNumberOfTargets(cgNode, callSiteRef) > 1) {
       val calls = cgNode.getIR.getCalls(callSiteRef).toSet
       Some(
         calls map {
           call =>
             Receiver(call.getReceiver, cgNode.getMethod)
         })
-    } else None
+    } /*else if (cg.getNumberOfTargets(cgNode, callSiteRef) < 1)
+        throw new RuntimeException("call site corresponds to wrong CG node")*/
+      else None
   }
 }

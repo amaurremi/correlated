@@ -7,21 +7,32 @@ object StatsBenchmarkRunner extends App with RunUtil {
   runSpecJvm()
 
   def runDacapo() {
-    run("dacapo")
+    runStatic("dacapo")
   }
 
   def runNonJava() {
-    run("nonJava")
+    runStatic("nonJava")
   }
 
   def runSpecJvm() {
-    run("specjvm")
+    runStatic("specjvm")
   }
 
-  def run(bmCollectionName: String) {
+  def runDynamicAntlr() {
+    getDynamicCcStats("dacapo", "antlr", Array[String]("-s", "small", "antlr"))
+  }
+
+  def runDynamicJess(): Unit = {
+    getDynamicCcStats("specjvm", "jess", Array[String]())
+  }
+
+  def runStatic(bmCollectionName: String) {
     val runner =
-      (bmCollectionName: String, bmName: String) =>
-        getCcStats(bmCollectionName, bmName, rta = false, onlyApp = false).printCommaSeparated()
+      (bmCollectionName: String, bmName: String) => {
+        val ccStats = getCcStats(bmCollectionName, bmName, rta = false, onlyApp = false)
+        assert(ccStats.monomorphicCallSiteNum + ccStats.polymorphicCallSiteNum == ccStats.totalCallSiteNum)
+        ccStats.printCommaSeparated()
+      }
     runBenchmarks(runner, bmCollectionName)
   }
 }

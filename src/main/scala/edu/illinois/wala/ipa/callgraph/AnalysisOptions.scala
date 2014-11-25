@@ -4,12 +4,9 @@ import com.ibm.wala.classLoader.ClassLoaderFactoryImpl
 import com.ibm.wala.ipa.callgraph.Entrypoint
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint
 import com.ibm.wala.ipa.cha.ClassHierarchy
-import com.ibm.wala.types.MethodReference
-import com.ibm.wala.types.TypeName
-import com.ibm.wala.types.TypeReference
-import com.typesafe.config.Config
-import com.typesafe.config.ConfigFactory
-import com.typesafe.config.ConfigList
+import com.ibm.wala.types.{MethodReference, TypeName, TypeReference}
+import com.typesafe.config.{Config, ConfigFactory, ConfigList}
+
 import scala.collection.JavaConversions._
 
 class AnalysisOptions(scope: AnalysisScope, entrypoints: java.lang.Iterable[Entrypoint], val cha: ClassHierarchy, val isSourceAnalysis: Boolean)

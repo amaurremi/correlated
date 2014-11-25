@@ -42,14 +42,20 @@ import scalaz.Scalaz._
   ): CorrelatedCallWriter[CGNode] = {
     import scalaz.Scalaz._
 
-    val callSites = toScalaIterator(cgNode.iterateCallSites()).toList map { (_, cgNode) }
+    val allCallSites = toScalaIterator(cgNode.iterateCallSites()).toList
+    val callSites = allCallSites map { CallSite(_, cgNode) } /*collect {
+      case cs if cg.getNumberOfTargets(cgNode, cs) >= 1 =>
+        CallSite(cs, cgNode)
+    }*/
     for {
       maps  <- callSites.traverse[CorrelatedCallWriter, ReceiverToCallSites](callSiteWriter(cg, rcs))
       ccMap  = getCcMap(maps)
+      total  = callSites.toSet
       _     <- CorrelatedCallStats(
-        totalCallSites      = callSites.toSet,
+        totalCallSites      = total,
         receiverToCallSites = ccMap,
-        rcCcReceivers       = if (rcs contains cgNode) ccMap.keySet else Set.empty
+        rcCcReceivers       = if (rcs contains cgNode) ccMap.keySet else Set.empty,
+        staticCallSites     = total filter { _.csr.isStatic }
       ).tell
     } yield cgNode
   }
@@ -100,7 +106,8 @@ import scalaz.Scalaz._
         MultiMap.mergeMultiMaps(f1.receiverToCallSites, f2.receiverToCallSites),
         f1.totalCallSites ++ f2.totalCallSites,
         f1.polymorphicCallSites ++ f2.polymorphicCallSites,
-        f1.monomorphicCallSites ++ f2.monomorphicCallSites
+        f1.monomorphicCallSites ++ f2.monomorphicCallSites,
+        f1.staticCallSites ++ f2.staticCallSites
       )
   }
 

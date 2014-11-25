@@ -7,43 +7,31 @@ import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
  */
 final case class CorrelatedCallStats(
 
-  /*
-   * All call graph nodes
-   */
+  // All call graph nodes
   cgNodes: Set[CGNode] = Set.empty,
 
-  /*
-   * Recursive components of the graph. A recursive component is a strongly connected component
-   * of the graph that consists of at least two nodes, or, if it consists of a single node, then
-   * that node has a self-loop.
-   */
-
+  // Recursive components of the graph. A recursive component is a strongly connected component
+  // of the graph that consists of at least two nodes, or, if it consists of a single node, then
+  // that node has a self-loop.
   rcs: List[Set[CGNode]] = List.empty[Set[CGNode]],
 
-  /*
-   * Receivers of correlated calls that are contained in a recursive component
-   */
+  // Receivers of correlated calls that are contained in a recursive component
   rcCcReceivers: Set[Receiver] = Set.empty[Receiver],
 
-  /*
-   * Maps a receiver to a set of call sites that are invoked on that receiver
-   */
+  // Maps a receiver to a set of call sites that are invoked on that receiver
   receiverToCallSites: ReceiverToCallSites = Map.empty withDefaultValue Set.empty,
 
-  /*
-   * All call sites that are reachable in the call graph
-   */
+  // All call sites that are reachable in the call graph
   totalCallSites: Set[CallSite] = Set.empty[CallSite],
 
-  /**
-   * Call sites that have more than one target
-   */
+  // Call sites that have more than one target
   polymorphicCallSites: Set[CallSite] = Set.empty[CallSite],
 
-  /**
-   * Call sites that have only one target
-   */
-  monomorphicCallSites: Set[CallSite] = Set.empty[CallSite]
+  // Call sites that have only one target
+  monomorphicCallSites: Set[CallSite] = Set.empty[CallSite],
+
+  // Static call sites
+  staticCallSites: Set[CallSite] = Set.empty[CallSite]
 ) {
 
   /**
@@ -61,7 +49,7 @@ final case class CorrelatedCallStats(
    * Total amount of dispatch call sites
    */
   lazy val dispatchCallSites: Set[CallSite] =
-    totalCallSites filter { _._1.isDispatch }
+    totalCallSites filter { _.csr.isDispatch }
 
   def polymorphicCallSiteNum: Int =
     polymorphicCallSites.size
@@ -106,6 +94,11 @@ final case class CorrelatedCallStats(
   def rcCcReceiverNum = rcCcReceivers.size
 
   /**
+   * Number of static call sites
+   */
+  def staticCallSiteNum = staticCallSites.size
+
+  /**
    * Prints out the information related to correlated calls.
    */
   def printInfo() =
@@ -118,8 +111,9 @@ final case class CorrelatedCallStats(
       "%7d CC receivers\n\n" +                            // 6
       "%7d recursive components (RCs)\n" +                // 7
       "%7d nodes in RCs\n" +                              // 8
-      "%7d CC receivers in nodes in RCs\n\n" +            // 9
-      "%7d monomorphic call sites\n",                     // 10
+      "%7d CC receivers in nodes in RCs\n" +              // 9
+      "%7d monomorphic call sites\n" +                    // 10
+      "%7d static call sites\n",                          // 11
       cgNodeNum,                                          // 1
       totalCallSiteNum,                                   // 2
       dispatchCallSiteNum,                                // 3
@@ -129,13 +123,15 @@ final case class CorrelatedCallStats(
       rcNum,                                              // 7
       rcNodeNum,                                          // 8
       rcCcReceiverNum,                                    // 9
-      monomorphicCallSiteNum                              // 10
+      monomorphicCallSiteNum,                             // 10
+      staticCallSiteNum                                   // 11
     )
 
   def printCommaSeparated() {
     println(List(
       totalCallSiteNum,
       dispatchCallSiteNum,
+      staticCallSiteNum,
       polymorphicCallSiteNum,
       ccSiteNum, ccReceiverNum,
       rcCcReceiverNum

@@ -31,15 +31,15 @@ object AppCorrelatedCallStats {
           isAppMethod(method)
       },
       totalCallSites = allStats.totalCallSites filter {
-        case (_, cgNode) =>
+        case CallSite(_, cgNode) =>
           isAppMethod(cgNode.getMethod)
       },
       polymorphicCallSites = allStats.polymorphicCallSites filter {
-        case (_, cgNode) =>
+        case CallSite(_, cgNode) =>
           isAppMethod(cgNode.getMethod)
       },
       monomorphicCallSites = allStats.monomorphicCallSites filter {
-        case (_, cgNode) =>
+        case CallSite(_, cgNode) =>
           isAppMethod(cgNode.getMethod)
       }
     )
