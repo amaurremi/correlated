@@ -43,7 +43,10 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
    * This assumes that the entry points of a program contain a main(String[] args) method.
    */
   private[this] def isSecretMainArgsArray(arrayRef: ValueNumber, node: Node): Boolean =
-    mainArgsSecret && (entryPoints contains enclProc(node)) && arrayRef == 1
+    mainArgsSecret && (entryPoints exists {
+      ep =>
+        enclProc(ep.node) == enclProc(node)
+    }) && arrayRef == 1
 
   override def ifdsOtherSuccEdges: IfdsOtherEdgeFn =
     ideN1 => {
@@ -71,8 +74,8 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
             defaultResult + Variable(method, loadInstr.getDef)
           else
             defaultResult
-        case loadInstr: SSAArrayLengthInstruction if isSecretMainArgsArray(loadInstr.getArrayRef, n1.node) =>
-          defaultResult + ArrayElement + Variable(method, loadInstr.getDef)
+        case loadInstr: SSAArrayLoadInstruction if isSecretMainArgsArray(loadInstr.getArrayRef, n1.node) =>
+            defaultResult + ArrayElement + Variable(method, loadInstr.getDef)
         //  Fields
         case putInstr: SSAPutInstruction
           if factSameAsVar(d1, method, putInstr.getVal) ||

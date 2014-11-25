@@ -249,6 +249,10 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
       it("array element passed as parameter") {
         assertSecretsFor("ArrayElementAsParameter")
       }
+
+      it("main args are secret") {
+        assertSecretsFor("MainArgsArray")
+      }
     }
 
     describe("fields") {
