@@ -94,6 +94,10 @@ class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
         assertSecretsFor("FunctionReturn8")
       }
 
+      it("propagates secret values along the return edge (static method) 9") {
+        assertSecretsFor("FunctionReturn9")
+      }
+
       it("sets a function parameter to top, if that function is invoked with secret and non-secret arguments") {
         assertSecretsFor("MultipleFunctionCalls")
       }

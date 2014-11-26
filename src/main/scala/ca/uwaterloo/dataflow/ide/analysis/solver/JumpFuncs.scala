@@ -145,8 +145,7 @@ trait JumpFuncs { this: IdeProblem with TraverseGraph =>
    * in the call-processing procedure.
    */
   private[this] def forwardExitFromCall(e: XEdge, f: IdeFunction, sq: NodeType, d: Fact) {
-    val n = e.target
-    forwardExitD4s.put((n.n, XNode(sq, d)), n.d)
+    forwardExitD4s.put((e.target.n, XNode(sq, d)), e.target.d)
   }
 
   /**

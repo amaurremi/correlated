@@ -125,7 +125,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
                 Variable(n2.node.getMethod, getValNumFromParameterNum(callInstr, getParameterNumber(ideN1).get))
             }
         case Variable(method, _) if method == ideN1.n.node.getMethod             =>
-          Set.empty
+          Set.empty[Fact]
         case _                                                                   =>
           Set(ideN1.d)
       }
@@ -160,7 +160,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
   override def ifdsCallReturnEdges: IfdsEdgeFn =
     (ideN1, _) => {
       val d1 = ideN1.d
-      val default = Set(d1)
+      val default = if (d1 == Lambda) Set.empty[Fact] else Set(d1)
       val n1 = ideN1.n.node
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction => // todo this method is hard to reason about and needs refactoring.
