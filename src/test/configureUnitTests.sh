@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage:
-# configureTests
+# ./configureTests
 
 ### Replace the `jrepath' value with your path to the rt.jar file
 jrepath="/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/rt.jar"
