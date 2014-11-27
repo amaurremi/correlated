@@ -102,30 +102,18 @@ final case class CorrelatedCallStats(
    * Prints out the information related to correlated calls.
    */
   def printInfo() =
-    printf(
-      "%7d call graph nodes\n" +                          // 1
-      "%7d total call sites\n" +                          // 2
-      "%7d dispatch call sites\n" +                       // 3
-      "%7d polymorphic call sites\n\n" +                  // 4
-      "%7d correlated calls (CCs)\n" +                    // 5
-      "%7d CC receivers\n\n" +                            // 6
-      "%7d recursive components (RCs)\n" +                // 7
-      "%7d nodes in RCs\n" +                              // 8
-      "%7d CC receivers in nodes in RCs\n" +              // 9
-      "%7d monomorphic call sites\n" +                    // 10
-      "%7d static call sites\n",                          // 11
-      cgNodeNum,                                          // 1
-      totalCallSiteNum,                                   // 2
-      dispatchCallSiteNum,                                // 3
-      polymorphicCallSiteNum,                             // 4
-      ccSiteNum,                                          // 5
-      ccReceiverNum,                                      // 6
-      rcNum,                                              // 7
-      rcNodeNum,                                          // 8
-      rcCcReceiverNum,                                    // 9
-      monomorphicCallSiteNum,                             // 10
-      staticCallSiteNum                                   // 11
-    )
+    println(
+      s"$cgNodeNum call graph nodes\n" +
+      s"$totalCallSiteNum total call sites\n" +
+      s"$staticCallSiteNum static call sites\n" +
+      s"$monomorphicCallSiteNum monomorphic call sites\n" +
+      s"$dispatchCallSiteNum dispatch call sites\n" +
+      s"$polymorphicCallSiteNum polymorphic call sites\n\n" +
+      s"$ccSiteNum correlated calls (CC)\n" +
+      s"$ccReceiverNum CC receivers\n\n" +
+      s"$rcNum recursive components (RC)\n" +
+      s"$rcNodeNum nodes in RC\n" +
+      s"$rcCcReceiverNum CC receivers in nodes in RC\n")
 
   def printCommaSeparated() {
     println(List(

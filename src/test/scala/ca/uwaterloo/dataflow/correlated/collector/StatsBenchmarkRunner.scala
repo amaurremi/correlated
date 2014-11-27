@@ -31,7 +31,7 @@ object StatsBenchmarkRunner extends App with RunUtil {
       (bmCollectionName: String, bmName: String) => {
         val ccStats = getCcStats(bmCollectionName, bmName, rta = false, onlyApp = false)
         assert(ccStats.monomorphicCallSiteNum + ccStats.polymorphicCallSiteNum == ccStats.totalCallSiteNum)
-        ccStats.printCommaSeparated()
+        ccStats.printInfo()
       }
     runBenchmarks(runner, bmCollectionName)
   }
