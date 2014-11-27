@@ -53,3 +53,33 @@ createConfigFile javac "spec/benchmarks/_213_javac/Main" specjvm
 createConfigFile jack "spec/benchmarks/_228_jack/Main" specjvm
 createConfigFile jess "spec/benchmarks/_202_jess/Main" specjvm
 createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm
+
+function createConfigFileDacapo() {
+    testname=$1
+    dir="resources/ca/uwaterloo/dataflow/benchmarks/dacapo"
+    mkdir -p $dir
+    cd $dir
+    testdir=$root/$testroot
+    testpathSrc=$testdir/$testname
+    testpathDep=$testdir/deps/$testname
+    contents="
+    wala {\n
+      jre-lib-path = \"$jrepath\"\n
+      dependencies.jar += \"$testpathSrc.jar\"\n
+      dependencies.jar += \"$testpathDep-deps.jar\"\n
+      entry {\n
+       class = \"Ldacapo/$testname/Main2\"\n
+       method = \"main([Ljava/lang/String;)V\"\n
+      }\n
+    }\n
+    "
+    cd "$root"
+}
+
+for test in `ls -d $testroot/dacapo/*.jar` ; do
+    testname=`basename $test`
+    testNameNoExtension="${testname%.*}"
+    echo -n `basename $testNameNoExtension`...
+    createConfigFileDacapo $testNameNoExtension
+    echo "[DONE]"
+done

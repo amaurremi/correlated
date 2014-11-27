@@ -113,7 +113,7 @@ final case class CorrelatedCallStats(
       s"$ccReceiverNum CC receivers\n\n" +
       s"$rcNum recursive components (RC)\n" +
       s"$rcNodeNum nodes in RC\n" +
-      s"$rcCcReceiverNum CC receivers in nodes in RC\n")
+      s"$rcCcReceiverNum CC receivers in nodes in RC\n\n")
 
   def printCommaSeparated() {
     println(List(

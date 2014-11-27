@@ -44,7 +44,7 @@ trait RunUtil {
       file =>
         val name = file.getName
         if (name endsWith "jar") {
-          println(s"Running $name benchmark...")
+          println(s"Running $name benchmark...\n")
           runner(bmCollectionName, name.substring(0, name.lastIndexOf('.')))
         }
     }

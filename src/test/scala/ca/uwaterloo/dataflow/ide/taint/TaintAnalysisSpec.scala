@@ -2,11 +2,7 @@ package ca.uwaterloo.dataflow.ide.taint
 
 import org.scalatest.{BeforeAndAfterAll, FunSpec}
 
-class TaintAnalysisSpec extends FunSpec with BeforeAndAfterAll {
-
-  override def beforeAll() {
-    //    SpecUtil.rebuild("ide/taint", "taint")
-  }
+class TaintAnalysisSpec extends FunSpec {
 
   private[this] def assertSecretsFor(test: String) {
     val dir = "ca/uwaterloo/dataflow/ide/taint/"
