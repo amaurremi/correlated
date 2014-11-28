@@ -35,8 +35,6 @@ function createConfigFile() {
     cd "$root"
 }
 
-createConfigFile JLex "ca/uwaterloo/dataflow/ide/taint/inputPrograms/JLex/JLex" other
-
 createConfigFile binarytrees_jython "binarytrees\$py" nonjava
 createConfigFile binarytrees_closure "binarytrees/core" nonjava
 createConfigFile fasta_groovy "fasta" nonjava
@@ -46,8 +44,8 @@ createConfigFile mandelbrot_scala "mandelbrot" nonjava
 createConfigFile mandelbrot_jython "mandelbrot\$py" nonjava
 createConfigFile nbody_scala "nbody" nonjava
 
-#createConfigFile check "spec/benchmarks/_200_check/Main" specjvm
-#createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm
+createConfigFile check "spec/benchmarks/_200_check/Main" specjvm
+createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm
 createConfigFile db "spec/benchmarks/_209_db/Main" specjvm
 createConfigFile javac "spec/benchmarks/_213_javac/Main" specjvm
 createConfigFile jack "spec/benchmarks/_228_jack/Main" specjvm
@@ -87,11 +85,10 @@ done
 function createConfigFileEP() {
     testname=$1
     entrypoint=$2
-    benchmarkCollection=$3
-    dir=resources/ca/uwaterloo/dataflow/benchmarks/$benchmarkCollection
+    dir=resources/ca/uwaterloo/dataflow/benchmarks/other
     mkdir -p $dir
     cd $dir
-    testdir=$root/$testroot/$benchmarkCollection
+    testdir=$root/$testroot/other
     contents="
     wala {\n
       jre-lib-path = \"$jrepath\"\n
@@ -107,8 +104,8 @@ function createConfigFileEP() {
 
 # entry point:        spec.benchmarks._200_check.Main.main([Ljava/lang/String;)V
 # entry point regexp: spec\.benchmarks\._200_check\.Main\.main\(\[Ljava\/lang\/String\;\)V
-createConfigFileEP check 'spec\\\\.benchmarks\\\\._200_check\\\\.Main\\\\.main\\\\(\\\\[Ljava\\\\/lang\\\\/String\\\\;\\\\)V' specjvm
+createConfigFileEP check 'spec\\\\.benchmarks\\\\._200_check\\\\.Main\\\\.main\\\\(\\\\[Ljava\\\\/lang\\\\/String\\\\;\\\\)V'
 
 # entry points:       all methods in package spec.benchmarks._205_raytrace
 # entry point regexp: spec\.benchmarks\._205_raytrace\..*
-createConfigFile raytrace 'spec\\\\.benchmarks\\\\._205_raytrace\\\\..*' specjvm
+createConfigFileEP raytrace 'spec\\\\.benchmarks\\\\._205_raytrace\\\\..*'

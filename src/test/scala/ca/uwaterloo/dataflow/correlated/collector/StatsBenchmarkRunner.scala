@@ -4,7 +4,11 @@ import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
 
 object StatsBenchmarkRunner extends App with RunUtil {
 
-  runSpecJvm()
+  runOther()
+
+  def runOther() {
+    runStatic("other")
+  }
 
   def runDacapo() {
     runStatic("dacapo")
