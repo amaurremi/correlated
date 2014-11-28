@@ -131,7 +131,6 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
           Set(ideN1.d)
       }
 
-
   /**
    * Functions for edges to phi instructions
    */
