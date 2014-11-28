@@ -8,6 +8,7 @@ import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
 import com.ibm.wala.ipa.callgraph.propagation.{InstanceKey, PointerAnalysis}
 import com.ibm.wala.ssa._
+import com.ibm.wala.types.MethodReference
 import com.ibm.wala.util.collections.HashSetMultiMap
 import com.typesafe.config.{ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
@@ -79,7 +80,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
         //  Fields
         case putInstr: SSAPutInstruction
           if factSameAsVar(d1, method, putInstr.getVal) ||
-             isConcatClass(getTypeInference(enclProc(n1.node)).getType(putInstr.getVal)) =>
+             isConcatClass(getTypeInference(enclProc(n1.node)).getType(putInstr.getVal).getTypeReference) =>
             defaultResult + Field(getIField(method.getClassHierarchy, putInstr.getDeclaredField))
         case getInstr: SSAGetInstruction                                            =>
           d1 match {
@@ -116,7 +117,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
       ideN1.d match {
         case v@Variable(method, vn)
           if getParameterNumber(ideN1).isDefined &&
-             isConcatClass(getTypeInference(enclProc(ideN1.n.node)).getType(vn)) =>
+             isConcatClass(getTypeInference(enclProc(ideN1.n.node)).getType(vn).getTypeReference) =>
           // We passed a StringBuilder/StringBuffer as a parameter to the enclosing method;
           // the current fact ideN1.d corresponds to this parameter. We need to make sure
           // that the StringBuilder/buffer in the calling method becomes secret.
@@ -168,34 +169,44 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
           val valNum = callValNum(callInstr)
           lazy val defaultPlusVar = if (valNum.isDefined) default + Variable(method, valNum.get) else default
           val value = if (callInstr.getNumberOfReturnValues == 0) None else Some(callInstr.getReturnValue(0))
-          getOperationType(callInstr.getDeclaredTarget, n1.getNode, value) match {
-            case Some(SecretLibraryCall)             =>
-              defaultPlusVar
-            case Some(ReturnsStaticSecretOrPreservesSecret)
-              if callInstr.isStatic && d1 == Λ       =>
+          val targetMethod = callInstr.getDeclaredTarget
+
+          if (isSecret(targetMethod))
+            defaultPlusVar
+          else if (isConcatConstructor(targetMethod) && d1 == Λ){
+            val valNum = initValNum(targetMethod, callInstr)
+            val phis = getPhis(n1, valNum, method)
+            default ++ phis
+          } else {
+            getOperationType(targetMethod, n1.getNode, value) match {
+              case Some(SecretLibraryCall) =>
                 defaultPlusVar
-            case Some(SecretIfSecretArgument)
-              if hasSecretArgument(d1, method, callInstr)    =>
+              case Some(ReturnsStaticSecretOrPreservesSecret)
+                if callInstr.isStatic && d1 == Λ =>
                 defaultPlusVar
-            case Some(opType) if !callInstr.isStatic =>
-              val receiver = callInstr.getReceiver
-              val factEqReceiver = factSameAsVar(d1, method, receiver)
-              opType match {
-                case ReturnsStaticSecretOrPreservesSecret if factEqReceiver    =>
-                  defaultPlusVar
-                case ReturnsSecretArray if factEqReceiver                      =>
-                  default + ArrayElement
-                case ConcatenatesStrings
-                  if factEqReceiver || isSecondArgument(d1, method, callInstr) =>
+              case Some(SecretIfSecretArgument)
+                if hasSecretArgument(d1, method, callInstr) =>
+                defaultPlusVar
+              case Some(opType) if !callInstr.isStatic =>
+                val receiver = callInstr.getReceiver
+                val factEqReceiver = factSameAsVar(d1, method, receiver)
+                opType match {
+                  case ReturnsStaticSecretOrPreservesSecret if factEqReceiver =>
+                    defaultPlusVar
+                  case ReturnsSecretArray if factEqReceiver =>
+                    default + ArrayElement
+                  case ConcatenatesStrings
+                    if factEqReceiver || isSecondArgument(d1, method, callInstr) =>
                     defaultPlusVar + Variable(method, callInstr.getReceiver)
-                case StringConcatConstructor
-                  if isSecondArgument(d1, method, callInstr)                   =>
+                  case StringConcatConstructor
+                    if isSecondArgument(d1, method, callInstr) =>
                     default + Variable(method, callInstr.getUse(0))
-                case _                                                         =>
-                  default
-              }
-            case _                                   =>
-              default
+                  case _ =>
+                    default
+                }
+              case _ =>
+                default
+            }
           }
       }
     }
@@ -223,14 +234,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
       }
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction =>
-          if (isSecret(targetMethod) && d1 == Λ) {
-            val valNum = callValNum(callInstr).get
-            defaultResult + Variable(callerMethod, valNum)
-          } else if (isConcatConstructor(targetMethod) && d1 == Λ){
-            val valNum = initValNum(targetMethod, callInstr)
-            val phis = getPhis(n1, valNum, callerMethod)
-            defaultResult ++ phis
-          } else if (exclude(n1, callInstr))
+          if (exclude(n1, callInstr))
             Set.empty
           else
             getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
@@ -246,8 +250,8 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
       }
     }
 
-  private[this] def isConcatConstructor(method: IMethod): Boolean =
-    method.isInit && isConcatClass(new PointType(method.getDeclaringClass))
+  private[this] def isConcatConstructor(method: MethodReference): Boolean =
+    method.isInit && isConcatClass(method.getDeclaringClass)
 
   /**
    * Should the call instruction be excluded from the analysis?

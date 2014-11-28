@@ -13,7 +13,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
   fileName: String
 ) extends IfdsTaintAnalysis(fileName) with VariableFacts with AbstractIdeToIfds with Assertions {
 
-  def secretAssertion(name: String) = Method(name, 1, isStatic = true, "V")
+  def secretAssertion(name: String) = Method(name, 1, "V")
 
   protected val secret                    = secretAssertion("secret")
   protected val notSecret                 = secretAssertion("notSecret")
@@ -33,7 +33,7 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
       case (node, invokeInstr) =>
         targetStartNodes(NormalNode(node)) foreach {
           startNode =>
-            assertionMap.get(Method(startNode.node.getMethod)) foreach {
+            assertionMap.get(Method(startNode.node.getMethod.getReference)) foreach {
               assertResult(_)(getResultAtCallNode(node, invokeInstr))
             }
         }

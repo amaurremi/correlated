@@ -29,11 +29,11 @@ trait SecretDefinition extends VariableFacts {
     klass: String
   )
 
-  def isSecret(method: IMethod): Boolean
+  def isSecret(method: MethodReference): Boolean
 
   def secretTypes: Set[String]
 
-  def isConcatClass(typeRef: TypeAbstraction): Boolean
+  def isConcatClass(typeRef: TypeReference): Boolean
 
   def isSecretArrayElementType(typeRef: TypeReference): Boolean
 

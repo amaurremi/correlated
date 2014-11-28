@@ -1,18 +1,17 @@
 package ca.uwaterloo.dataflow.common
 
-import com.ibm.wala.classLoader.IMethod
+import com.ibm.wala.types.MethodReference
 
 case class Method(
   name: String,
   parameterNum: Int,
-  isStatic: Boolean,
   retType: String
 ) {
 
   def equalsUpToParamNum(any: Any): Boolean =
     any match {
-      case Method(n, _, s, r) =>
-        n == name && s == isStatic && r == retType
+      case Method(n, _, r) =>
+        n == name && r == retType
       case _                  =>
         false
     }
@@ -20,11 +19,10 @@ case class Method(
 
 object Method {
 
-  def apply(method: IMethod): Method =
+  def apply(method: MethodReference): Method =
     Method(
       method.getName.toString,
-      if (method.isStatic) method.getNumberOfParameters else method.getNumberOfParameters - 1,
-      method.isStatic,
+      method.getNumberOfParameters,
       method.getReturnType.getName.toString
     )
 }

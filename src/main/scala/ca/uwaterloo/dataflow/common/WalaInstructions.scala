@@ -6,6 +6,7 @@ import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
 import com.ibm.wala.ssa._
 import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
+import com.ibm.wala.types.MethodReference
 
 import scala.collection.JavaConverters._
 import scala.collection.breakOut
@@ -117,7 +118,7 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
   /**
    * Value number of a constructor
    */
-  def initValNum(method: IMethod, callInstr: SSAInvokeInstruction): ValueNumber = {
+  def initValNum(method: MethodReference, callInstr: SSAInvokeInstruction): ValueNumber = {
     assert(method.isInit)
     callInstr.getUse(0)
   }

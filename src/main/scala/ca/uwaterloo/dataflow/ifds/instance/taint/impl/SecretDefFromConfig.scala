@@ -40,11 +40,10 @@ trait SecretDefFromConfig extends SecretDefinition {
     name == of || amongSubtypes
   }
 
-  override def isSecret(method: IMethod) =
+  override def isSecret(method: MethodReference) =
     stringConfig.secretMethods exists {
       sm =>
-        (sm.method equalsUpToParamNum Method(method)) &&
-          isSubType(method.getDeclaringClass.getReference, sm.enclClass, method.getClassHierarchy)
+        sm.method equalsUpToParamNum Method(method)
     }
 
   lazy val stringConfig: SecretConfig = {
@@ -59,7 +58,6 @@ trait SecretDefFromConfig extends SecretDefinition {
           Method(
             conf getString "name",
             -1,
-            conf getBoolean "static",
             conf getString "type"
           ),
           conf getString "enclosing"
@@ -100,11 +98,10 @@ trait SecretDefFromConfig extends SecretDefinition {
 
   override def secretTypes: Set[String] = stringConfig.secretMethods map { _.method.retType }
 
-  override def isConcatClass(typeAbs: TypeAbstraction): Boolean =
-    typeAbs != TypeAbstraction.TOP &&
-      (stringConfig.appendMethods exists {
-        _.klass == typeName(typeAbs.getTypeReference)
-      })
+  override def isConcatClass(typeRef: TypeReference): Boolean =
+    stringConfig.appendMethods exists {
+      _.klass == typeName(typeRef)
+    }
 
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeName(typeRef)
