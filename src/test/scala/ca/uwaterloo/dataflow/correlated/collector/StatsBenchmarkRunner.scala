@@ -4,7 +4,12 @@ import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
 
 object StatsBenchmarkRunner extends App with RunUtil {
 
+  // Run all benchmarks under 'benchmarks/other'
   runOther()
+
+  // Run a specific benchmark
+  // runSingleBm("other", "check")
+  // runSingleBm("other", "raytrace")
 
   def runOther() {
     runStatic("other")
@@ -39,5 +44,12 @@ object StatsBenchmarkRunner extends App with RunUtil {
         ccStats.printCorrelated(bmName)
       }
     runBenchmarks(runner, bmCollectionName)
+  }
+
+  def runSingleBm(bmCollectionName: String, bmName: String) {
+    val ccStats = getCcStats(bmCollectionName, bmName, rta = false, onlyApp = false)
+    assert(ccStats.monomorphicCallSiteNum + ccStats.polymorphicCallSiteNum == ccStats.totalCallSiteNum)
+    ccStats.printInfo()
+    ccStats.printCorrelated(bmName)
   }
 }
