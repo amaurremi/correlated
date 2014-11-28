@@ -18,7 +18,7 @@ final case class CorrelatedCallStats(
   // Receivers of correlated calls that are contained in a recursive component
   rcCcReceivers: Set[Receiver] = Set.empty[Receiver],
 
-  // Maps a receiver to a set of call sites that are invoked on that receiver
+  // Maps a receiver to a set of correlated call sites that are invoked on that receiver
   receiverToCallSites: ReceiverToCallSites = Map.empty withDefaultValue Set.empty,
 
   // All call sites that are reachable in the call graph
@@ -114,6 +114,20 @@ final case class CorrelatedCallStats(
       s"$rcNum recursive components (RC)\n" +
       s"$rcNodeNum nodes in RC\n" +
       s"$rcCcReceiverNum CC receivers in nodes in RC\n\n")
+
+  /**
+   * Prints out correlated call sites
+   */
+  def printCorrelated(fileName: String) {
+    println("Correlated call sites in " + fileName + ":")
+    for {
+      receiver            <- receiverToCallSites.keys
+      CallSite(csr, node) <- receiverToCallSites(receiver)
+    } {
+      println("in method " + node.getMethod.getSignature + ", call site " + csr.toString)
+    }
+    println()
+  }
 
   def printCommaSeparated() {
     println(List(
