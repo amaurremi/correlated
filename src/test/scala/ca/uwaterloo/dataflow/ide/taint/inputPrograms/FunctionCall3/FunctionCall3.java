@@ -19,8 +19,6 @@ public class FunctionCall3 {
         }
     }
 
-
-
     static String secret() {
         return "secret";
     }
