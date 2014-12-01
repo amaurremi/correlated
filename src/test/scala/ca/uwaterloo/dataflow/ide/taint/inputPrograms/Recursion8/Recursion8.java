@@ -11,7 +11,7 @@ public class Recursion8 {
         SecretAssertions.secret(s2);
         String s3 = "not secret";
         String s4 = a.bar(s3, 5);
-        SecretAssertions.secret(s4); // because bar is also invoked with a secret argument from foo
+        SecretAssertions.notSecret(s4);
     }
 
     static String secret() {

@@ -10,7 +10,7 @@ public class Recursion4 {
         SecretAssertions.secret(s2);
         String s3 = "not secret";
         String s4 = bar(s3, 5);
-        SecretAssertions.secret(s4); // bar is also called with a secret value from foo
+        SecretAssertions.notSecret(s4);
     }
 
     public static String foo(String s, int n){
