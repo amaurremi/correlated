@@ -170,10 +170,10 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
   override def ifdsCallReturnEdges: IfdsEdgeFn =
     (ideN1, _) => {
       val d1 = ideN1.d
-      val default = if (d1 == Lambda) Set.empty[Fact] else Set(d1)
       val n1 = ideN1.n.node
       n1.getLastInstruction match {
         case callInstr: SSAInvokeInstruction => // todo this method is hard to reason about and needs refactoring.
+          val default = if (d1 == Lambda && !exclude(n1, callInstr)) Set.empty[Fact] else Set(d1)
           val method = n1.getMethod
           val valNum = callValNum(callInstr)
           lazy val defaultPlusVar = if (valNum.isDefined) default + Variable(method, valNum.get) else default
