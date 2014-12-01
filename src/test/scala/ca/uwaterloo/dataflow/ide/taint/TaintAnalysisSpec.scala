@@ -99,6 +99,12 @@ class TaintAnalysisSpec extends FunSpec {
       }
     }
 
+    describe("control flow") {
+      it("propagates the code following a constructor") {
+        assertSecretsFor("ReturnFromConstructor")
+      }
+    }
+
     describe("recursion") {
       it("recursive call") {
         assertSecretsFor("Recursion")
