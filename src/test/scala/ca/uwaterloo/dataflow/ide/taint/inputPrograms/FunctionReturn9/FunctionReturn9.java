@@ -8,6 +8,11 @@ public class FunctionReturn9 {
         f(secret());
         String s2 = f(secret());
         SecretAssertions.secret(s2);
+
+        // 4 = secret()
+        // 6 = f(4)
+        // 8 = secret()
+        // 10 = f(8)
     }
 
     static String f(String s) {

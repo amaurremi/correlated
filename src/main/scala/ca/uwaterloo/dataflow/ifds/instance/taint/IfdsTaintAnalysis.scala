@@ -61,7 +61,8 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
             // we are returning a secret value, because an existing (i.e. secret) fact d1 is returned
             case v@Variable(m, _)
               if isFactReturned(v, n1, returnInstr.getResult) =>
-                (methodToReturnVars get m).asScala.toSet ++ (if (m == method) Set.empty[Fact] else defaultResult)
+                val facts = if (m == method) Set.empty[Fact] else defaultResult
+                facts + ReturnSecretValue
             case _                                            =>
               defaultResult
           }
@@ -125,9 +126,18 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
               callInstr: SSAInvokeInstruction =>
                 Variable(n2.node.getMethod, getValNumFromParameterNum(callInstr, getParameterNumber(ideN1).get))
             }
-        case Variable(method, _) if method == ideN1.n.node.getMethod             =>
+        case Variable(method, _) if method == ideN1.n.node.getMethod                              =>
           Set.empty[Fact]
-        case _                                                                   =>
+        case ReturnSecretValue                                                                    =>
+          val calls = getCallSites(n2.node, enclProc(ideN1.n.node))
+          val valNums = calls map { _.getLastInstruction } collect {
+            case instr: SSAInvokeInstruction =>
+              callValNum(instr)
+          }
+          val valNumSet = valNums.flatten.toSet
+//          assert (valNumSet.size == 1) TODO this must be wrong!!!!!
+          valNumSet map { Variable(n2.node.getMethod, _) }
+        case _                                                                                    =>
           Set(ideN1.d)
       }
 
@@ -235,17 +245,16 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
         case callInstr: SSAInvokeInstruction =>
           if (exclude(n1, callInstr))
             Set.empty
-          else
-            getParameterNumber(ideN1, callInstr) match { // checks if we are passing d1 as an argument to the function
-              case Some(argNum)                                       =>
+          else {
+            getParameterNumber(ideN1, callInstr) match {
+              // checks if we are passing d1 as an argument to the function
+              case Some(argNum) =>
                 val substituteFact = Variable(targetMethod, getValNumFromParameterNum(n2.node, argNum))
                 Set(substituteFact)
-              case None if d1 == Λ && callValNum(callInstr).isDefined =>
-                methodToReturnVars.put(targetMethod, Variable(callerMethod, callValNum(callInstr).get))
-                defaultResult
-              case None                                               =>
+              case None =>
                 defaultResult
             }
+          }
       }
     }
 

@@ -57,7 +57,6 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
     for {
       r <- followingNodes(exit)
       rn = r.node
-//      if supergraph isReturn rn
       c <- getCallSites(rn, enclProc(exit.node))
       if (supergraph getSuccNodes c).asScala contains rn
     } yield NormalNode(c) -> r

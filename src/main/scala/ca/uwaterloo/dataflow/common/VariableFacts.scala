@@ -24,6 +24,8 @@ trait VariableFacts extends ExplodedGraphTypes with TraverseGraph with WalaInstr
     override def toString: String = elem.toString + " in " + method.getName.toString + "()"
   }
 
+  case object ReturnSecretValue extends VariableFact
+
   case object ArrayElement extends VariableFact
 
   case class Field(field: IField) extends VariableFact

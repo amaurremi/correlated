@@ -1,12 +1,12 @@
 package ca.uwaterloo.dataflow.ide.taint
 
-import ca.uwaterloo.dataflow.common.{Method, AbstractIdeToIfds, VariableFacts}
+import ca.uwaterloo.dataflow.common.{AbstractIdeToIfds, Method, VariableFacts}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
-import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
+import ca.uwaterloo.dataflow.ifds.conversion.{IdeFromIfdsBuilder, IdeToIfds}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
 import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretStrings}
 import com.ibm.wala.classLoader.IField
-import com.ibm.wala.ssa.{DefUse, SSAFieldAccessInstruction, SSAArrayLoadInstruction, SSAInvokeInstruction}
+import com.ibm.wala.ssa.{DefUse, SSAArrayLoadInstruction, SSAFieldAccessInstruction, SSAInvokeInstruction}
 import org.scalatest.Assertions
 
 sealed abstract class AbstractTaintAnalysisSpecBuilder (

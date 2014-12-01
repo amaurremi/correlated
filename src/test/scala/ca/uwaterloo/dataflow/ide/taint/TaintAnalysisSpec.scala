@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.ide.taint
 
-import org.scalatest.{BeforeAndAfterAll, FunSpec}
+import org.scalatest.FunSpec
 
 class TaintAnalysisSpec extends FunSpec {
 
