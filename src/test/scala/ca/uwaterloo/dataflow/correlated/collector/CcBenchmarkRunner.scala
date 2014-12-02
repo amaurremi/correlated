@@ -11,7 +11,7 @@ import org.scalatest.FunSpec
 object CcBenchmarkRunner extends FunSpec with RunUtil {
 
   def main(args: Array[String]): Unit = {
-    runOther()
+    runSingleBm("other", "raytrace")
   }
 
   def runSpecJvm(): Unit = {
@@ -26,13 +26,16 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
     run("other")
   }
 
+  def runSingleBm(bmCollectionName: String, bmName: String): Unit = {
+    val path: String = configPath(bmCollectionName, bmName)
+    new NormalTaintAnalysisRunner(path, bmName).printResultSize()
+    new CcTaintAnalysisRunner(path, bmName).printResultSize()
+  }
+
   def run(bmCollectionName: String): Unit = {
     val runner =
-      (bmCollectionName: String, bmName: String) => {
-        val path: String = configPath(bmCollectionName, bmName)
-        new NormalTaintAnalysisRunner(path, bmName).printResultSize()
-        new CcTaintAnalysisRunner(path, bmName).printResultSize()
-      }
+      (bmCollectionName: String, bmName: String) =>
+        runSingleBm(bmCollectionName, bmName)
     runBenchmarks(runner, bmCollectionName)
   }
 
