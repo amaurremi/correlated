@@ -43,9 +43,11 @@ object StatsBenchmarkRunner extends App with RunUtil {
   }
 
   def runSingleBm(bmCollectionName: String, bmName: String) {
+    println(s"Running $bmName benchmark...")
     val ccStats = getCcStats(bmCollectionName, bmName, rta = false, onlyApp = false)
     assert(ccStats.monomorphicCallSiteNum + ccStats.polymorphicCallSiteNum == ccStats.totalCallSiteNum)
     ccStats.printInfo()
     ccStats.printCorrelated(bmName)
+    println()
   }
 }
