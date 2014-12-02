@@ -58,8 +58,8 @@ function createConfigFileDacapo() {
     mkdir -p $dir
     cd $dir
     testdir=$root/$testroot
-    testpathSrc=$testdir/$testname
-    testpathDep=$testdir/deps/$testname
+    testpathSrc=$testdir/dacapo/$testname
+    testpathDep=$testdir/dacapo/deps/$testname
     contents="
     wala {\n
       jre-lib-path = \"$jrepath\"\n
@@ -71,6 +71,7 @@ function createConfigFileDacapo() {
       }\n
     }\n
     "
+    echo -e $contents > $testname.conf
     cd "$root"
 }
 
