@@ -99,9 +99,9 @@ trait SecretDefFromConfig extends SecretDefinition {
   override def secretTypes: Set[String] = stringConfig.secretMethods map { _.method.retType }
 
   override def isConcatClass(typeRef: TypeReference): Boolean =
-    stringConfig.appendMethods exists {
+    typeRef != null && (stringConfig.appendMethods exists {
       _.klass == typeName(typeRef)
-    }
+    })
 
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeName(typeRef)
