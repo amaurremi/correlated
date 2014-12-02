@@ -75,9 +75,9 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
 
 sealed abstract class AbstractTaintAnalysisStringSpecBuilder (
   fileName: String
-) extends AbstractTaintAnalysisSpecBuilder(fileName) with SecretStrings
+) extends AbstractTaintAnalysisSpecBuilder(fileName)
 
-class TaintAnalysisSpecBuilder(
+abstract class TaintAnalysisSpecBuilder(
   fileName: String
 ) extends AbstractTaintAnalysisStringSpecBuilder(fileName) with IdeFromIfdsBuilder with IdeToIfds {
 
@@ -85,7 +85,7 @@ class TaintAnalysisSpecBuilder(
     Map(secret -> true, notSecret -> false, secretStandardNotSecretCc -> true)
 }
 
-class CcTaintAnalysisSpecBuilder(
+abstract class CcTaintAnalysisSpecBuilder(
   fileName: String
 ) extends AbstractTaintAnalysisStringSpecBuilder(fileName) with CorrelatedCallsToIfds with CcReceivers {
 

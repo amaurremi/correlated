@@ -1,14 +1,20 @@
 package ca.uwaterloo.dataflow.ide.taint
 
+import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{SecretInput, SecretStrings}
 import org.scalatest.FunSpec
 
 class TaintAnalysisSpec extends FunSpec {
 
-  private[this] def assertSecretsFor(test: String) {
+  private[this] def assertSecretsFor(test: String, useSecretStrings: Boolean = true) {
     val dir = "ca/uwaterloo/dataflow/ide/taint/"
     val path = dir + test
-    new TaintAnalysisSpecBuilder(path).assertSecretValues()
-    new CcTaintAnalysisSpecBuilder(path).assertSecretValues()
+    val (ifds, ide) =
+      if (useSecretStrings)
+        (new TaintAnalysisSpecBuilder(path) with SecretStrings, new TaintAnalysisSpecBuilder(path) with SecretStrings)
+      else
+        (new TaintAnalysisSpecBuilder(path) with SecretInput, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
+    ifds.assertSecretValues()
+    ide.assertSecretValues()
   }
 
   describe("IFDS and correlated-calls taint analyses") {
