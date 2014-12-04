@@ -11,7 +11,7 @@ import org.scalatest.FunSpec
 object CcBenchmarkRunner extends FunSpec with RunUtil {
 
   def main(args: Array[String]): Unit = {
-    runSingleBm("specjvm", "jess")
+    runSingleBm("dacapo", "antlr")
   }
 
   def runSpecJvm(): Unit = {

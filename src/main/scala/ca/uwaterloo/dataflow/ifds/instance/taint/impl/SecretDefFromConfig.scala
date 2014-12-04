@@ -106,27 +106,27 @@ trait SecretDefFromConfig extends SecretDefinition {
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeName(typeRef)
 
-  def typeName(tpe: TypeReference): String =
-    tpe.getName.toString
+  lazy val typeName: TypeReference => String =
+    _.getName.toString
 
   override def getOperationType(op: MethodReference, node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation] = {
-    val methodName = op.getName.toString
-    val declaringClassName = op.getDeclaringClass.getName.toString
-    val isConcatClass = stringConfig.appendMethods exists {
+    lazy val methodName = op.getName.toString
+    lazy val declaringClassName = op.getDeclaringClass.getName.toString
+    lazy val isConcatClass = stringConfig.appendMethods exists {
       _.klass == declaringClassName
     }
-    val isAppendMethodName = stringConfig.appendMethods exists {
+    lazy val isAppendMethodName = stringConfig.appendMethods exists {
       _.methodName == methodName
     }
-    val secretArrayMethodName = stringConfig.returnSecretArray contains methodName
-    val libOptions = stringConfig.libraryOptions
-    val isLibCall = libOptions.excludePrefixes exists {
+    lazy val secretArrayMethodName = stringConfig.returnSecretArray contains methodName
+    lazy val libOptions = stringConfig.libraryOptions
+    lazy val isLibCall = libOptions.excludePrefixes exists {
       declaringClassName.startsWith
     }
-    val retType = op.getReturnType.getName.toString
-    val hasSecretReturnType = secretTypes contains retType
-    val isInvokedOnSecretType = secretTypes contains declaringClassName
-    val types = vn match {
+    lazy val retType = op.getReturnType.getName.toString
+    lazy val hasSecretReturnType = secretTypes contains retType
+    lazy val isInvokedOnSecretType = secretTypes contains declaringClassName
+    lazy val types = vn match {
       case Some(n) =>
         getTypes(node, n) map {
           _.getName.toString
@@ -135,16 +135,16 @@ trait SecretDefFromConfig extends SecretDefinition {
         Set.empty[String]
     }
     // Is the return type (or its subtype) considered secret by default, if it's returned from a library?
-    val isDefaultSecret = (libOptions.defaultSecretTypes intersect (types + retType)).nonEmpty
-    val isWhiteListedLib = isDefaultSecret && (libOptions.whiteList exists {
+    lazy val isDefaultSecret = (libOptions.defaultSecretTypes intersect (types + retType)).nonEmpty
+    lazy val isWhiteListedLib = isDefaultSecret && (libOptions.whiteList exists {
       m =>
         m.methodName == methodName && isSubType(op.getDeclaringClass, m.klass, node.getClassHierarchy)
     })
-    val isInSecretIfSecretArgList = isDefaultSecret && (libOptions.secretIfArgument exists {
+    lazy val isInSecretIfSecretArgList = isDefaultSecret && (libOptions.secretIfArgument exists {
       m =>
         m.methodName == methodName && isSubType(op.getDeclaringClass, m.klass, node.getClassHierarchy)
     })
-    val stringTypeConsideredSecret = secretTypes contains "Ljava/lang/String"
+    lazy val stringTypeConsideredSecret = secretTypes contains "Ljava/lang/String"
 
     if (secretArrayMethodName && hasSecretReturnType) // todo refactor this terrible conditional
       Some(ReturnsSecretArray)

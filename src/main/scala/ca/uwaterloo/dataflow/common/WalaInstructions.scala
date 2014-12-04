@@ -31,12 +31,12 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
    */
   def getParameterNumber(node: XNode, callInstr: SSAInvokeInstruction): Option[Int] =
     node.d match {
-      case Variable(method, elem)           =>
+      case Variable(method, elem)                               =>
         val valNum = getValNum(elem, node)
         firstParameter(callInstr) to callInstr.getNumberOfParameters - 1 find {
           callInstr.getUse(_) == valNum
         }
-      case ArrayElement | Field(_) | Lambda => None // todo fields???
+      case ArrayElement | Field(_) | Lambda | ReturnSecretValue => None // todo fields???
     }
 
   /**
@@ -45,13 +45,13 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
    */
   def getParameterNumber(node: XNode): Option[Int] =
     node.d match {
-      case Variable(method, elem)           =>
+      case Variable(method, elem)                               =>
         val valNum = getValNum(elem, node)
         val ir: IR = enclProc(node.n.node).getIR
         firstParameter(node.n.node) to node.n.node.getMethod.getNumberOfParameters - 1 find {
            ir.getParameter(_) == valNum
         }
-      case ArrayElement | Field(_) | Lambda => None // todo fields???
+      case ArrayElement | Field(_) | Lambda | ReturnSecretValue => None // todo fields???
     }
 
   /**
@@ -126,8 +126,6 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
   def hasRetValue(retInstr: SSAReturnInstruction) = retInstr.getResult >= 0
 
   def getMethodName(node: Node): String = node.getMethod.getName.toString
-
-  def getCalledNodes(node: Node) = (supergraph getCalledNodes node).asScala
 
   private[WalaInstructions] def getReceiverTypes(
     callInstr: SSAInvokeInstruction,
