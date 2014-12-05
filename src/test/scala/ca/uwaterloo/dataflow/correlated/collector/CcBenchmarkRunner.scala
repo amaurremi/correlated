@@ -11,7 +11,7 @@ import org.scalatest.FunSpec
 object CcBenchmarkRunner extends FunSpec with RunUtil {
 
   def main(args: Array[String]): Unit = {
-    runSingleBm("dacapo", "antlr")
+    runSingleBm("other", "scala-library-2.10.2")
   }
 
   def runSpecJvm(): Unit = {

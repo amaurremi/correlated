@@ -124,6 +124,4 @@ createConfigFileEP check 'spec\\\\.benchmarks\\\\._200_check\\\\.Main\\\\.main\\
 # entry point regexp: spec\.benchmarks\._205_raytrace\..*
 createConfigFileEP raytrace 'spec\\\\.benchmarks\\\\._205_raytrace\\\\..*' spec
 
-# entry points:       all methods in package spec.benchmarks._209_db
-# entry point regexp: spec\.benchmarks\._209_db\..*
-createConfigFileEP db 'spec\\\\.benchmarks\\\\._209_db\\\\.Main\\\.runB.*' spec
+createConfigFileEP scala-library-2.10.2 'scala\\\\.collection\\\\.immutable\\\\.List.*'

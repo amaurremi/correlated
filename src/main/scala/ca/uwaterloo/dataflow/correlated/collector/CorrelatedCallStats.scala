@@ -1,5 +1,6 @@
 package ca.uwaterloo.dataflow.correlated.collector
 
+import com.ibm.wala.classLoader.{CallSiteReference, IMethod}
 import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
 
 /**
@@ -120,11 +121,18 @@ final case class CorrelatedCallStats(
    */
   def printCorrelated(fileName: String) {
     println("Correlated call sites in " + fileName + ":")
-    for {
-      receiver            <- receiverToCallSites.keys
-      CallSite(csr, node) <- receiverToCallSites(receiver)
-    } {
-      println("in method " + node.getMethod.getSignature + ", call site " + csr.toString)
+    val methodToCs = receiverToCallSites.foldLeft(Map.empty[IMethod, Set[CallSiteReference]]) {
+      case (oldMap, (Receiver(_, method), callSites)) =>
+        val csrs = callSites map { _.csr }
+        oldMap + (method -> (oldMap.getOrElse(method, Set.empty[CallSiteReference]) ++ csrs))
+    }
+    methodToCs foreach {
+      case (m, callsites) =>
+        println(m.toString)
+        callsites foreach {
+          cs =>
+            println("  call site: " + cs.toString)
+        }
     }
     println()
   }
