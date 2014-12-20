@@ -125,3 +125,6 @@ createConfigFileEP check 'spec\\\\.benchmarks\\\\._200_check\\\\.Main\\\\.main\\
 createConfigFileEP raytrace 'spec\\\\.benchmarks\\\\._205_raytrace\\\\..*' spec
 
 createConfigFileEP scala-library-2.10.2 'scala\\\\.collection\\\\.immutable\\\\.List.*'
+
+createConfigFileEP java.util-1.7 'java\\\\.util.*'
+

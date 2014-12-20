@@ -66,6 +66,8 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
             isSecretArrayElement(node, num)
           case Field(f)               =>
             isSecretField(node, num, f)
+          case ReturnSecretValue      =>
+            true
           case Lambda                 =>
             false
         }

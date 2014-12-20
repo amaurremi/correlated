@@ -5,7 +5,7 @@ import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
 object StatsBenchmarkRunner extends App with RunUtil {
 
   // Run all benchmarks under 'benchmarks/other'
-  runSingleBm("other", "scala-library-2.10.2")
+  runDacapo()
 
   // Run a specific benchmark
   // runSingleBm("other", "check")
@@ -46,8 +46,8 @@ object StatsBenchmarkRunner extends App with RunUtil {
     println(s"Running $bmName benchmark...")
     val ccStats = getCcStats(bmCollectionName, bmName, rta = false, onlyApp = false)
     assert(ccStats.monomorphicCallSiteNum + ccStats.polymorphicCallSiteNum == ccStats.totalCallSiteNum)
-    ccStats.printInfo()
-    ccStats.printCorrelated(bmName)
+    ccStats.printCommaSeparatedForPaper()
+//    ccStats.printCorrelated(bmName)
     println()
   }
 }

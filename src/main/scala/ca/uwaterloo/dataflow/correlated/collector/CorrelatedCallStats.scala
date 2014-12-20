@@ -2,6 +2,7 @@ package ca.uwaterloo.dataflow.correlated.collector
 
 import com.ibm.wala.classLoader.{CallSiteReference, IMethod}
 import com.ibm.wala.ipa.callgraph.{CGNode, CallGraph}
+import com.ibm.wala.types.TypeReference
 
 /**
  * Data structure that contains information about the program with respect to correlated calls
@@ -32,7 +33,10 @@ final case class CorrelatedCallStats(
   monomorphicCallSites: Set[CallSite] = Set.empty[CallSite],
 
   // Static call sites
-  staticCallSites: Set[CallSite] = Set.empty[CallSite]
+  staticCallSites: Set[CallSite] = Set.empty[CallSite],
+
+  // lasses
+  classes: Set[TypeReference] = Set.empty[TypeReference]
 ) {
 
   /**
@@ -67,6 +71,11 @@ final case class CorrelatedCallStats(
    * Total number of call sites
    */
   def totalCallSiteNum = totalCallSites.size
+
+  /**
+   * Number of classes
+   */
+  def classNum = classes.size
 
   /**
    * Number of dispatch call sites
@@ -104,6 +113,7 @@ final case class CorrelatedCallStats(
    */
   def printInfo() =
     println(
+      s"$classes classes\n" +
       s"$cgNodeNum call graph nodes\n" +
       s"$totalCallSiteNum total call sites\n" +
       s"$staticCallSiteNum static call sites\n" +
@@ -137,8 +147,22 @@ final case class CorrelatedCallStats(
     println()
   }
 
+  def printCommaSeparatedForPaper(): Unit = {
+    println(List(
+      classNum,
+      totalCallSiteNum,
+      polymorphicCallSiteNum,
+      ccSiteNum,
+      ccReceiverNum,
+      polymorphicCallSiteNum.toFloat / totalCallSiteNum,
+      ccSiteNum.toFloat / polymorphicCallSiteNum,
+      ccSiteNum / ccReceiverNum
+    ).mkString(", "))
+  }
+
   def printCommaSeparated() {
     println(List(
+      classNum,
       totalCallSiteNum,
       dispatchCallSiteNum,
       staticCallSiteNum,
