@@ -14,9 +14,15 @@ trait RunUtil {
     rta: Boolean = false,
     onlyApp: Boolean = false
   ): CorrelatedCallStats = {
-    val pa = FlexibleCallGraphBuilder()(createConfig(configPath(bmCollectionName, bmName)))
+    import ca.uwaterloo.dataflow.correlated.collector.Time.time
+
+    println("  Creating call graph...")
+    val pa = time { FlexibleCallGraphBuilder()(createConfig(configPath(bmCollectionName, bmName))) }
     val cg = if (rta) pa.cgRta else pa.cg
-    if (onlyApp) AppCorrelatedCallStats(cg) else CorrelatedCallStats(cg)
+    println("  Running correlated calls analysis...")
+    time {
+      if (onlyApp) AppCorrelatedCallStats(cg) else CorrelatedCallStats(cg)
+    }
   }
 
   private[this] def createConfig(configPath: String) =
