@@ -1,8 +1,9 @@
-package ca.uwaterloo.dataflow.correlated.collector
+package ca.uwaterloo.dataflow.common
 
 object Time {
 
-  def time[R](block: => R): R = {
+  def time[R](process: String)(block: => R): R = {
+    println(process + "...")
     def sec() = System.nanoTime() / 1000000000.0
     val t0 = sec()
     val result = block

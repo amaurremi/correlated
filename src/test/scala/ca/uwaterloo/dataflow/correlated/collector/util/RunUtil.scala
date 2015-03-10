@@ -1,5 +1,6 @@
 package ca.uwaterloo.dataflow.correlated.collector.util
 
+import ca.uwaterloo.dataflow.common.Time
 import ca.uwaterloo.dataflow.correlated.collector.{AppCorrelatedCallStats, CorrelatedCallStats}
 import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
@@ -14,13 +15,11 @@ trait RunUtil {
     rta: Boolean = false,
     onlyApp: Boolean = false
   ): CorrelatedCallStats = {
-    import ca.uwaterloo.dataflow.correlated.collector.Time.time
+    import Time.time
 
-    println("  Creating call graph...")
-    val pa = time { FlexibleCallGraphBuilder()(createConfig(configPath(bmCollectionName, bmName))) }
+    val pa = time ("Creating call graph") { FlexibleCallGraphBuilder()(createConfig(configPath(bmCollectionName, bmName))) }
     val cg = if (rta) pa.cgRta else pa.cg
-    println("  Running correlated calls analysis...")
-    time {
+    time ("Running correlated calls analysis") {
       if (onlyApp) AppCorrelatedCallStats(cg) else CorrelatedCallStats(cg)
     }
   }

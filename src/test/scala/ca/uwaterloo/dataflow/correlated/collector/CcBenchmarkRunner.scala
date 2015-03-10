@@ -1,17 +1,18 @@
 package ca.uwaterloo.dataflow.correlated.collector
 
-import ca.uwaterloo.dataflow.common.{AbstractIdeToIfds, VariableFacts}
+import ca.uwaterloo.dataflow.common.{Time, AbstractIdeToIfds, VariableFacts}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeToIfds, IdeFromIfdsBuilder}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
 import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{CcReceivers, SecretInput}
 import org.scalatest.FunSpec
+import Time.time
 
 object CcBenchmarkRunner extends FunSpec with RunUtil {
 
   def main(args: Array[String]): Unit = {
-    runSingleBm("other", "scala-library-2.10.2")
+    runSingleBm("specjvm", "javac")
   }
 
   def runSpecJvm(): Unit = {
@@ -29,8 +30,9 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
   def runSingleBm(bmCollectionName: String, bmName: String): Unit = {
     println(s"Running $bmName benchmark...")
     val path: String = configPath(bmCollectionName, bmName)
-    new NormalTaintAnalysisRunner(path, bmName).printResultSize()
-    new CcTaintAnalysisRunner(path, bmName).printResultSize()
+//    new NormalTaintAnalysisRunner(path, bmName).printResultSize()
+    val runner = time("Preparing analysis") { new CcTaintAnalysisRunner(path, bmName) }
+    runner.printResultSize()
     println()
   }
 
@@ -71,7 +73,8 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
     with CcReceivers {
 
     override def printResultSize() {
-      printf("%s CC result: %d\n", bmName, ifdsResult.size)
+      val result = time ("Computing correlated-calls result") { ifdsResult }
+      printf("%s CC result: %d\n", bmName, result.size)
     }
   }
 }
