@@ -2,18 +2,27 @@ package ca.uwaterloo.dataflow.common
 
 import com.ibm.wala.util.collections.Filter
 import com.ibm.wala.util.graph.traverse.DFS
+
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
 
+  private[this] val followingNodesCache = mutable.Map[NodeType, Seq[NodeType]]()
+
+  private[this] val enclProcCache = mutable.Map[Node, Procedure]()
+
+  private[this] val startNodeCache = mutable.Map[Node, Seq[NodeType]]()
+
   def followingNodes(n: NodeType): Seq[NodeType] =
-    n match {
-      case PhiNode(node)    =>
-        Seq(NormalNode(node))
-      case NormalNode(node) =>
-        (supergraph getSuccNodes node).asScala.toSeq map createNodeType
-    }
+    followingNodesCache.getOrElseUpdate(n,
+      n match {
+        case PhiNode(node)    =>
+          Seq(NormalNode(node))
+        case NormalNode(node) =>
+          (supergraph getSuccNodes node).asScala.toSeq map createNodeType
+      })
   
   def createNodeType(node: Node): NodeType =
     if (phiInstructions(node).isEmpty)
@@ -24,7 +33,8 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
   /**
    * Returns the enclosing procedure of a given node.
    */
-  lazy val enclProc: Node => Procedure = supergraph.getProcOf
+  def enclProc(node: Node): Procedure =
+    enclProcCache.getOrElseUpdate(node, supergraph.getProcOf(node))
 
   /**
    * Given a call node n, returns the start nodes of n's target procedures.
@@ -41,13 +51,12 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
     }
 
   /**
-   * Returns the start node of the argument's enclosing procedure.
+   * Returns the start node of the node's enclosing procedure.
    */
-  lazy val startNodes: Node => Seq[NodeType] = { // todo: in general, not sure to which scala collections WALA's collections should be converted
-    n =>
-      val nodes = supergraph getEntriesForProcedure enclProc(n)
-      nodes.view.toSeq map createNodeType
-  }
+  def startNodes(n: Node): Seq[NodeType] =
+    startNodeCache.getOrElseUpdate(
+      n,
+      (supergraph getEntriesForProcedure enclProc(n)).view.toSeq map createNodeType)
 
   /**
    * Given the exit node of procedure p, returns all pairs (c, r), where c calls p with corresponding
@@ -61,27 +70,25 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
       if (supergraph getSuccNodes c).asScala contains rn
     } yield NormalNode(c) -> r
 
-  lazy val getCallSites: (Node, Procedure) => Iterator[Node] =
-    (node, proc) =>
-      supergraph.getCallSites(node, proc).asScala
+  def getCallSites(node: Node, proc: Procedure): Iterator[Node] =
+    supergraph.getCallSites(node, proc).asScala
 
   /**
    * All call nodes inside of a given procedure
    */
-  lazy val callNodesInProc: Procedure => Seq[NormalNode] =
-    p => {
-      val nodesInProc = DFS.getReachableNodes(
-        supergraph,
-        (supergraph getEntriesForProcedure p).toSeq,
-        new Filter[Node]() {
-          override def accepts(n: Node): Boolean = enclProc(n) == p
-        }
-      ).toSeq
-      nodesInProc collect {
-        case nip if supergraph isCall nip =>
-          NormalNode(nip)
+  def callNodesInProc(p: Procedure): Seq[NormalNode] = {
+    val nodesInProc = DFS.getReachableNodes(
+      supergraph,
+      (supergraph getEntriesForProcedure p).toSeq,
+      new Filter[Node]() {
+        override def accepts(n: Node): Boolean = enclProc(n) == p
       }
+    ).toSeq
+    nodesInProc collect {
+      case nip if supergraph isCall nip =>
+        NormalNode(nip)
     }
+  }
 
   def traverseSupergraph = supergraph.iterator.asScala
 }

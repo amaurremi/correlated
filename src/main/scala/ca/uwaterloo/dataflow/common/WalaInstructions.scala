@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.common
 
-import com.ibm.wala.classLoader.{IClass, IMethod}
+import com.ibm.wala.classLoader.IClass
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.callgraph.impl.ClassHierarchyMethodTargetSelector
 import com.ibm.wala.ipa.cfg.BasicBlockInContext
