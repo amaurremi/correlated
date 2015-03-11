@@ -24,11 +24,11 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       override lazy val entryPoints: Seq[NodeType] = notNeeded
       override lazy val supergraph: ISupergraph[Node, Procedure] = notNeeded
       override def getValNum(factElem: FactElem, node: XNode): ValueNumber = notNeeded
-      override def otherSuccEdges: IdeOtherEdgeFn = notNeeded
-      override def otherSuccEdgesPhi: IdeOtherEdgeFn = notNeeded
-      override def endReturnEdges: IdeEdgeFn = notNeeded
-      override def callReturnEdges: IdeEdgeFn = notNeeded
-      override def callStartEdges: IdeEdgeFn = notNeeded
+      override def otherSuccEdges(n: XNode) = notNeeded
+      override def otherSuccEdgesPhi(n: XNode) = notNeeded
+      override def endReturnEdges(n: XNode, t: NodeType) = notNeeded
+      override def callReturnEdges(n: XNode, t: NodeType) = notNeeded
+      override def callStartEdges(n: XNode, t: NodeType) = notNeeded
       override lazy val callGraph: CallGraph = notNeeded
 
       override val pointerAnalysis: PointerAnalysis[InstanceKey] = mock[PointerAnalysis[InstanceKey]]

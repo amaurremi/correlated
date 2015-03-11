@@ -172,14 +172,13 @@ trait JumpFuncs {
     }
   }
 
-  private[this] def otherSuccEdgesWithPhi: IdeOtherEdgeFn =
-    node =>
-      node.n match {
-        case NormalNode(n) =>
-          otherSuccEdges(node)
-        case PhiNode(n) =>
-          otherSuccEdgesPhi(node)
-      }
+  private[this] def otherSuccEdgesWithPhi(node: XNode) =
+    node.n match {
+      case NormalNode(n) =>
+        otherSuccEdges(node)
+      case PhiNode(n) =>
+        otherSuccEdgesPhi(node)
+    }
 
   private[this] def propagate(e: XEdge, f: IdeFunction) {
     val jf = jumpFn(e)

@@ -13,43 +13,29 @@ trait IdeFlowFunctions { this: IdeExplodedGraphTypes with IdeConstants =>
   )
 
   /**
-   * Given partial information for an edge:
-   *   n, d1, m
-   * returns d2 such that there exists an edge in the exploded graph:
-   *   (n, d1) -> (m, d2)
-   * along with the corresponding edge functions.
-   */
-  type IdeEdgeFn = (XNode, NodeType) => Set[FactFunPair]
-
-  /**
-   * An edge function for "other" edges that doesn't require the target node of an edge as input.
-   */
-  type IdeOtherEdgeFn = XNode => Set[FactFunPair]
-
-  /**
    * Functions for inter-procedural edges from a call node to the corresponding start edges.
    */
-  def callStartEdges: IdeEdgeFn
+  def callStartEdges(node: XNode, tpe: NodeType): Set[FactFunPair]
 
   /**
    * Functions for intra-procedural edges from a call to the corresponding return edges.
    */
-  def callReturnEdges: IdeEdgeFn
+  def callReturnEdges(node: XNode, tpe: NodeType): Set[FactFunPair]
 
   /**
    * Functions for inter-procedural edges from an end node to the return node of the callee function.
    */
-  def endReturnEdges: IdeEdgeFn
+  def endReturnEdges(node: XNode, tpe: NodeType): Set[FactFunPair]
 
   /**
    * Functions for all other (inter-procedural) edges.
    */
-  def otherSuccEdges: IdeOtherEdgeFn
+  def otherSuccEdges(node: XNode): Set[FactFunPair]
 
   /**
    * Functions for phi instructions.
    */
-  def otherSuccEdgesPhi: IdeOtherEdgeFn
+  def otherSuccEdgesPhi(node: XNode): Set[FactFunPair]
 
   /**
    * Helper function analogous to callStartFns, but returns only the factoids, without the edge functions.

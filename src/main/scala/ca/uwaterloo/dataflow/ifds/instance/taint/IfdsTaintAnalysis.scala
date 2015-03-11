@@ -49,8 +49,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
         enclProc(ep.node) == enclProc(node)
     }) && arrayRef == 1
 
-  override def ifdsOtherSuccEdges: IfdsOtherEdgeFn =
-    ideN1 => {
+  override def ifdsOtherSuccEdges(ideN1: XNode) = {
       val n1            = ideN1.n
       val d1            = ideN1.d
       val defaultResult = Set(d1)
@@ -113,8 +112,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
   private[this] def factSameAsVar(fact: Fact, method: IMethod, vn: ValueNumber) =
     fact == Variable(method, vn)
 
-  override def ifdsEndReturnEdges: IfdsEdgeFn =
-    (ideN1, n2) =>
+  override def ifdsEndReturnEdges(ideN1: XNode, n2: NodeType) =
       ideN1.d match {
         case v@Variable(method, vn)
           if getParameterNumber(ideN1).isDefined &&
@@ -144,8 +142,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
   /**
    * Functions for edges to phi instructions
    */
-  override def ifdsOtherSuccEdgesPhi: IfdsOtherEdgeFn =
-    ideN1 => {
+  override def ifdsOtherSuccEdgesPhi(ideN1: XNode) = {
       val d1 = ideN1.d
       val n1 = ideN1.n.node
       ideN1.d match {
@@ -167,8 +164,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
       }
     }
 
-  override def ifdsCallReturnEdges: IfdsEdgeFn =
-    (ideN1, _) => {
+  override def ifdsCallReturnEdges(ideN1: XNode, n2: NodeType) = {
       val d1 = ideN1.d
       val n1 = ideN1.n.node
       n1.getLastInstruction match {
@@ -229,8 +225,7 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
         factSameAsVar(d, method, getValNumFromParameterNum(callInstr, argNum))
     }
 
-  override def ifdsCallStartEdges: IfdsEdgeFn =
-    (ideN1, n2) => {
+  override def ifdsCallStartEdges(ideN1: XNode, n2: NodeType) = {
       val n1            = ideN1.n.node
       val d1            = ideN1.d
       val targetMethod  = n2.node.getMethod
