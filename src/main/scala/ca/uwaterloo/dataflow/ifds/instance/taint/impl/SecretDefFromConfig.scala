@@ -4,14 +4,13 @@ import java.io.File
 
 import ca.uwaterloo.dataflow.common._
 import ca.uwaterloo.dataflow.ifds.instance.taint.SecretDefinition
-import com.ibm.wala.analysis.typeInference.TypeAbstraction
-import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.ipa.cha.IClassHierarchy
 import com.ibm.wala.types.{MethodReference, TypeReference}
 import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 trait SecretDefFromConfig extends SecretDefinition {
 
@@ -106,8 +105,10 @@ trait SecretDefFromConfig extends SecretDefinition {
   override def isSecretArrayElementType(typeRef: TypeReference) =
     stringConfig.arrayElemTypes contains typeName(typeRef)
 
-  lazy val typeName: TypeReference => String =
-    _.getName.toString
+  private[this] val typeNameCache = mutable.Map[TypeReference, String]()
+
+  def typeName(tr: TypeReference): String =
+    typeNameCache.getOrElseUpdate(tr, tr.getName.toString)
 
   override def getOperationType(op: MethodReference, node: CGNode, vn: Option[ValueNumber]): Option[SecretOperation] = {
     lazy val methodName = op.getName.toString

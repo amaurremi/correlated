@@ -1,8 +1,6 @@
 package ca.uwaterloo.dataflow.ifds.instance.taint
 
 import ca.uwaterloo.dataflow.common.VariableFacts
-import com.ibm.wala.analysis.typeInference.TypeAbstraction
-import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.ipa.callgraph.CGNode
 import com.ibm.wala.types.{MethodReference, TypeReference}
 

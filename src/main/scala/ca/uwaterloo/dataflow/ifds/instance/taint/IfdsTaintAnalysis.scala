@@ -2,7 +2,7 @@ package ca.uwaterloo.dataflow.ifds.instance.taint
 
 import ca.uwaterloo.dataflow.common.VariableFacts
 import ca.uwaterloo.dataflow.ifds.analysis.problem.IfdsProblem
-import com.ibm.wala.analysis.typeInference.{PointType, TypeInference}
+import com.ibm.wala.analysis.typeInference.TypeInference
 import com.ibm.wala.classLoader.IMethod
 import com.ibm.wala.dataflow.IFDS.{ICFGSupergraph, ISupergraph}
 import com.ibm.wala.ipa.callgraph.CallGraph
@@ -14,6 +14,7 @@ import com.typesafe.config.{ConfigFactory, ConfigParseOptions, ConfigResolveOpti
 import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with VariableFacts with SecretDefinition {
 
@@ -99,9 +100,10 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
       }
     }
 
-  lazy val getTypeInference: Procedure => TypeInference =
-    proc =>
-      TypeInference.make(proc.getIR, true)
+  private[this] val typeInferenceMap = mutable.Map[Procedure, TypeInference]()
+
+  def getTypeInference(proc: Procedure): TypeInference =
+    typeInferenceMap.getOrElseUpdate(proc, TypeInference.make(proc.getIR, true))
 
   /**
    * For a fact, checks whether the right-hand side of the assignment instruction in node 'n' is the value of the fact.
