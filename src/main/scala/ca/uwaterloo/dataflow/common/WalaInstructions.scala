@@ -9,7 +9,7 @@ import com.ibm.wala.ssa.analysis.IExplodedBasicBlock
 import com.ibm.wala.types.MethodReference
 
 import scala.collection.JavaConverters._
-import scala.collection.breakOut
+import scala.collection.{breakOut, mutable}
 
 trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphTypes =>
 
@@ -123,18 +123,17 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
     })(breakOut)
   }
 
-  lazy val getDeclaringClasses: (SSAInvokeInstruction, Node) => Map[IClass, Set[IClass]] =
-    (callInstr, sourceNode) => {
-      val targetSelector = new ClassHierarchyMethodTargetSelector(sourceNode.getMethod.getClassHierarchy)
-      getReceiverTypes(callInstr, sourceNode.getNode).foldLeft(Map[IClass, Set[IClass]]() withDefaultValue Set.empty[IClass]) {
-        case (result, receiverType) =>
-          val targetMethod = targetSelector.getCalleeTarget(sourceNode.getNode, callInstr.getCallSite, receiverType)
-          if (targetMethod == null)
-            result
-          else {
-            val targetClass = targetMethod.getDeclaringClass
-            result + (targetClass -> (result(targetClass) + receiverType))
-          }
-      }
+  def getDeclaringClasses(callInstr: SSAInvokeInstruction, sourceNode: Node): Map[IClass, Set[IClass]] = {
+    val targetSelector = new ClassHierarchyMethodTargetSelector(sourceNode.getMethod.getClassHierarchy)
+    getReceiverTypes(callInstr, sourceNode.getNode).foldLeft(Map[IClass, Set[IClass]]() withDefaultValue Set.empty[IClass]) {
+      case (result, receiverType) =>
+        val targetMethod = targetSelector.getCalleeTarget(sourceNode.getNode, callInstr.getCallSite, receiverType)
+        if (targetMethod == null)
+          result
+        else {
+          val targetClass = targetMethod.getDeclaringClass
+          result + (targetClass -> (result(targetClass) + receiverType))
+        }
     }
+  }
 }
