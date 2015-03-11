@@ -61,23 +61,6 @@ trait WalaInstructions extends Phis { this: VariableFacts with ExplodedGraphType
     followingNodes(n) map { _.node.getLastInstruction }
 
   /**
-   * Does the value with the given value number correspond to a method call?
-   */
- def isCall(value: ValueNumber, node: Node): Boolean =
-    instructionsInProc(node) exists {
-      case instr: SSAInvokeInstruction
-        if instr.getReturnValue(0) == value => true
-      case _                                => false
-    }
-
-  /**
-   * Get all instructions in the procedure enclosing this node.
-   */
-  lazy val instructionsInProc =
-    (node: Node) =>
-      enclProc(node).getIR.iterateNormalInstructions.asScala
-
-  /**
    * Get the value number for the ith parameter.
    * @param argNum the number of the parameter
    * @param n a node inside of the method
