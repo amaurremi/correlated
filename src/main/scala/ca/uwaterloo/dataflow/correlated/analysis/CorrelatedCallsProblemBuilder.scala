@@ -200,8 +200,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
             })(breakOut))
       }
 
-    override def ◦(f: IdeFunction): IdeFunction =
-      f
+    override def ◦(f: IdeFunction): IdeFunction = f
 
     override def toString: String = "id"
   }
