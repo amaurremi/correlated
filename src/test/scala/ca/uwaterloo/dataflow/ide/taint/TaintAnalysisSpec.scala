@@ -5,7 +5,7 @@ import org.scalatest.FunSpec
 
 class TaintAnalysisSpec extends FunSpec {
 
-  private[this] def assertSecretsFor(test: String, useSecretStrings: Boolean = false) {
+  private[this] def assertSecretsFor(test: String, useSecretStrings: Boolean = true) {
     val dir = "ca/uwaterloo/dataflow/ide/taint/"
     val path = dir + test
     val (ifds, ide) =
