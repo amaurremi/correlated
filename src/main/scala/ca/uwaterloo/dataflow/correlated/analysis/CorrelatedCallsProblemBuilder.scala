@@ -110,7 +110,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
     override def ⊔(el: TypesLattice) = el
   }
 
-  trait CorrelatedFunctionI extends IdeFunctionI
+  sealed trait CorrelatedFunctionI extends IdeFunctionI
 
   trait CorrelatedFunction extends CorrelatedFunctionI {
 
@@ -126,8 +126,10 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
 
     override def ◦(f: CorrelatedFunctionI): CorrelatedFunctionI =
       f match {
-        case CorrelatedIdFunction        =>
+        case CorrelatedIdFunction         =>
           this
+        case CorrelatedTopFunction        =>
+          CorrelatedTopFunction
         case CorrelatedFunction(fUpdates) =>
           val recToTypes: ComposedTypeMultiMap = ((updates.keys ++ fUpdates.keys) map {
             r =>
@@ -146,6 +148,8 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
       f match {
         case CorrelatedIdFunction         =>
           CorrelatedIdFunction ⊓ this
+        case CorrelatedTopFunction        =>
+          this
         case CorrelatedFunction(fUpdates) =>
           CorrelatedFunction(
             ((updates.keys ++ fUpdates.keys) map {
@@ -188,8 +192,10 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
 
     override def ⊓(f: IdeFunction): IdeFunction =
       f match {
-        case CorrelatedIdFunction =>
+        case CorrelatedIdFunction        =>
           f
+        case CorrelatedTopFunction       =>
+          this
         case CorrelatedFunction(updates) =>
           CorrelatedFunction(
             (updates.keys map {
