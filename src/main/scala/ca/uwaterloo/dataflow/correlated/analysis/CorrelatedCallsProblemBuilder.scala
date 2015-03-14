@@ -31,7 +31,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
   override val Top    = MapLatticeElem(mapReceivers(TypesTop))
 
   override val Id     = CorrelatedIdFunction
-  override val λTop   = CorrelatedFunction(mapReceivers(composedTypesTop))
+  override val λTop   = CorrelatedTopFunction
 
   def mapReceivers[A](value: A): Map[ReceiverI, A] =
     (ccReceivers map {
@@ -166,7 +166,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
         CorrelatedIdFunction
       else {
         val nonIdUpdates = pairs filter {
-          _ != composedTypesId
+          _._2 != composedTypesId
         }
         if (nonIdUpdates.isEmpty)
           CorrelatedIdFunction
@@ -201,5 +201,14 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
     override def ◦(f: IdeFunction): IdeFunction = f
 
     override def toString: String = "id"
+  }
+
+  object CorrelatedTopFunction extends CorrelatedFunctionI {
+
+    override def apply(arg: LatticeElem): LatticeElem = Top
+
+    override def ⊓(f: IdeFunction): IdeFunction = f
+
+    override def ◦(f: IdeFunction): IdeFunction = this
   }
 }
