@@ -129,15 +129,17 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
         case CorrelatedIdFunction        =>
           this
         case CorrelatedFunction(fUpdates) =>
-          CorrelatedFunction(
-            (ccReceivers map {
-              r =>
-                val ComposedTypes(i1, u1) = updates(r)
-                val ComposedTypes(i2, u2) = fUpdates(r)
-                r -> ComposedTypes(
-                  i1 ⊔ i2, (i1 ⊔ u2) ⊓ u1
-                )
-            })(breakOut))
+          val recToTypes: ComposedTypeMultiMap = ((updates.keys ++ fUpdates.keys) map {
+            r =>
+              val ComposedTypes(i1, u1) = updates getOrElse (r, composedTypesId)
+              val ComposedTypes(i2, u2) = fUpdates getOrElse (r, composedTypesId)
+              r -> ComposedTypes(
+                i1 ⊔ i2, (i1 ⊔ u2) ⊓ u1
+              )
+          })(breakOut)
+          CorrelatedFunction(recToTypes filter {
+            _._2 != composedTypesId
+          })
       }
 
     override def ⊓(f: CorrelatedFunctionI): CorrelatedFunctionI =
@@ -146,10 +148,10 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
           CorrelatedIdFunction ⊓ this
         case CorrelatedFunction(fUpdates) =>
           CorrelatedFunction(
-            (ccReceivers map {
+            ((updates.keys ++ fUpdates.keys) map {
               r =>
-                val ComposedTypes(i1, u1) = updates(r)
-                val ComposedTypes(i2, u2) = fUpdates(r)
+                val ComposedTypes(i1, u1) = updates getOrElse (r, composedTypesId)
+                val ComposedTypes(i2, u2) = fUpdates getOrElse (r, composedTypesId)
                 r -> ComposedTypes(
                   i1 ⊓ i2, u1 ⊓ u2
                 )
@@ -163,17 +165,13 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
       if (pairs.isEmpty)
         CorrelatedIdFunction
       else {
-        if (pairs.valuesIterator exists {_ != composedTypesId}) { // if at least one pair is not ID
-          val updates: ComposedTypeMultiMap =
-            if (pairs.size == ccReceivers.size)
-              pairs
-            else
-              (ccReceivers map {
-                r =>
-                  r -> (pairs getOrElse(r, composedTypesId))
-              })(breakOut)
-          CorrelatedFunctionImpl(updates)
-        } else CorrelatedIdFunction
+        val nonIdUpdates = pairs filter {
+          _ != composedTypesId
+        }
+        if (nonIdUpdates.isEmpty)
+          CorrelatedIdFunction
+        else
+          CorrelatedFunctionImpl(nonIdUpdates)
       }
     }
 
@@ -194,7 +192,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
           f
         case CorrelatedFunction(updates) =>
           CorrelatedFunction(
-            (ccReceivers map {
+            (updates.keys map {
               r =>
                 r -> ComposedTypes(TypesBottom, updates(r).unionSet)
             })(breakOut))

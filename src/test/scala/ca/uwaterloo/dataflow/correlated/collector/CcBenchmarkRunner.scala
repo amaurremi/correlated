@@ -12,7 +12,7 @@ import Time.time
 object CcBenchmarkRunner extends FunSpec with RunUtil {
 
   def main(args: Array[String]): Unit = {
-    runSingleBm("specjvm", "db")
+    runSingleBm("specjvm", "javac")
   }
 
   def runSpecJvm(): Unit = {
