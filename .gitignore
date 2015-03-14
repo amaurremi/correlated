@@ -4,6 +4,3 @@ src/test/scala/ca/uwaterloo/dataflow/*/*/inputPrograms/*/*.jar
 src/test/resources/ca/uwaterloo/dataflow/*/*/*.conf
 .idea/
 .idea_modules
-projectFilesBackup
-*/.DS_STORE
-
