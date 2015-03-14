@@ -5,7 +5,7 @@ import ca.uwaterloo.dataflow.correlated.collector.util.RunUtil
 object StatsBenchmarkRunner extends App with RunUtil {
 
   // Run all benchmarks under 'benchmarks/other'
-  runDacapo()
+  runSingleBm("specjvm", "javac")
 
   // Run a specific benchmark
   // runSingleBm("other", "check")

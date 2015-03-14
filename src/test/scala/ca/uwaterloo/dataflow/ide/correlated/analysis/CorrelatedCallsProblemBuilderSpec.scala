@@ -58,7 +58,7 @@ class CorrelatedCallsProblemBuilderSpec extends FunSpec with MockitoSugar {
       it("identity and top functions") {
         val ct = ComposedTypes(SetType(Set(class1)), SetType(Set(class2)))
         val f  = CorrelatedFunction(Map(receiver1 -> ct))
-//
+
         assertResult(Id)(Id ◦ Id)
         assertResult(λTop)(Id ◦ λTop)
         assertResult(f)(Id ◦ f)

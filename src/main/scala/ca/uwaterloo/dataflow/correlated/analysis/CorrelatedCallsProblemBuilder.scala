@@ -19,7 +19,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
   type Type                 = IClass
 
   override type LatticeElem = MapLatticeElem
-  override type IdeFunction = CorrelatedFunction
+  override type IdeFunction = CorrelatedFunctionI
 
   val TypesTop: TypesLattice = SetType(Set.empty[Type])
 
@@ -30,7 +30,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
   override val Bottom = MapLatticeElem(mapReceivers(TypesBottom))
   override val Top    = MapLatticeElem(mapReceivers(TypesTop))
 
-  override val Id     = CorrelatedFunction(mapReceivers(composedTypesId))
+  override val Id     = CorrelatedIdFunction
   override val λTop   = CorrelatedFunction(mapReceivers(composedTypesTop))
 
   def mapReceivers[A](value: A): Map[ReceiverI, A] =
@@ -110,7 +110,9 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
     override def ⊔(el: TypesLattice) = el
   }
 
-  trait CorrelatedFunction extends IdeFunctionI {
+  trait CorrelatedFunctionI extends IdeFunctionI
+
+  trait CorrelatedFunction extends CorrelatedFunctionI {
 
     val updates: ComposedTypeMultiMap
 
@@ -122,52 +124,85 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
         }
       )
 
-    override def ◦(f: CorrelatedFunction): CorrelatedFunction =
-      CorrelatedFunction(
-        (ccReceivers map {
-          r =>
-            val ComposedTypes(i1, u1) = updates(r)
-            val ComposedTypes(i2, u2) = f.updates(r)
-            r -> ComposedTypes(
-              i1 ⊔ i2, (i1 ⊔ u2) ⊓ u1
-            )
-        })(breakOut)
-      )
+    override def ◦(f: CorrelatedFunctionI): CorrelatedFunctionI =
+      f match {
+        case CorrelatedIdFunction        =>
+          this
+        case CorrelatedFunction(fUpdates) =>
+          CorrelatedFunction(
+            (ccReceivers map {
+              r =>
+                val ComposedTypes(i1, u1) = updates(r)
+                val ComposedTypes(i2, u2) = fUpdates(r)
+                r -> ComposedTypes(
+                  i1 ⊔ i2, (i1 ⊔ u2) ⊓ u1
+                )
+            })(breakOut))
+      }
 
-    override def ⊓(f: CorrelatedFunction): CorrelatedFunction =
-      CorrelatedFunction(
-        (ccReceivers map {
-          r =>
-            val ComposedTypes(i1, u1) = updates(r)
-            val ComposedTypes(i2, u2) = f.updates(r)
-            r -> ComposedTypes(
-              i1 ⊓ i2, u1 ⊓ u2
-            )
-        })(breakOut))
-
-    override def toString: String =
-      if (this == Id)
-        "id"
-      else super.toString
+    override def ⊓(f: CorrelatedFunctionI): CorrelatedFunctionI =
+      f match {
+        case CorrelatedIdFunction         =>
+          CorrelatedIdFunction ⊓ this
+        case CorrelatedFunction(fUpdates) =>
+          CorrelatedFunction(
+            (ccReceivers map {
+              r =>
+                val ComposedTypes(i1, u1) = updates(r)
+                val ComposedTypes(i2, u2) = fUpdates(r)
+                r -> ComposedTypes(
+                  i1 ⊓ i2, u1 ⊓ u2
+                )
+            })(breakOut))
+      }
   }
 
   object CorrelatedFunction {
 
-    def apply(pairs: ComposedTypeMultiMap): CorrelatedFunction =
-      CorrelatedFunctionImpl(
-        if (pairs.size == ccReceivers.size)
-          pairs
-        else
-          (ccReceivers map {
-            r =>
-              r -> (pairs getOrElse (r, composedTypesId))
-          })(breakOut)
-      )
+    def apply(pairs: ComposedTypeMultiMap): CorrelatedFunctionI = {
+      if (pairs.isEmpty)
+        CorrelatedIdFunction
+      else {
+        if (pairs.valuesIterator exists {_ != composedTypesId}) { // if at least one pair is not ID
+          val updates: ComposedTypeMultiMap =
+            if (pairs.size == ccReceivers.size)
+              pairs
+            else
+              (ccReceivers map {
+                r =>
+                  r -> (pairs getOrElse(r, composedTypesId))
+              })(breakOut)
+          CorrelatedFunctionImpl(updates)
+        } else CorrelatedIdFunction
+      }
+    }
 
     def unapply(ct: CorrelatedFunction): Option[ComposedTypeMultiMap] = Some(ct.updates)
 
     case class CorrelatedFunctionImpl private[CorrelatedFunction](
       updates: ComposedTypeMultiMap
     ) extends CorrelatedFunction
+  }
+
+  object CorrelatedIdFunction extends CorrelatedFunctionI {
+
+    override def apply(el: LatticeElem): LatticeElem = el
+
+    override def ⊓(f: IdeFunction): IdeFunction =
+      f match {
+        case CorrelatedIdFunction =>
+          f
+        case CorrelatedFunction(updates) =>
+          CorrelatedFunction(
+            (ccReceivers map {
+              r =>
+                r -> ComposedTypes(TypesBottom, updates(r).unionSet)
+            })(breakOut))
+      }
+
+    override def ◦(f: IdeFunction): IdeFunction =
+      f
+
+    override def toString: String = "id"
   }
 }
