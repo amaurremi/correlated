@@ -52,6 +52,7 @@ createConfigFile mandelbrot_jython "mandelbrot\$py" nonjava
 createConfigFile nbody_scala "nbody" nonjava
 
 createConfigFile check "spec/benchmarks/_200_check/Main" specjvm spec
+createConfigFile compress "spec/benchmarks/_201_compress/Main" specjvm spec
 createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm spec
 createConfigFile db "spec/benchmarks/_209_db/Main" specjvm spec
 createConfigFile javac "spec/benchmarks/_213_javac/Main" specjvm spec
