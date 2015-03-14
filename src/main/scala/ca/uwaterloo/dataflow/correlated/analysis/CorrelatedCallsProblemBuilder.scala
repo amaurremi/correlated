@@ -127,7 +127,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
     override def ◦(f: CorrelatedFunctionI): CorrelatedFunctionI =
       f match {
         case CorrelatedIdFunction        =>
-          f
+          this
         case CorrelatedFunction(fUpdates) =>
           CorrelatedFunction(
             (ccReceivers map {
@@ -143,7 +143,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
     override def ⊓(f: CorrelatedFunctionI): CorrelatedFunctionI =
       f match {
         case CorrelatedIdFunction         =>
-          f ⊓ this
+          CorrelatedIdFunction ⊓ this
         case CorrelatedFunction(fUpdates) =>
           CorrelatedFunction(
             (ccReceivers map {
@@ -163,15 +163,17 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
       if (pairs.isEmpty)
         CorrelatedIdFunction
       else {
-        val updates: ComposedTypeMultiMap =
-          if (pairs.size == ccReceivers.size)
-            pairs
-          else // todo does this branch ever get executed?
-            (ccReceivers map {
-              r =>
-                r -> (pairs getOrElse(r, composedTypesId))
-            })(breakOut)
-        CorrelatedFunctionImpl(updates)
+        if (pairs.valuesIterator exists {_ != composedTypesId}) { // if at least one pair is not ID
+          val updates: ComposedTypeMultiMap =
+            if (pairs.size == ccReceivers.size)
+              pairs
+            else
+              (ccReceivers map {
+                r =>
+                  r -> (pairs getOrElse(r, composedTypesId))
+              })(breakOut)
+          CorrelatedFunctionImpl(updates)
+        } else CorrelatedIdFunction
       }
     }
 
@@ -180,8 +182,6 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
     case class CorrelatedFunctionImpl private[CorrelatedFunction](
       updates: ComposedTypeMultiMap
     ) extends CorrelatedFunction
-
-    override def toString: String = "id"
   }
 
   object CorrelatedIdFunction extends CorrelatedFunctionI {
@@ -200,6 +200,9 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
             })(breakOut))
       }
 
-    override def ◦(f: IdeFunction): IdeFunction = f
+    override def ◦(f: IdeFunction): IdeFunction =
+      f
+
+    override def toString: String = "id"
   }
 }
