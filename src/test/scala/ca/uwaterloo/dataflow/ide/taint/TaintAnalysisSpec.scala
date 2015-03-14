@@ -10,7 +10,7 @@ class TaintAnalysisSpec extends FunSpec {
     val path = dir + test
     val (ifds, ide) =
       if (useSecretStrings)
-        (new TaintAnalysisSpecBuilder(path) with SecretStrings, new TaintAnalysisSpecBuilder(path) with SecretStrings)
+        (new TaintAnalysisSpecBuilder(path) with SecretStrings, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
       else
         (new TaintAnalysisSpecBuilder(path) with SecretInput, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
     ifds.assertSecretValues()
