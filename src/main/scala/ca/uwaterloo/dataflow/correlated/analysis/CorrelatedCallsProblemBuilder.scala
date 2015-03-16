@@ -128,8 +128,6 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
       f match {
         case CorrelatedIdFunction         =>
           this
-        case CorrelatedTopFunction        =>
-          CorrelatedTopFunction
         case CorrelatedFunction(fUpdates) =>
           val recToTypes: ComposedTypeMultiMap = ((updates.keys ++ fUpdates.keys) map {
             r =>

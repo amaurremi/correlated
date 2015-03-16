@@ -51,14 +51,14 @@ createConfigFile mandelbrot_scala "mandelbrot" nonjava
 createConfigFile mandelbrot_jython "mandelbrot\$py" nonjava
 createConfigFile nbody_scala "nbody" nonjava
 
-createConfigFile check "spec/benchmarks/_200_check/Main" specjvm spec
-createConfigFile compress "spec/benchmarks/_201_compress/Main" specjvm spec
-createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm spec
-createConfigFile db "spec/benchmarks/_209_db/Main" specjvm spec
-createConfigFile javac "spec/benchmarks/_213_javac/Main" specjvm spec
-createConfigFile jack "spec/benchmarks/_228_jack/Main" specjvm spec
-createConfigFile jess "spec/benchmarks/_202_jess/Main" specjvm spec
-createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm spec
+createConfigFile check "spec/benchmarks/_200_check/Main" specjvm
+createConfigFile compress "spec/benchmarks/_201_compress/Main" specjvm
+createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm
+createConfigFile db "spec/benchmarks/_209_db/Main" specjvm
+createConfigFile javac "spec/benchmarks/_213_javac/Main" specjvm
+createConfigFile jack "spec/benchmarks/_228_jack/Main" specjvm
+createConfigFile jess "spec/benchmarks/_202_jess/Main" specjvm
+createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm
 
 function createConfigFileDacapo() {
     testname=$1
@@ -119,13 +119,15 @@ function createConfigFileEP() {
 
 # entry point:        spec.benchmarks._200_check.Main.main([Ljava/lang/String;)V
 # entry point regexp: spec\.benchmarks\._200_check\.Main\.main\(\[Ljava\/lang\/String\;\)V
-createConfigFileEP check 'spec\\\\.benchmarks\\\\._200_check\\\\.Main\\\\.main\\\\(\\\\[Ljava\\\\/lang\\\\/String\\\\;\\\\)V' spec
+createConfigFileEP check 'spec\\\\.benchmarks\\\\._200_check\\\\.Main\\\\.main\\\\(\\\\[Ljava\\\\/lang\\\\/String\\\\;\\\\)V'
 
 # entry points:       all methods in package spec.benchmarks._205_raytrace
 # entry point regexp: spec\.benchmarks\._205_raytrace\..*
-createConfigFileEP raytrace 'spec\\\\.benchmarks\\\\._205_raytrace\\\\..*' spec
+createConfigFileEP raytrace 'spec\\\\.benchmarks\\\\._205_raytrace\\\\..*'
 
 createConfigFileEP scala-library-2.10.2 'scala\\\\.collection\\\\.immutable\\\\.List.*'
 
-createConfigFileEP java.util-1.7 'java\\\\.util.*'
+#createConfigFileEP java.util-1.7 'java\\\\.util.*'
 
+createConfigFileEP mpegaudio 'spec\\\\.benchmarks\\\\._222_mpegaudio\\\\..*'
+createConfigFileEP mtrt 'spec\\\\.benchmarks\\\\._227_mtrt\\\\..*'
