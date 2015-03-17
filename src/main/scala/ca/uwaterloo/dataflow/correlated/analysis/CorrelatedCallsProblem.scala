@@ -49,10 +49,11 @@ trait CorrelatedCallsProblem extends CorrelatedCallsProblemBuilder with WalaInst
               Id
           }
       }
-      assert(edgeFns.size == 1) // todo this must be a wrong assumption
-      d2s map {
-        FactFunPair(_, edgeFns.head)
-      }
+      // todo look into this!!!! there used to be an assertion that edgeFns.size == 1 but it's wrong!
+      for {
+        edgeFn <- edgeFns
+        d2     <- d2s
+      } yield FactFunPair(d2, edgeFn)
     }
   }
 

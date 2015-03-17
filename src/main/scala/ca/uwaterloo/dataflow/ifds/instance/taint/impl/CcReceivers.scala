@@ -6,5 +6,7 @@ import ca.uwaterloo.dataflow.correlated.collector.{CorrelatedCallStats, Receiver
 
 trait CcReceivers extends Receivers { this: SuperGraphTypes =>
 
-  override def getCcReceivers: Set[ReceiverI] = CorrelatedCallStats(callGraph).receiverToCallSites.keys.toSet
+  override def getCcReceivers: Set[ReceiverI] = Time.time ("  Collecting receivers...") {
+    CorrelatedCallStats(callGraph).receiverToCallSites.keys.toSet
+  }
 }

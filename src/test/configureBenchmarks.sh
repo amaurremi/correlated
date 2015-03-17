@@ -52,6 +52,7 @@ createConfigFile mandelbrot_jython "mandelbrot\$py" nonjava
 createConfigFile nbody_scala "nbody" nonjava
 
 createConfigFile check "spec/benchmarks/_200_check/Main" specjvm spec
+createConfigFile compress "spec/benchmarks/_201_compress/Main" specjvm spec
 createConfigFile raytrace "spec/benchmarks/_205_raytrace/Main" specjvm spec
 createConfigFile db "spec/benchmarks/_209_db/Main" specjvm spec
 createConfigFile javac "spec/benchmarks/_213_javac/Main" specjvm spec
@@ -122,9 +123,11 @@ createConfigFileEP check 'spec\\\\.benchmarks\\\\._200_check\\\\.Main\\\\.main\\
 
 # entry points:       all methods in package spec.benchmarks._205_raytrace
 # entry point regexp: spec\.benchmarks\._205_raytrace\..*
-createConfigFileEP raytrace 'spec\\\\.benchmarks\\\\._205_raytrace\\\\..*' spec
+createConfigFileEP raytrace 'spec\\\\.benchmarks\\\\._205_raytrace\\\\.Runner.*' spec
 
 createConfigFileEP scala-library-2.10.2 'scala\\\\.collection\\\\.immutable\\\\.List.*'
 
-createConfigFileEP java.util-1.7 'java\\\\.util.*'
+#createConfigFileEP java.util-1.7 'java\\\\.util.*'
 
+createConfigFileEP mpegaudio 'spec\\\\.benchmarks\\\\._222_mpegaudio\\\\.Main.*' spec
+createConfigFileEP mtrt 'spec\\\\.benchmarks\\\\._205_raytrace\\\\.Runner.*' spec

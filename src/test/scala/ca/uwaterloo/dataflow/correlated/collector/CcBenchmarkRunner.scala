@@ -27,11 +27,13 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
     run("other")
   }
 
-  def runSingleBm(bmCollectionName: String, bmName: String): Unit = {
+  def runSingleBm(bmCollectionName: String, bmName: String, equivAnalysis: Boolean = false): Unit = {
     println(s"Running $bmName benchmark...")
     val path: String = configPath(bmCollectionName, bmName)
-//    new NormalTaintAnalysisRunner(path, bmName).printResultSize()
-    val runner = time("Preparing analysis") { new CcTaintAnalysisRunner(path, bmName) }
+    val runner = time("Preparing analysis") {
+      if (equivAnalysis) new NormalTaintAnalysisRunner(path, bmName)
+      else new CcTaintAnalysisRunner(path, bmName)
+    }
     runner.printResultSize()
     println()
   }
@@ -50,6 +52,12 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
   with AbstractIdeToIfds
   with SecretInput {
 
+    def printResultSize(equiv: Boolean, bmName: String) = {
+      val (analysis, algorithm) = if (equiv) ("equivalence", "IFDS") else ("CC", "IDE")
+      val result = time ("Computing " + analysis + " result") { ifdsResult }
+      printf("%s %s result: %d\n", bmName, algorithm, result.size)
+    }
+
     def printResultSize()
   }
 
@@ -61,7 +69,7 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
     with IdeToIfds {
 
     override def printResultSize() {
-      printf("%s IFDS result: %d\n", bmName, ifdsResult.size)
+      printResultSize(equiv = true, bmName)
     }
   }
 
@@ -73,8 +81,13 @@ object CcBenchmarkRunner extends FunSpec with RunUtil {
     with CcReceivers {
 
     override def printResultSize() {
-      val result = time ("Computing correlated-calls result") { ifdsResult }
-      printf("%s CC result: %d\n", bmName, result.size)
+      printResultSize(equiv = false, bmName)
+      val supNodes = supergraph.getNumberOfNodes
+      val ifdsNodes = ifdsResult.keySet.size
+      val explNodes = ifdsResult.values.flatten.size
+      println("Number of supergraph nodes: " + supNodes)
+      println("Number of supergraph nodes in IFDS result: " + ifdsNodes)
+      println("Number of exploded nodes: " + explNodes)
     }
   }
 }
