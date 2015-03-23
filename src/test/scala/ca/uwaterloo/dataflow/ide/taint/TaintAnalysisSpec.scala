@@ -12,7 +12,7 @@ class TaintAnalysisSpec extends FunSpec {
       if (useSecretStrings)
         (new TaintAnalysisSpecBuilder(path) with SecretStrings, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
       else
-        (new TaintAnalysisSpecBuilder(path) with SecretInput, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
+        (new TaintAnalysisSpecBuilder(path) with SecretInput, new CcTaintAnalysisSpecBuilder(path) with SecretInput)
     ifds.assertSecretValues()
     ide.assertSecretValues()
   }
