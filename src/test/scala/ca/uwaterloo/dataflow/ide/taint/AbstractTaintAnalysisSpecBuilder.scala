@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.ide.taint
 
-import ca.uwaterloo.dataflow.common.{AbstractIdeToIfds, Method, VariableFacts}
+import ca.uwaterloo.dataflow.common.{Time, AbstractIdeToIfds, Method, VariableFacts}
 import ca.uwaterloo.dataflow.correlated.analysis.CorrelatedCallsToIfds
 import ca.uwaterloo.dataflow.ifds.conversion.{IdeFromIfdsBuilder, IdeToIfds}
 import ca.uwaterloo.dataflow.ifds.instance.taint.IfdsTaintAnalysis
@@ -26,17 +26,19 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
   val assertionMap: Map[Method, Boolean]
 
   def assertSecretValues() {
-    traverseSupergraph collect {
-      case node if (supergraph isCall node) && node.getLastInstruction.isInstanceOf[SSAInvokeInstruction] =>
-        (node, node.getLastInstruction.asInstanceOf[SSAInvokeInstruction])
-    } foreach {
-      case (node, invokeInstr) =>
-        targetStartNodes(NormalNode(node)) foreach {
-          startNode =>
-            assertionMap.get(Method(startNode.node.getMethod.getReference)) foreach {
-              assertResult(_)(getResultAtCallNode(node, invokeInstr))
-            }
-        }
+    Time.time("Running analysis...") {
+      traverseSupergraph collect {
+        case node if (supergraph isCall node) && node.getLastInstruction.isInstanceOf[SSAInvokeInstruction] =>
+          (node, node.getLastInstruction.asInstanceOf[SSAInvokeInstruction])
+      } foreach {
+        case (node, invokeInstr) =>
+          targetStartNodes(NormalNode(node)) foreach {
+            startNode =>
+              assertionMap.get(Method(startNode.node.getMethod.getReference)) foreach {
+                assertResult(_)(getResultAtCallNode(node, invokeInstr))
+              }
+          }
+      }
     }
   }
 

@@ -1,5 +1,6 @@
 package ca.uwaterloo.dataflow.ide.taint
 
+import ca.uwaterloo.dataflow.common.Time.time
 import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{SecretInput, SecretStrings}
 import org.scalatest.FunSpec
 
@@ -8,13 +9,18 @@ class TaintAnalysisSpec extends FunSpec {
   private[this] def assertSecretsFor(test: String, useSecretStrings: Boolean = true) {
     val dir = "ca/uwaterloo/dataflow/ide/taint/"
     val path = dir + test
-    val (ifds, ide) =
+    lazy val (ifds, ide) =
       if (useSecretStrings)
         (new TaintAnalysisSpecBuilder(path) with SecretStrings, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
       else
         (new TaintAnalysisSpecBuilder(path) with SecretInput, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
-    ifds.assertSecretValues()
-    ide.assertSecretValues()
+    println(test + " unit test...")
+    time("preparing IFDS analysis...") {
+      ifds
+    }.assertSecretValues()
+    time("preparing IDE analysis...") {
+      ide
+    }.assertSecretValues()
   }
 
   describe("IFDS and correlated-calls taint analyses") {
