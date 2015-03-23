@@ -79,15 +79,19 @@ abstract class IfdsTaintAnalysis(configPath: String) extends IfdsProblem with Va
         case loadInstr: SSAArrayLoadInstruction if isSecretMainArgsArray(loadInstr.getArrayRef, n1.node) =>
             defaultResult + ArrayElement + Variable(method, loadInstr.getDef)
         //  Fields
-        case putInstr: SSAPutInstruction
-          if factSameAsVar(d1, method, putInstr.getVal) ||
-             isConcatClass(getTypeInference(enclProc(n1.node)).getType(putInstr.getVal).getTypeReference) =>
-            defaultResult + Field(getIField(method.getClassHierarchy, putInstr.getDeclaredField))
+          // IGNORING FIELDS IN THIS BRANCH
+//        case putInstr: SSAPutInstruction
+//          if factSameAsVar(d1, method, putInstr.getVal) ||
+//             isConcatClass(getTypeInference(enclProc(n1.node)).getType(putInstr.getVal).getTypeReference) =>
+//            defaultResult + Field(getIField(method.getClassHierarchy, putInstr.getDeclaredField))
         case getInstr: SSAGetInstruction                                            =>
           d1 match {
-            case Field(field)
-              if field == getIField(method.getClassHierarchy, getInstr.getDeclaredField) =>
-                defaultResult + Variable(method, getInstr.getDef)
+            case Lambda =>
+              defaultResult + Variable(method, getInstr.getDef)
+              // IGNORING FIELDS IN THIS BRANCH
+//            case Field(field)
+//              if field == getIField(method.getClassHierarchy, getInstr.getDeclaredField) =>
+//                defaultResult + Variable(method, getInstr.getDef)
             case _                                                                       =>
               defaultResult
           }
