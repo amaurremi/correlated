@@ -4,7 +4,7 @@
 # configureStatsTest <test name>
 
 ### Replace the `jrepath' value with your path to the rt.jar file
-jrepath="/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home/jre/lib/rt.jar"
+jrepath="/usr/lib/jvm/java-7-oracle/jre/lib/rt.jar"
 
 testroot=ca/uwaterloo/dataflow/correlated/collector
 testParent=$testroot/inputPrograms

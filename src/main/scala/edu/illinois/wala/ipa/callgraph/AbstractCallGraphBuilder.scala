@@ -13,7 +13,7 @@ trait AbstractCallGraphBuilder {
   def _cha: ClassHierarchy
 
   // public
-  def heap: HeapGraph[InstanceKey]
+  def heap: HeapGraph
   def cg: CallGraph
 
   def cgRta: CallGraph
