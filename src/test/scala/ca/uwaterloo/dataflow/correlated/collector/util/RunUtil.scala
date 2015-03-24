@@ -1,11 +1,11 @@
 package ca.uwaterloo.dataflow.correlated.collector.util
 
+import java.io.File
+
 import ca.uwaterloo.dataflow.common.Time
 import ca.uwaterloo.dataflow.correlated.collector.{AppCorrelatedCallStats, CorrelatedCallStats}
-import com.typesafe.config.{ConfigResolveOptions, ConfigParseOptions, ConfigFactory}
-import edu.illinois.wala.ipa.callgraph.FlexibleCallGraphBuilder
-import edu.illinois.wala.ipa.callgraph.DynamicCallGraphBuilder
-import java.io.File
+import com.typesafe.config.{ConfigFactory, ConfigParseOptions, ConfigResolveOptions}
+import edu.illinois.wala.ipa.callgraph.{DynamicCallGraphBuilder, FlexibleCallGraphBuilder}
 
 trait RunUtil {
 

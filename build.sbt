@@ -4,7 +4,7 @@ version := "0.1"
 
 organization := "University of Waterloo"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.2"
 
 resolvers += "Local Maven Repository" at "file:///"+Path.userHome.absolutePath+"/.m2/repository"
 

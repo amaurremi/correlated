@@ -26,19 +26,17 @@ sealed abstract class AbstractTaintAnalysisSpecBuilder (
   val assertionMap: Map[Method, Boolean]
 
   def assertSecretValues() {
-    Time.time("Running analysis...") {
-      traverseSupergraph collect {
-        case node if (supergraph isCall node) && node.getLastInstruction.isInstanceOf[SSAInvokeInstruction] =>
-          (node, node.getLastInstruction.asInstanceOf[SSAInvokeInstruction])
-      } foreach {
-        case (node, invokeInstr) =>
-          targetStartNodes(NormalNode(node)) foreach {
-            startNode =>
-              assertionMap.get(Method(startNode.node.getMethod.getReference)) foreach {
-                assertResult(_)(getResultAtCallNode(node, invokeInstr))
-              }
-          }
-      }
+    traverseSupergraph collect {
+      case node if (supergraph isCall node) && node.getLastInstruction.isInstanceOf[SSAInvokeInstruction] =>
+        (node, node.getLastInstruction.asInstanceOf[SSAInvokeInstruction])
+    } foreach {
+      case (node, invokeInstr) =>
+        targetStartNodes(NormalNode(node)) foreach {
+          startNode =>
+            assertionMap.get(Method(startNode.node.getMethod.getReference)) foreach {
+              assertResult(_)(getResultAtCallNode(node, invokeInstr))
+            }
+        }
     }
   }
 

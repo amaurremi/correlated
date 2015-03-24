@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.ide.taint
 
-import ca.uwaterloo.dataflow.common.Time.time
+import ca.uwaterloo.dataflow.common.Time
 import ca.uwaterloo.dataflow.ifds.instance.taint.impl.{SecretInput, SecretStrings}
 import org.scalatest.FunSpec
 
@@ -9,18 +9,22 @@ class TaintAnalysisSpec extends FunSpec {
   private[this] def assertSecretsFor(test: String, useSecretStrings: Boolean = true) {
     val dir = "ca/uwaterloo/dataflow/ide/taint/"
     val path = dir + test
-    lazy val (ifds, ide) =
+    println(test + " unit test:")
+    val ifds = Time.time("Preparing IFDS analysis") {
       if (useSecretStrings)
-        (new TaintAnalysisSpecBuilder(path) with SecretStrings, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
+        new TaintAnalysisSpecBuilder(path) with SecretStrings
       else
-        (new TaintAnalysisSpecBuilder(path) with SecretInput, new CcTaintAnalysisSpecBuilder(path) with SecretStrings)
-    println(test + " unit test...")
-    time("preparing IFDS analysis...") {
-      ifds
-    }.assertSecretValues()
-    time("preparing IDE analysis...") {
-      ide
-    }.assertSecretValues()
+        new TaintAnalysisSpecBuilder(path) with SecretInput
+    }
+    ifds.assertSecretValues()
+    val ide = Time.time("Preparing Correlated-calls analysis") {
+      if (useSecretStrings)
+        new CcTaintAnalysisSpecBuilder(path) with SecretStrings
+      else
+        new CcTaintAnalysisSpecBuilder(path) with SecretInput
+    }
+    ide.assertSecretValues()
+    println()
   }
 
   describe("IFDS and correlated-calls taint analyses") {
@@ -273,7 +277,8 @@ class TaintAnalysisSpec extends FunSpec {
       }
     }
 
-    describe("fields") {
+    // Ignoring fields in this branch
+    /*describe("fields") {
       it("field") {
         assertSecretsFor("Field")
       }
@@ -318,7 +323,7 @@ class TaintAnalysisSpec extends FunSpec {
         assertSecretsFor("FieldAsParameter")
       }
     }
-
+*/
     describe("inheritance") {
       it("inheritance") {
         assertSecretsFor("Inheritance")

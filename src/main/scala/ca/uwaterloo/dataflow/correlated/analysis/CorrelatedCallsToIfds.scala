@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.correlated.analysis
 
-import ca.uwaterloo.dataflow.common.AbstractIdeToIfds
+import ca.uwaterloo.dataflow.common.{Time, AbstractIdeToIfds}
 
 /**
  * Take the result of a correlated calls analysis and return the result of the source IFDS analysis.
@@ -13,15 +13,17 @@ trait CorrelatedCallsToIfds extends AbstractIdeToIfds with CorrelatedCallsProble
    * is contained in S, then f is reachable.
    */
   override def ifdsResult: Map[Node, Set[Fact]] =
-    solvedResult.foldLeft(Map[Node, Set[Fact]]() withDefaultValue Set.empty[Fact]) {
-      case (result, (XNode(NormalNode(n), f), l)) =>
-        if (f == Λ)
+    Time.time("Computing result") {
+      solvedResult.foldLeft(Map[Node, Set[Fact]]() withDefaultValue Set.empty[Fact]) {
+        case (result, (XNode(NormalNode(n), f), l)) =>
+          if (f == Λ)
+            result
+          else if (l.hasEmptyMapping)
+            result + (n -> result(n))
+          else
+            result + (n -> (result(n) + f))
+        case (result, _) =>
           result
-        else if (l.hasEmptyMapping)
-          result + (n -> result(n))
-        else
-          result + (n -> (result(n) + f))
-      case (result, _)                            =>
-        result
+      }
     }
 }
