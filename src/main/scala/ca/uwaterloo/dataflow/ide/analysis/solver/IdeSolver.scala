@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.ide.analysis.solver
 
-import ca.uwaterloo.dataflow.common.{Phis, TraverseGraph}
+import ca.uwaterloo.dataflow.common.{Time, Phis, TraverseGraph}
 import ca.uwaterloo.dataflow.ide.analysis.problem.IdeProblem
 
 trait IdeSolver extends JumpFuncs with ComputeValues with TraverseGraph with Phis { this: IdeProblem =>
@@ -10,6 +10,8 @@ trait IdeSolver extends JumpFuncs with ComputeValues with TraverseGraph with Phi
    */
   lazy val solvedResult: Map[XNode, LatticeElem] = {
     // computeJumpFuncs corresponds to Phase I of the algorithm, computeValues corresponds to Phase II.
-    computeValues(computeJumpFuncs)
+    Time.time ("Computing result") {
+      computeValues(computeJumpFuncs)
+    }
   }
 }

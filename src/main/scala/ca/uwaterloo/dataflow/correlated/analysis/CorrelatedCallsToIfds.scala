@@ -13,7 +13,6 @@ trait CorrelatedCallsToIfds extends AbstractIdeToIfds with CorrelatedCallsProble
    * is contained in S, then f is reachable.
    */
   override def ifdsResult: Map[Node, Set[Fact]] =
-    Time.time("Computing result") {
       solvedResult.foldLeft(Map[Node, Set[Fact]]() withDefaultValue Set.empty[Fact]) {
         case (result, (XNode(NormalNode(n), f), l)) =>
           if (f == Λ)
@@ -25,5 +24,4 @@ trait CorrelatedCallsToIfds extends AbstractIdeToIfds with CorrelatedCallsProble
         case (result, _) =>
           result
       }
-    }
 }

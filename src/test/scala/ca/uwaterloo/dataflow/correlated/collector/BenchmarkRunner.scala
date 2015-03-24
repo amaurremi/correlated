@@ -25,18 +25,6 @@ trait BenchmarkRunner extends FunSpec with RunUtil {
       }
     }
 
-  def runSpecJvm(): Unit = {
-    run("specjvm")
-  }
-
-  def runDacapo(): Unit = {
-    run("dacapo")
-  }
-
-  def runOther(): Unit = {
-    run("other")
-  }
-
   def runSingleBm(bmCollectionName: String, bmName: String, equivAnalysis: Boolean = false): Unit = {
     println(s"Running $bmName benchmark...")
     val path: String = configPath(bmCollectionName, bmName)
@@ -64,7 +52,7 @@ trait BenchmarkRunner extends FunSpec with RunUtil {
 
     def printResultSize(equiv: Boolean, bmName: String) = {
       val (analysis, algorithm) = if (equiv) ("equivalence", "IFDS") else ("CC", "IDE")
-      val result = time ("Computing " + analysis + " result") { ifdsResult }
+      val result = ifdsResult
       printf("%s %s result: %d\n", bmName, algorithm, result.size)
     }
 
