@@ -20,6 +20,7 @@ public class LibCalls {
         SecretAssertions.notSecret(String.copyValueOf(null)); // library method in whitelist
         SecretAssertions.secret(new HashSet<Object>().toString()); // java.util String
         SecretAssertions.notSecret(new File("")); // java.lang not String
-        SecretAssertions.notSecret(new A().s); // non-library String
+        // commenting out for ignoring fields
+        // SecretAssertions.notSecret(new A().s); // non-library String
     }
 }

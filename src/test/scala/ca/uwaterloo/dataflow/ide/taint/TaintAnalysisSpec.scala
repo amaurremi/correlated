@@ -52,9 +52,10 @@ class TaintAnalysisSpec extends FunSpec {
         assertSecretsFor("TryCatch")
       }
 
-      it("propagates secret values via exception objects") {
+      // Ignoring fields
+      /*it("propagates secret values via exception objects") {
         assertSecretsFor("TryCatch2")
-      }
+      }*/
     }
 
     describe("function calls") {
@@ -273,7 +274,8 @@ class TaintAnalysisSpec extends FunSpec {
       }
     }
 
-    describe("fields") {
+    // Disabling fields test for ignore-fields branch
+/*    describe("fields") {
       it("field") {
         assertSecretsFor("Field")
       }
@@ -317,7 +319,7 @@ class TaintAnalysisSpec extends FunSpec {
       it("field passed as parameter") {
         assertSecretsFor("FieldAsParameter")
       }
-    }
+    }*/
 
     describe("inheritance") {
       it("inheritance") {
