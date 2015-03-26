@@ -68,6 +68,12 @@ trait BenchmarkRunner extends FunSpec with RunUtil {
 
     override def printResultSize() {
       printResultSize(equiv = true, bmName)
+      val supNodes = supergraph.getNumberOfNodes
+      val ifdsNodes = ifdsResult.keySet.size
+      val explNodes = ifdsResult.values.flatten.size
+      println("Number of supergraph nodes: " + supNodes)
+      println("Number of supergraph nodes in IFDS result: " + ifdsNodes)
+      println("Number of exploded nodes: " + explNodes)
     }
   }
 
@@ -81,12 +87,6 @@ trait BenchmarkRunner extends FunSpec with RunUtil {
 
     override def printResultSize() {
       printResultSize(equiv = false, bmName)
-      val supNodes = supergraph.getNumberOfNodes
-      val ifdsNodes = ifdsResult.keySet.size
-      val explNodes = ifdsResult.values.flatten.size
-      println("Number of supergraph nodes: " + supNodes)
-      println("Number of supergraph nodes in IFDS result: " + ifdsNodes)
-      println("Number of exploded nodes: " + explNodes)
     }
   }
 }
