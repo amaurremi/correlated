@@ -1,6 +1,6 @@
 package ca.uwaterloo.dataflow.common
 
-import com.ibm.wala.util.collections.Filter
+import com.ibm.wala.util.Predicate
 import com.ibm.wala.util.graph.traverse.DFS
 
 import scala.collection.JavaConversions._
@@ -80,8 +80,8 @@ trait TraverseGraph { this: ExplodedGraphTypes with Phis =>
     val nodesInProc = DFS.getReachableNodes(
       supergraph,
       (supergraph getEntriesForProcedure p).toSeq,
-      new Filter[Node]() {
-        override def accepts(n: Node): Boolean = enclProc(n) == p
+      new Predicate[Node]() {
+        override def test(n: Node): Boolean = enclProc(n) == p
       }
     ).toSeq
     nodesInProc collect {

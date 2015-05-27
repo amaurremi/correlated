@@ -2,26 +2,20 @@ package edu.illinois.wala.util
 
 import collection.JavaConverters._
 import com.ibm.wala.util.Predicate
-import com.ibm.wala.util.collections.Filter
 import com.ibm.wala.util.intset.IntSet
 import com.ibm.wala.util.intset.IntSetAction
 import com.ibm.wala.util.intset.SparseIntSet
 
 trait Wrapper {
-  implicit def makePredicateFromFunction[T](f: Function1[T, Boolean]) = new Predicate[T] {
+  implicit def makePredicateFromFunction[T](f: Function1[T, Boolean]): Predicate[T] {def test(t: T): Boolean} = new Predicate[T] {
     def test(t: T) = f(t)
   }
 
-  // is actually deprecated
-  implicit def makeFilterFromFunction[T](f: Function1[T, Boolean]) = new Filter[T] {
-    def accepts(t: T) = f(t)
-  }
-
-  implicit def makeIntSetActionFromFunction(f: Function1[Int, Unit]) = new IntSetAction {
+  implicit def makeIntSetActionFromFunction(f: Function1[Int, Unit]): IntSetAction with Object {def act(t: Int): Unit} = new IntSetAction {
     def act(t: Int) = f(t)
   }
 
-  implicit def intsetSet(s: IntSet) = new WrappedIntSet(s)
+  implicit def intsetSet(s: IntSet): WrappedIntSet = new WrappedIntSet(s)
 
   import com.ibm.wala.util.graph.Graph
 
@@ -43,8 +37,8 @@ class WrappedIntSet(s: IntSet) extends Set[Int] {
   def iterator: Iterator[Int] = {
     val it = s.intIterator()
     new Iterator[Int] {
-      def hasNext = it.hasNext()
-      def next = it.next()
+      def hasNext = it.hasNext
+      def next() = it.next()
     }
   }
   def +(elem: Int) = new WrappedIntSet(s.union(SparseIntSet.singleton(elem)))

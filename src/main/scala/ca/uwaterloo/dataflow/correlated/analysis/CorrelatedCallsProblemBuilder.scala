@@ -112,7 +112,7 @@ trait CorrelatedCallsProblemBuilder extends IdeProblem with Receivers {
 
   sealed trait CorrelatedFunctionI extends IdeFunctionI
 
-  trait CorrelatedFunction extends CorrelatedFunctionI {
+  sealed trait CorrelatedFunction extends CorrelatedFunctionI {
 
     val updates: ComposedTypeMultiMap
 
